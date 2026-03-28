@@ -1,0 +1,24 @@
+services:
+  db:
+    image: postgres:18.3-alpine3.23
+    user: postgres
+    restart: always
+    healthcheck:
+      test: "pg_isready -U username --dbname=tests"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - 3031:5432
+    environment:
+      POSTGRES_USER: username
+      POSTGRES_DB: tests
+      POSTGRES_PASSWORD: password
+    volumes:
+      # this automatically runs drizzle migrations in alphabetical order
+      - ./src/db/migrations:/docker-entrypoint-initdb.d
+      # Persistent data storage
+      - postgres_data:/var/lib/postgresql
+
+volumes:
+  postgres_data:
