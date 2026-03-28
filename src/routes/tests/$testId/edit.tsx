@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useForm } from "@tanstack/react-form";
@@ -40,14 +40,14 @@ function TestEditorPage() {
   const [saveLabel, setSaveLabel] = useState("Ready");
   const [saveTone, setSaveTone] = useState<"neutral" | "accent" | "success" | "warning">("neutral");
 
-  const invalidate = async () => {
+  const invalidate = useCallback(async () => {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: testsKeys.editor(testId) }),
       queryClient.invalidateQueries({ queryKey: testsKeys.take(testId) }),
       queryClient.invalidateQueries({ queryKey: testsKeys.dashboard() }),
       queryClient.invalidateQueries({ queryKey: testsKeys.all }),
     ]);
-  };
+  }, [queryClient, testId]);
 
   const withSaveState = async (callback: () => Promise<void>) => {
     setSaveLabel("Saving");
@@ -261,9 +261,8 @@ function TestEditorPage() {
               void metaForm.handleSubmit();
             }}
           >
-            <metaForm.Field
-              name="title"
-              children={(field) => (
+            <metaForm.Field name="title">
+              {(field) => (
                 <div className="space-y-2">
                   <FieldLabel label="Title" />
                   <TextInput
@@ -273,10 +272,9 @@ function TestEditorPage() {
                   />
                 </div>
               )}
-            />
-            <metaForm.Field
-              name="description"
-              children={(field) => (
+            </metaForm.Field>
+            <metaForm.Field name="description">
+              {(field) => (
                 <div className="space-y-2">
                   <FieldLabel label="Description" />
                   <textarea
@@ -288,7 +286,7 @@ function TestEditorPage() {
                   />
                 </div>
               )}
-            />
+            </metaForm.Field>
             <Button type="submit" tone="secondary" className="w-full">
               Save metadata
             </Button>
@@ -304,9 +302,8 @@ function TestEditorPage() {
                   void addEditorForm.handleSubmit();
                 }}
               >
-                <addEditorForm.Field
-                  name="email"
-                  children={(field) => (
+                <addEditorForm.Field name="email">
+                  {(field) => (
                     <div className="space-y-2">
                       <FieldLabel
                         label="Invite editor"
@@ -321,7 +318,7 @@ function TestEditorPage() {
                       />
                     </div>
                   )}
-                />
+                </addEditorForm.Field>
                 <Button type="submit" tone="secondary" className="w-full">
                   Send invite
                 </Button>

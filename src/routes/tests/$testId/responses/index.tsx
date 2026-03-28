@@ -60,11 +60,17 @@ function ResponsesPage() {
     }),
     columnHelper.accessor("submittedAt", {
       header: "Submitted",
-      cell: (info) => (info.getValue() ? new Date(info.getValue()!).toLocaleString() : "Not yet"),
+      cell: (info) => {
+        const value = info.getValue();
+        return value ? new Date(value).toLocaleString() : "Not yet";
+      },
     }),
     columnHelper.accessor("lastAutosavedAt", {
       header: "Last save",
-      cell: (info) => (info.getValue() ? new Date(info.getValue()!).toLocaleString() : "Never"),
+      cell: (info) => {
+        const value = info.getValue();
+        return value ? new Date(value).toLocaleString() : "Never";
+      },
     }),
   ];
 

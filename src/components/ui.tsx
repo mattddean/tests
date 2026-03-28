@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { LoaderCircle } from "lucide-react";
-import type { ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 
 export function cx(...values: Array<string | false | null | undefined>) {
   return values.filter(Boolean).join(" ");
@@ -57,7 +57,7 @@ export function ButtonLink({
   className,
   tone = "primary",
   ...props
-}: any & {
+}: ComponentProps<typeof Link> & {
   children: ReactNode;
   className?: string;
   tone?: "primary" | "secondary" | "ghost";

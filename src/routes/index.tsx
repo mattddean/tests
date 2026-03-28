@@ -24,6 +24,10 @@ function HomePage() {
     return <MarketingLanding />;
   }
 
+  return <WorkspaceHome />;
+}
+
+function WorkspaceHome() {
   const { data } = useSuspenseQuery(dashboardQueryOptions());
 
   return (

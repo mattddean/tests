@@ -23,10 +23,6 @@ function AuthPage() {
   const [error, setError] = useState<string | null>(null);
   const { data: session } = useSuspenseQuery(sessionQueryOptions());
 
-  if (session?.user) {
-    return null;
-  }
-
   const form = useForm({
     defaultValues: {
       name: "",
@@ -55,6 +51,10 @@ function AuthPage() {
       window.location.assign("/");
     },
   });
+
+  if (session?.user) {
+    return null;
+  }
 
   return (
     <div className="grid min-h-[70dvh] gap-6 lg:grid-cols-[1.1fr_0.9fr]">
@@ -111,9 +111,8 @@ function AuthPage() {
           }}
         >
           {isSignUp ? (
-            <form.Field
-              name="name"
-              children={(field) => (
+            <form.Field name="name">
+              {(field) => (
                 <div className="space-y-2">
                   <FieldLabel label="Name" helper="Shown as the editor and responder identity." />
                   <TextInput
@@ -125,12 +124,11 @@ function AuthPage() {
                   />
                 </div>
               )}
-            />
+            </form.Field>
           ) : null}
 
-          <form.Field
-            name="email"
-            children={(field) => (
+          <form.Field name="email">
+            {(field) => (
               <div className="space-y-2">
                 <FieldLabel label="Email" helper="Use the address collaborators can invite." />
                 <TextInput
@@ -143,11 +141,10 @@ function AuthPage() {
                 />
               </div>
             )}
-          />
+          </form.Field>
 
-          <form.Field
-            name="password"
-            children={(field) => (
+          <form.Field name="password">
+            {(field) => (
               <div className="space-y-2">
                 <FieldLabel label="Password" helper="Minimum eight characters." />
                 <TextInput
@@ -161,7 +158,7 @@ function AuthPage() {
                 />
               </div>
             )}
-          />
+          </form.Field>
 
           {error ? (
             <div className="flex items-start gap-3 rounded-[1.5rem] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -170,15 +167,14 @@ function AuthPage() {
             </div>
           ) : null}
 
-          <form.Subscribe
-            selector={(state) => state.isSubmitting}
-            children={(isSubmitting) => (
+          <form.Subscribe selector={(state) => state.isSubmitting}>
+            {(isSubmitting) => (
               <Button type="submit" className="w-full">
                 {isSubmitting ? "Working..." : isSignUp ? "Create account" : "Sign in"}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             )}
-          />
+          </form.Subscribe>
         </form>
 
         <button

@@ -21,6 +21,9 @@ export const Route = createFileRoute("/tests/$testId/responses/$responseId")({
 function ResponseReviewPage() {
   const { testId, responseId } = Route.useParams();
   const { data } = useSuspenseQuery(responseDetailQueryOptions(testId, responseId));
+  const startedAt = data.response.startedAt
+    ? new Date(data.response.startedAt).toLocaleString()
+    : "Not started";
 
   return (
     <div className="space-y-6">
@@ -64,9 +67,7 @@ function ResponseReviewPage() {
           <p className="text-[11px] tracking-[0.24em] text-[color:var(--muted)] uppercase">
             Started
           </p>
-          <p className="mt-2 text-sm font-medium">
-            {new Date(data.response.startedAt!).toLocaleString()}
-          </p>
+          <p className="mt-2 text-sm font-medium">{startedAt}</p>
         </div>
         <div>
           <p className="text-[11px] tracking-[0.24em] text-[color:var(--muted)] uppercase">
