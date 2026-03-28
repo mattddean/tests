@@ -15,6 +15,7 @@ const loggedServerFunction = createServerFn({ method: "GET" }).middleware([
 ]);
 */
 
+type Todo = { id: number; name: string };
 const TODOS_FILE = "todos.json";
 
 async function readTodos() {
@@ -24,12 +25,12 @@ async function readTodos() {
         [
           { id: 1, name: "Get groceries" },
           { id: 2, name: "Buy a new phone" },
-        ],
+        ] satisfies Todo[],
         null,
         2,
       ),
     ),
-  );
+  ) as Todo[];
 }
 
 const getTodos = createServerFn({

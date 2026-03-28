@@ -1,12 +1,14 @@
 import { faker } from "@faker-js/faker";
-const range = (len) => {
+
+const range = (len: number) => {
   const arr = [];
   for (let i = 0; i < len; i++) {
     arr.push(i);
   }
   return arr;
 };
-const newPerson = (num) => {
+
+const newPerson = (num: number) => {
   return {
     id: num,
     firstName: faker.person.firstName(),
@@ -17,8 +19,9 @@ const newPerson = (num) => {
     status: faker.helpers.shuffle(["relationship", "complicated", "single"])[0],
   };
 };
-export function makeData(...lens) {
-  const makeDataLevel = (depth = 0) => {
+
+export function makeData(...lens: number[]) {
+  const makeDataLevel = (depth = 0): (Person & { subRows: Person[] | undefined })[] => {
     const len = lens[depth];
     return range(len).map((index) => {
       return {
@@ -29,3 +32,5 @@ export function makeData(...lens) {
   };
   return makeDataLevel();
 }
+
+export type Person = ReturnType<typeof newPerson>;
