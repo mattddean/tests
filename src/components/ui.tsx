@@ -37,11 +37,11 @@ export function Button({
       className={cx(
         "inline-flex h-11 items-center justify-center rounded-2xl border px-4 text-sm font-medium transition duration-200 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50",
         tone === "primary" &&
-          "border-[color:var(--accent-strong)] bg-[color:var(--accent)] text-white shadow-[0_20px_30px_-18px_rgba(13,148,136,0.8)] hover:bg-[color:var(--accent-strong)]",
+          "border-[color:var(--accent-strong)] bg-[color:var(--accent)] text-white shadow-[0_20px_30px_-18px_rgba(13,148,136,0.8)] hover:bg-[color:var(--accent-strong)] hover:text-white",
         tone === "secondary" &&
-          "border-[color:var(--border-strong)] bg-[color:var(--panel-solid)] text-[color:var(--foreground)] hover:border-[color:var(--accent-soft)] hover:bg-white",
+          "border-[color:var(--border-strong)] bg-[color:var(--panel-solid)] text-[color:var(--foreground)] hover:border-[color:var(--border-strong)] hover:bg-white hover:text-[color:var(--foreground)]",
         tone === "ghost" &&
-          "border-transparent bg-transparent text-[color:var(--foreground)] hover:bg-[color:var(--panel)]",
+          "border-transparent bg-transparent text-[color:var(--foreground)] hover:bg-white/85 hover:text-[color:var(--foreground)]",
         tone === "danger" && "border-red-200 bg-red-50 text-red-700 hover:bg-red-100",
         className,
       )}
@@ -65,13 +65,13 @@ export function ButtonLink({
   return (
     <Link
       className={cx(
-        "inline-flex h-11 items-center justify-center rounded-2xl border px-4 text-sm font-medium transition duration-200 active:translate-y-px",
+        "inline-flex whitespace-nowrap h-11 items-center justify-center rounded-2xl border px-4 text-sm font-medium transition duration-200 active:translate-y-px",
         tone === "primary" &&
-          "border-[color:var(--accent-strong)] bg-[color:var(--accent)] text-white shadow-[0_20px_30px_-18px_rgba(13,148,136,0.8)] hover:bg-[color:var(--accent-strong)]",
+          "border-[color:var(--accent-strong)] bg-[color:var(--accent)] text-white shadow-[0_20px_30px_-18px_rgba(13,148,136,0.8)] hover:bg-[color:var(--accent-strong)] hover:text-white",
         tone === "secondary" &&
-          "border-[color:var(--border-strong)] bg-[color:var(--panel-solid)] text-[color:var(--foreground)] hover:border-[color:var(--accent-soft)] hover:bg-white",
+          "border-[color:var(--border-strong)] bg-[color:var(--panel-solid)] text-[color:var(--foreground)] hover:border-[color:var(--border-strong)] hover:bg-white hover:text-[color:var(--foreground)]",
         tone === "ghost" &&
-          "border-transparent bg-transparent text-[color:var(--foreground)] hover:bg-[color:var(--panel)]",
+          "border-transparent bg-transparent text-[color:var(--foreground)] hover:bg-white/85 hover:text-[color:var(--foreground)]",
         className,
       )}
       {...props}

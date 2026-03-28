@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { Link, createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import {
   createColumnHelper,
@@ -85,12 +85,13 @@ function ResponsesPage() {
         title="Every draft and submission for this test."
         description="Use the table for sorting and scanning, then click into any row to reopen the original document with that responder’s selected answers."
         actions={
-          <a
-            href={`/tests/${testId}/edit`}
-            className="inline-flex h-11 items-center justify-center rounded-2xl border border-[color:var(--border-strong)] bg-[color:var(--panel-solid)] px-4 text-sm font-medium transition hover:bg-white"
+          <Link
+            to="/tests/$testId/edit"
+            params={{ testId }}
+            className="inline-flex h-11 items-center justify-center rounded-2xl border border-[color:var(--border-strong)] bg-[color:var(--panel-solid)] px-4 text-sm font-medium text-[color:var(--foreground)] transition hover:bg-white hover:text-[color:var(--foreground)]"
           >
             Back to editor
-          </a>
+          </Link>
         }
       />
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useForm } from "@tanstack/react-form";
 import { AlertCircle, ArrowRight } from "lucide-react";
@@ -19,7 +19,6 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
-  const router = useRouter();
   const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { data: session } = useSuspenseQuery(sessionQueryOptions());
@@ -53,8 +52,7 @@ function AuthPage() {
         return;
       }
 
-      await router.invalidate();
-      await router.navigate({ to: "/" });
+      window.location.assign("/");
     },
   });
 

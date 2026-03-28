@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { Link, createFileRoute, redirect } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Card, SectionHeading } from "@/components/ui";
 import { sessionQueryOptions } from "@/features/auth/queries";
@@ -29,12 +29,20 @@ function ResponseReviewPage() {
         title="Inspect a completed or in-progress response in context."
         description="This view reuses the test surface and overlays the responder metadata instead of switching to a detached answer sheet."
         actions={
-          <a
-            href={`/tests/${testId}/responses`}
-            className="inline-flex h-11 items-center justify-center rounded-2xl border border-[color:var(--border-strong)] bg-[color:var(--panel-solid)] px-4 text-sm font-medium transition hover:bg-white"
+          <Link
+            to="/tests/$testId/responses"
+            params={{ testId }}
+            search={{
+              page: 1,
+              query: "",
+              status: "all",
+              sortBy: "submittedAt",
+              direction: "desc",
+            }}
+            className="inline-flex h-11 items-center justify-center rounded-2xl border border-[color:var(--border-strong)] bg-[color:var(--panel-solid)] px-4 text-sm font-medium text-[color:var(--foreground)] transition hover:bg-white hover:text-[color:var(--foreground)]"
           >
             Back to table
-          </a>
+          </Link>
         }
       />
 

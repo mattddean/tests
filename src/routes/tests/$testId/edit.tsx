@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useForm } from "@tanstack/react-form";
 import { CircleCheckBig, Eye, Send } from "lucide-react";
@@ -201,19 +201,28 @@ function TestEditorPage() {
           description="The live reader view and the editor view share the same structure. Hover reveals tools, click turns text into editing, and reorder actions stay anchored to the content."
           actions={
             <>
-              <a
-                href={`/tests/${testId}`}
-                className="inline-flex h-11 items-center justify-center rounded-2xl border border-[color:var(--border-strong)] bg-[color:var(--panel-solid)] px-4 text-sm font-medium hover:bg-white"
+              <Link
+                to="/tests/$testId"
+                params={{ testId }}
+                className="inline-flex h-11 items-center justify-center rounded-2xl border border-[color:var(--border-strong)] bg-[color:var(--panel-solid)] px-4 text-sm font-medium text-[color:var(--foreground)] hover:bg-white hover:text-[color:var(--foreground)]"
               >
                 <Eye className="mr-2 h-4 w-4" />
                 Preview
-              </a>
-              <a
-                href={`/tests/${testId}/responses`}
-                className="inline-flex h-11 items-center justify-center rounded-2xl border border-[color:var(--border-strong)] bg-[color:var(--panel-solid)] px-4 text-sm font-medium hover:bg-white"
+              </Link>
+              <Link
+                to="/tests/$testId/responses"
+                params={{ testId }}
+                search={{
+                  page: 1,
+                  query: "",
+                  status: "all",
+                  sortBy: "submittedAt",
+                  direction: "desc",
+                }}
+                className="inline-flex h-11 items-center justify-center rounded-2xl border border-[color:var(--border-strong)] bg-[color:var(--panel-solid)] px-4 text-sm font-medium text-[color:var(--foreground)] hover:bg-white hover:text-[color:var(--foreground)]"
               >
                 Responses
-              </a>
+              </Link>
             </>
           }
         />

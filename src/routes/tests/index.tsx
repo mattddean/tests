@@ -81,14 +81,12 @@ function TestsPage() {
               title={item.title}
               description={item.description}
               status={item.status}
+              testId={item.id}
               updatedAt={item.updatedAt}
               editorCount={item.editorCount}
               responseCount={item.responseCount}
-              editHref={item.viewerPermission !== "taker" ? `/tests/${item.id}/edit` : undefined}
-              takeHref={`/tests/${item.id}`}
-              responsesHref={
-                item.viewerPermission !== "taker" ? `/tests/${item.id}/responses` : undefined
-              }
+              canEdit={item.viewerPermission !== "taker"}
+              canViewResponses={item.viewerPermission !== "taker"}
             />
           ))
         )}

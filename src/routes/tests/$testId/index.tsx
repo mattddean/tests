@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { Edit3 } from "lucide-react";
 import { Card, SectionHeading } from "@/components/ui";
@@ -92,13 +92,14 @@ function TestTakePage() {
         description="Selections save into your draft as you work. When every required question is covered, submit the response to lock it."
         actions={
           data.canEdit ? (
-            <a
-              href={`/tests/${testId}/edit`}
-              className="inline-flex h-11 items-center justify-center rounded-2xl border border-[color:var(--border-strong)] bg-[color:var(--panel-solid)] px-4 text-sm font-medium transition hover:bg-white"
-            >
+          <Link
+            to="/tests/$testId/edit"
+            params={{ testId }}
+            className="inline-flex h-11 items-center justify-center rounded-2xl border border-[color:var(--border-strong)] bg-[color:var(--panel-solid)] px-4 text-sm font-medium text-[color:var(--foreground)] transition hover:bg-white hover:text-[color:var(--foreground)]"
+          >
               <Edit3 className="mr-2 h-4 w-4" />
               Edit test
-            </a>
+            </Link>
           ) : null
         }
       />
@@ -126,9 +127,13 @@ function TestTakePage() {
       {data.canEdit ? (
         <div className="text-center text-sm text-[color:var(--muted)]">
           Editors can preview the taker experience here or return to{" "}
-          <a href={`/tests/${testId}/edit`} className="text-[color:var(--accent-strong)]">
+          <Link
+            to="/tests/$testId/edit"
+            params={{ testId }}
+            className="text-[color:var(--accent-strong)]"
+          >
             edit mode
-          </a>
+          </Link>
           .
         </div>
       ) : null}

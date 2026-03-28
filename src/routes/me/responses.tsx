@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ButtonLink, Card, EmptyState, SectionHeading, StatusPill } from "@/components/ui";
 import { sessionQueryOptions } from "@/features/auth/queries";
@@ -55,12 +55,13 @@ function MyResponsesPage() {
                       : ""}
                   </p>
                 </div>
-                <a
-                  href={`/tests/${item.testId}`}
-                  className="inline-flex h-11 items-center justify-center rounded-2xl border border-[color:var(--border-strong)] bg-[color:var(--panel-solid)] px-4 text-sm font-medium hover:bg-white"
+                <Link
+                  to="/tests/$testId"
+                  params={{ testId: item.testId }}
+                  className="inline-flex h-11 items-center justify-center rounded-2xl border border-[color:var(--border-strong)] bg-[color:var(--panel-solid)] px-4 text-sm font-medium text-[color:var(--foreground)] hover:bg-white hover:text-[color:var(--foreground)]"
                 >
                   {item.status === "submitted" ? "View response" : "Resume draft"}
-                </a>
+                </Link>
               </div>
             </Card>
           ))}

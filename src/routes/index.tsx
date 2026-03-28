@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ArrowRight, CheckCircle2, FilePenLine, LayoutList, Rows3, Sparkles } from "lucide-react";
 import { dashboardQueryOptions } from "@/features/tests/queries";
@@ -107,9 +107,10 @@ function HomePage() {
               />
             ) : (
               data.recentResponses.map((response) => (
-                <a
+                <Link
                   key={response.id}
-                  href={`/tests/${response.testId}`}
+                  to="/tests/$testId"
+                  params={{ testId: response.testId }}
                   className="block rounded-[1.5rem] border border-[color:var(--border)] bg-white/70 px-4 py-4 transition hover:border-[color:var(--border-strong)]"
                 >
                   <div className="flex items-center justify-between gap-3">
@@ -121,7 +122,7 @@ function HomePage() {
                     </div>
                     <ArrowRight className="h-4 w-4 text-[color:var(--muted)]" />
                   </div>
-                </a>
+                </Link>
               ))
             )}
           </div>
@@ -156,12 +157,12 @@ function HomePage() {
                 title={item.title}
                 description={item.description}
                 status={item.status}
+                testId={item.id}
                 updatedAt={item.updatedAt}
                 editorCount={item.editorCount}
                 responseCount={item.responseCount}
-                editHref={`/tests/${item.id}/edit`}
-                takeHref={`/tests/${item.id}`}
-                responsesHref={`/tests/${item.id}/responses`}
+                canEdit
+                canViewResponses
               />
             ))
           )}

@@ -49,22 +49,25 @@ function RootComponent() {
 
 function AppFrame() {
   const { data: session } = useSuspenseQuery(sessionQueryOptions());
+  const shouldShowDevtools = import.meta.env.DEV && import.meta.env.VITE_SHOW_DEVTOOLS === "true";
 
   return (
     <SiteShell session={session}>
       <Outlet />
-      <TanStackDevtools
-        config={{
-          position: "bottom-right",
-        }}
-        plugins={[
-          {
-            name: "TanStack Router",
-            render: <TanStackRouterDevtoolsPanel />,
-          },
-          TanStackQueryDevtools,
-        ]}
-      />
+      {shouldShowDevtools ? (
+        <TanStackDevtools
+          config={{
+            position: "bottom-right",
+          }}
+          plugins={[
+            {
+              name: "TanStack Router",
+              render: <TanStackRouterDevtoolsPanel />,
+            },
+            TanStackQueryDevtools,
+          ]}
+        />
+      ) : null}
     </SiteShell>
   );
 }
