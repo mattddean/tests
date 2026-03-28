@@ -48,20 +48,20 @@ function ResponseReviewPage() {
 
       <Card className="grid gap-4 p-5 md:grid-cols-4">
         <div>
-          <p className="text-[11px] uppercase tracking-[0.24em] text-[color:var(--muted)]">
+          <p className="text-[11px] tracking-[0.24em] text-[color:var(--muted)] uppercase">
             Responder
           </p>
           <p className="mt-2 text-sm font-medium">{data.responder.name}</p>
           <p className="text-sm text-[color:var(--muted)]">{data.responder.email}</p>
         </div>
         <div>
-          <p className="text-[11px] uppercase tracking-[0.24em] text-[color:var(--muted)]">
+          <p className="text-[11px] tracking-[0.24em] text-[color:var(--muted)] uppercase">
             Status
           </p>
           <p className="mt-2 text-sm font-medium">{data.response.status}</p>
         </div>
         <div>
-          <p className="text-[11px] uppercase tracking-[0.24em] text-[color:var(--muted)]">
+          <p className="text-[11px] tracking-[0.24em] text-[color:var(--muted)] uppercase">
             Started
           </p>
           <p className="mt-2 text-sm font-medium">
@@ -69,7 +69,7 @@ function ResponseReviewPage() {
           </p>
         </div>
         <div>
-          <p className="text-[11px] uppercase tracking-[0.24em] text-[color:var(--muted)]">
+          <p className="text-[11px] tracking-[0.24em] text-[color:var(--muted)] uppercase">
             Submitted
           </p>
           <p className="mt-2 text-sm font-medium">

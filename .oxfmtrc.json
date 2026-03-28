@@ -1,4 +1,12 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "ignorePatterns": ["src/db/migrations/meta/**"]
+  "ignorePatterns": ["src/db/migrations/meta/**"],
+  "sortPackageJson": {
+    "sortScripts": true
+  },
+  "sortTailwindcss": {
+    "stylesheet": "./src/styles.css",
+    "functions": ["clsx", "cn", "cx"],
+    "preserveWhitespace": true
+  }
 }

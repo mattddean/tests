@@ -14,8 +14,8 @@ export function SiteShell({
   return (
     <div className="min-h-[100dvh] bg-[color:var(--background)] text-[color:var(--foreground)]">
       <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute left-[8%] top-0 h-[22rem] w-[22rem] rounded-full bg-[color:var(--accent-faint)] blur-3xl" />
-        <div className="absolute bottom-0 right-[8%] h-[18rem] w-[18rem] rounded-full bg-white/80 blur-3xl" />
+        <div className="absolute top-0 left-[8%] h-[22rem] w-[22rem] rounded-full bg-[color:var(--accent-faint)] blur-3xl" />
+        <div className="absolute right-[8%] bottom-0 h-[18rem] w-[18rem] rounded-full bg-white/80 blur-3xl" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.7),transparent_30%),linear-gradient(180deg,rgba(250,248,243,0.95),rgba(242,237,229,0.95))]" />
       </div>
 
@@ -83,7 +83,7 @@ function NavLink({
         className:
           "bg-[color:var(--foreground)] text-white shadow-[0_20px_30px_-18px_rgba(15,23,42,0.6)] hover:bg-[color:var(--foreground)] hover:text-white",
       }}
-      className="whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium transition lg:px-4"
+      className="rounded-full px-3 py-2 text-sm font-medium whitespace-nowrap transition lg:px-4"
     >
       {children}
     </Link>
@@ -94,11 +94,11 @@ function SignedOutActions() {
   return (
     <>
       <div className="hidden md:block">
-        <ButtonLink to="/auth" tone="ghost" className="whitespace-nowrap px-3 lg:px-4">
+        <ButtonLink to="/auth" tone="ghost" className="px-3 whitespace-nowrap lg:px-4">
           Sign in
         </ButtonLink>
       </div>
-      <ButtonLink to="/auth" className="whitespace-nowrap px-3 lg:px-4">
+      <ButtonLink to="/auth" className="px-3 whitespace-nowrap lg:px-4">
         Get started
       </ButtonLink>
     </>
@@ -109,7 +109,7 @@ function SignedInActions({ session }: { session: SessionData }) {
   return (
     <>
       <div className="hidden md:block">
-        <ButtonLink to="/tests/new" preload={false} className="whitespace-nowrap px-3 lg:px-4">
+        <ButtonLink to="/tests/new" preload={false} className="px-3 whitespace-nowrap lg:px-4">
           <SquarePen className="mr-2 h-4 w-4" />
           <span className="xl:hidden">New</span>
           <span className="hidden xl:inline">New test</span>
@@ -158,7 +158,7 @@ function MobileNavLink({
         className:
           "bg-[color:var(--foreground)] text-white hover:bg-[color:var(--foreground)] hover:text-white",
       }}
-      className="inline-flex h-10 shrink-0 items-center justify-center whitespace-nowrap rounded-[1.15rem] px-3 text-sm font-medium transition"
+      className="inline-flex h-10 shrink-0 items-center justify-center rounded-[1.15rem] px-3 text-sm font-medium whitespace-nowrap transition"
     >
       {children}
     </Link>
@@ -175,7 +175,7 @@ function MobileActionLink({
   return (
     <Link
       to={to}
-      className="inline-flex h-10 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-[1.15rem] border border-[color:var(--accent-strong)] bg-[color:var(--accent)] px-3 text-sm font-medium text-white shadow-[0_18px_28px_-20px_rgba(13,148,136,0.8)] transition hover:bg-[color:var(--accent-strong)] hover:text-white"
+      className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-[1.15rem] border border-[color:var(--accent-strong)] bg-[color:var(--accent)] px-3 text-sm font-medium whitespace-nowrap text-white shadow-[0_18px_28px_-20px_rgba(13,148,136,0.8)] transition hover:bg-[color:var(--accent-strong)] hover:text-white"
     >
       {children}
     </Link>
@@ -214,7 +214,7 @@ export function TestListRow({
           <p className="max-w-[70ch] text-sm leading-6 text-[color:var(--muted)]">
             {description || "No description yet."}
           </p>
-          <div className="flex flex-wrap items-center gap-4 text-xs uppercase tracking-[0.18em] text-[color:var(--muted)]">
+          <div className="flex flex-wrap items-center gap-4 text-xs tracking-[0.18em] text-[color:var(--muted)] uppercase">
             <span>Updated {new Date(updatedAt).toLocaleString()}</span>
             <span>{editorCount} editors</span>
             <span>{responseCount} responses</span>

@@ -13,7 +13,7 @@ export function AppLogo() {
         <div className="h-5 w-5 rounded-full border-2 border-[color:var(--accent)]" />
       </div>
       <div>
-        <p className="text-[10px] uppercase tracking-[0.28em] text-[color:var(--muted)]">
+        <p className="text-[10px] tracking-[0.28em] text-[color:var(--muted)] uppercase">
           Test Builder
         </p>
         <p className="text-lg font-semibold tracking-tight text-[color:var(--foreground)]">
@@ -65,7 +65,7 @@ export function ButtonLink({
   return (
     <Link
       className={cx(
-        "inline-flex whitespace-nowrap h-11 items-center justify-center rounded-2xl border px-4 text-sm font-medium transition duration-200 active:translate-y-px",
+        "inline-flex h-11 items-center justify-center rounded-2xl border px-4 text-sm font-medium whitespace-nowrap transition duration-200 active:translate-y-px",
         tone === "primary" &&
           "border-[color:var(--accent-strong)] bg-[color:var(--accent)] text-white shadow-[0_20px_30px_-18px_rgba(13,148,136,0.8)] hover:bg-[color:var(--accent-strong)] hover:text-white",
         tone === "secondary" &&
@@ -109,7 +109,7 @@ export function SectionHeading({
     <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
       <div className="space-y-2">
         {eyebrow ? (
-          <p className="text-[11px] uppercase tracking-[0.28em] text-[color:var(--muted)]">
+          <p className="text-[11px] tracking-[0.28em] text-[color:var(--muted)] uppercase">
             {eyebrow}
           </p>
         ) : null}
@@ -139,7 +139,7 @@ export function EmptyState({
   return (
     <Card className="border-dashed px-8 py-12 text-center">
       <div className="mx-auto max-w-lg space-y-3">
-        <p className="text-[11px] uppercase tracking-[0.3em] text-[color:var(--muted)]">
+        <p className="text-[11px] tracking-[0.3em] text-[color:var(--muted)] uppercase">
           Empty state
         </p>
         <h2 className="text-2xl font-semibold tracking-tight text-[color:var(--foreground)]">
@@ -162,7 +162,7 @@ export function StatusPill({
   return (
     <span
       className={cx(
-        "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium uppercase tracking-[0.18em]",
+        "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium tracking-[0.18em] uppercase",
         tone === "neutral" && "bg-[color:var(--panel-solid)] text-[color:var(--muted)]",
         tone === "accent" && "bg-[color:var(--accent-faint)] text-[color:var(--accent-strong)]",
         tone === "success" && "bg-emerald-50 text-emerald-700",
@@ -199,7 +199,7 @@ export function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
     <input
       {...props}
       className={cx(
-        "h-11 w-full rounded-2xl border border-[color:var(--border-strong)] bg-white px-4 text-sm text-[color:var(--foreground)] outline-none transition placeholder:text-[color:var(--muted)] focus:border-[color:var(--accent)] focus:ring-4 focus:ring-[color:var(--accent-faint)]",
+        "h-11 w-full rounded-2xl border border-[color:var(--border-strong)] bg-white px-4 text-sm text-[color:var(--foreground)] transition outline-none placeholder:text-[color:var(--muted)] focus:border-[color:var(--accent)] focus:ring-4 focus:ring-[color:var(--accent-faint)]",
         props.className,
       )}
     />
@@ -211,7 +211,7 @@ export function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement
     <textarea
       {...props}
       className={cx(
-        "w-full rounded-2xl border border-[color:var(--border-strong)] bg-white px-4 py-3 text-sm text-[color:var(--foreground)] outline-none transition placeholder:text-[color:var(--muted)] focus:border-[color:var(--accent)] focus:ring-4 focus:ring-[color:var(--accent-faint)]",
+        "w-full rounded-2xl border border-[color:var(--border-strong)] bg-white px-4 py-3 text-sm text-[color:var(--foreground)] transition outline-none placeholder:text-[color:var(--muted)] focus:border-[color:var(--accent)] focus:ring-4 focus:ring-[color:var(--accent-faint)]",
         props.className,
       )}
     />
@@ -221,7 +221,7 @@ export function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement
 export function SurfaceMeta({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="space-y-1">
-      <p className="text-[11px] uppercase tracking-[0.24em] text-[color:var(--muted)]">{label}</p>
+      <p className="text-[11px] tracking-[0.24em] text-[color:var(--muted)] uppercase">{label}</p>
       <div className="text-sm text-[color:var(--foreground)]">{value}</div>
     </div>
   );

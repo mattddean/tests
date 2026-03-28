@@ -92,11 +92,11 @@ function TestTakePage() {
         description="Selections save into your draft as you work. When every required question is covered, submit the response to lock it."
         actions={
           data.canEdit ? (
-          <Link
-            to="/tests/$testId/edit"
-            params={{ testId }}
-            className="inline-flex h-11 items-center justify-center rounded-2xl border border-[color:var(--border-strong)] bg-[color:var(--panel-solid)] px-4 text-sm font-medium text-[color:var(--foreground)] transition hover:bg-white hover:text-[color:var(--foreground)]"
-          >
+            <Link
+              to="/tests/$testId/edit"
+              params={{ testId }}
+              className="inline-flex h-11 items-center justify-center rounded-2xl border border-[color:var(--border-strong)] bg-[color:var(--panel-solid)] px-4 text-sm font-medium text-[color:var(--foreground)] transition hover:bg-white hover:text-[color:var(--foreground)]"
+            >
               <Edit3 className="mr-2 h-4 w-4" />
               Edit test
             </Link>

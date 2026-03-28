@@ -177,7 +177,7 @@ function ResponsesPage() {
                     {headerGroup.headers.map((header) => (
                       <th
                         key={header.id}
-                        className="px-4 py-3 text-left text-xs uppercase tracking-[0.18em] text-[color:var(--muted)]"
+                        className="px-4 py-3 text-left text-xs tracking-[0.18em] text-[color:var(--muted)] uppercase"
                       >
                         {flexRender(header.column.columnDef.header, header.getContext())}
                       </th>

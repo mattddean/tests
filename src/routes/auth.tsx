@@ -61,7 +61,7 @@ function AuthPage() {
       <Card className="overflow-hidden">
         <div className="grid h-full gap-6 p-8 md:p-10">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.28em] text-[color:var(--muted)]">
+            <p className="text-[11px] tracking-[0.28em] text-[color:var(--muted)] uppercase">
               Access
             </p>
             <h1 className="mt-4 text-5xl font-semibold tracking-[-0.05em]">
@@ -95,7 +95,7 @@ function AuthPage() {
       </Card>
 
       <Card className="p-8 md:p-10">
-        <p className="text-[11px] uppercase tracking-[0.28em] text-[color:var(--muted)]">
+        <p className="text-[11px] tracking-[0.28em] text-[color:var(--muted)] uppercase">
           {isSignUp ? "Create account" : "Welcome back"}
         </p>
         <h2 className="mt-4 text-3xl font-semibold tracking-tight">

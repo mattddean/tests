@@ -242,7 +242,7 @@ function TestEditorPage() {
       <div className="space-y-4">
         <Card className="sticky top-24 space-y-5 p-5">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[color:var(--muted)]">
+            <p className="text-sm font-semibold tracking-[0.2em] text-[color:var(--muted)] uppercase">
               Settings
             </p>
             <CircleCheckBig className="h-4 w-4 text-[color:var(--accent)]" />
@@ -339,12 +339,12 @@ function TestEditorPage() {
                       <p className="text-xs text-[color:var(--muted)]">{person.email}</p>
                     </div>
                     {person.role === "owner" ? (
-                      <span className="text-xs uppercase tracking-[0.18em] text-[color:var(--muted)]">
+                      <span className="text-xs tracking-[0.18em] text-[color:var(--muted)] uppercase">
                         owner
                       </span>
                     ) : (
                       <button
-                        className="text-xs uppercase tracking-[0.18em] text-red-600"
+                        className="text-xs tracking-[0.18em] text-red-600 uppercase"
                         onClick={() =>
                           void removeEditorMutation.mutateAsync({
                             data: {

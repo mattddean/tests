@@ -247,7 +247,7 @@ function QuestionBlock({
           <div className="min-w-0 flex-1 space-y-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="space-y-2">
-                <p className="text-[11px] uppercase tracking-[0.24em] text-[color:var(--muted)]">
+                <p className="text-[11px] tracking-[0.24em] text-[color:var(--muted)] uppercase">
                   Question {question.position + 1}
                 </p>
                 <InlineEditableText
@@ -271,7 +271,7 @@ function QuestionBlock({
                 <div className="flex items-center gap-2 opacity-0 transition group-hover:opacity-100">
                   <button
                     className={cx(
-                      "rounded-full border px-3 py-2 text-xs uppercase tracking-[0.18em] transition",
+                      "rounded-full border px-3 py-2 text-xs tracking-[0.18em] uppercase transition",
                       question.required
                         ? "border-[color:var(--accent-soft)] bg-[color:var(--accent-faint)] text-[color:var(--accent-strong)]"
                         : "border-[color:var(--border)] text-[color:var(--muted)]",
@@ -506,7 +506,7 @@ function InlineEditableText({
 
   if (!editable) {
     return (
-      <div className={cx(className, !trimmedValue && "italic text-[color:var(--muted)]")}>
+      <div className={cx(className, !trimmedValue && "text-[color:var(--muted)] italic")}>
         {displayValue}
       </div>
     );
@@ -518,7 +518,7 @@ function InlineEditableText({
         className={cx(
           "w-full rounded-2xl border border-transparent px-2 py-1 text-left transition hover:border-[color:var(--accent-soft)] hover:bg-[color:var(--accent-faint)]",
           className,
-          !trimmedValue && "italic text-[color:var(--muted)]",
+          !trimmedValue && "text-[color:var(--muted)] italic",
         )}
         onClick={() => setEditing(true)}
       >

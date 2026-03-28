@@ -96,7 +96,7 @@ function HomePage() {
         </Card>
 
         <Card className="p-6 md:p-8">
-          <h3 className="text-sm uppercase tracking-[0.26em] text-[color:var(--muted)]">
+          <h3 className="text-sm tracking-[0.26em] text-[color:var(--muted)] uppercase">
             Recent Responses
           </h3>
           <div className="mt-5 space-y-3">
@@ -116,7 +116,7 @@ function HomePage() {
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="font-medium tracking-tight">{response.testTitle}</p>
-                      <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[color:var(--muted)]">
+                      <p className="mt-1 text-xs tracking-[0.18em] text-[color:var(--muted)] uppercase">
                         {response.status}
                       </p>
                     </div>
@@ -177,7 +177,7 @@ function MarketingLanding() {
     <div className="space-y-10">
       <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <Card className="p-8 md:p-10">
-          <p className="text-[11px] uppercase tracking-[0.28em] text-[color:var(--muted)]">
+          <p className="text-[11px] tracking-[0.28em] text-[color:var(--muted)] uppercase">
             Test Builder
           </p>
           <h1 className="mt-5 max-w-[12ch] text-5xl font-semibold tracking-[-0.06em] md:text-7xl">
@@ -235,7 +235,7 @@ function MetricCard({
     <div className="rounded-[1.6rem] border border-[color:var(--border)] bg-white/70 p-4">
       <div className="flex items-center gap-2 text-[color:var(--accent-strong)]">{icon}</div>
       <p className="mt-6 text-3xl font-semibold tracking-tight">{value}</p>
-      <p className="mt-1 text-xs uppercase tracking-[0.2em] text-[color:var(--muted)]">{label}</p>
+      <p className="mt-1 text-xs tracking-[0.2em] text-[color:var(--muted)] uppercase">{label}</p>
     </div>
   );
 }
