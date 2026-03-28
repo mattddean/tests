@@ -5,7 +5,7 @@ import { sessionQueryOptions } from "@/features/auth/queries";
 import { createTest } from "@/features/tests/server";
 import { LoadingBlock } from "@/components/ui";
 
-export const Route = createFileRoute("/tests/new")({
+export const Route = createFileRoute("/tests_/new")({
   loader: async ({ context }) => {
     const session = await context.queryClient.ensureQueryData(sessionQueryOptions());
     if (!session?.user) {

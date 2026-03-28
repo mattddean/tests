@@ -20,7 +20,7 @@ const searchSchema = z.object({
   direction: z.enum(["asc", "desc"]).catch("desc"),
 });
 
-export const Route = createFileRoute("/tests/$testId/responses")({
+export const Route = createFileRoute("/tests_/$testId/responses")({
   validateSearch: searchSchema,
   loaderDeps: ({ search }) => search,
   loader: async ({ context, params, deps }) => {
@@ -190,7 +190,10 @@ function ResponsesPage() {
                     key={row.id}
                     className="cursor-pointer transition hover:bg-[color:var(--panel)]"
                     onClick={() =>
-                      window.location.assign(`/tests/${testId}/responses/${row.original.id}`)
+                      void navigate({
+                        to: "/tests/$testId/responses/$responseId",
+                        params: { testId, responseId: row.original.id },
+                      })
                     }
                   >
                     {row.getVisibleCells().map((cell) => (

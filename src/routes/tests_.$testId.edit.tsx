@@ -22,7 +22,7 @@ import {
 } from "@/features/tests/server";
 import { TestDocument } from "@/features/tests/components/test-document";
 
-export const Route = createFileRoute("/tests/$testId/edit")({
+export const Route = createFileRoute("/tests_/$testId/edit")({
   loader: async ({ context, params }) => {
     const session = await context.queryClient.ensureQueryData(sessionQueryOptions());
     if (!session?.user) {
