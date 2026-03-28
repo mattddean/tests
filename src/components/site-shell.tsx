@@ -175,7 +175,7 @@ function MobileActionLink({
   return (
     <Link
       to={to}
-      className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-[1.15rem] border border-[color:var(--accent-strong)] bg-[color:var(--accent)] px-3 text-sm font-medium whitespace-nowrap text-white shadow-[0_18px_28px_-20px_rgba(13,148,136,0.8)] transition hover:bg-[color:var(--accent-strong)] hover:text-white"
+      className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-[1.15rem] border border-[color:var(--accent-strong)] bg-[color:var(--accent-strong)] px-3 text-sm font-medium whitespace-nowrap text-white shadow-[0_18px_28px_-20px_rgba(13,148,136,0.8)] transition hover:border-[#07574e] hover:bg-[#07574e] hover:text-white"
     >
       {children}
     </Link>

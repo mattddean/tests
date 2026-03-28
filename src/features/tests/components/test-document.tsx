@@ -420,7 +420,7 @@ function ChoiceRow({
             className={cx(
               "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition",
               selected
-                ? "border-[color:var(--accent)] bg-[color:var(--accent)] text-white"
+                ? "border-[color:var(--accent-strong)] bg-[color:var(--accent-strong)] text-white"
                 : "border-[color:var(--border-strong)] bg-white",
             )}
             onClick={mode === "take" ? onSelect : undefined}

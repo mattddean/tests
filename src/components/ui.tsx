@@ -1,9 +1,15 @@
 import { Link } from "@tanstack/react-router";
 import { LoaderCircle } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
+import { Button as ShadButton, buttonVariants } from "@/components/ui/button";
+import { Card as ShadCard } from "@/components/ui/card";
+import { Input as ShadInput } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea as ShadTextarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
 export function cx(...values: Array<string | false | null | undefined>) {
-  return values.filter(Boolean).join(" ");
+  return cn(...values);
 }
 
 export function AppLogo() {
@@ -32,23 +38,19 @@ export function Button({
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
   tone?: "primary" | "secondary" | "ghost" | "danger";
 }) {
+  const variant =
+    tone === "primary"
+      ? "default"
+      : tone === "secondary"
+        ? "secondary"
+        : tone === "ghost"
+          ? "ghost"
+          : "destructive";
+
   return (
-    <button
-      className={cx(
-        "inline-flex h-11 items-center justify-center rounded-2xl border px-4 text-sm font-medium transition duration-200 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50",
-        tone === "primary" &&
-          "border-[color:var(--accent-strong)] bg-[color:var(--accent)] text-white shadow-[0_20px_30px_-18px_rgba(13,148,136,0.8)] hover:bg-[color:var(--accent-strong)] hover:text-white",
-        tone === "secondary" &&
-          "border-[color:var(--border-strong)] bg-[color:var(--panel-solid)] text-[color:var(--foreground)] hover:border-[color:var(--border-strong)] hover:bg-white hover:text-[color:var(--foreground)]",
-        tone === "ghost" &&
-          "border-transparent bg-transparent text-[color:var(--foreground)] hover:bg-white/85 hover:text-[color:var(--foreground)]",
-        tone === "danger" && "border-red-200 bg-red-50 text-red-700 hover:bg-red-100",
-        className,
-      )}
-      {...props}
-    >
+    <ShadButton className={cn("w-auto", className)} variant={variant} {...props}>
       {children}
-    </button>
+    </ShadButton>
   );
 }
 
@@ -62,36 +64,17 @@ export function ButtonLink({
   className?: string;
   tone?: "primary" | "secondary" | "ghost";
 }) {
+  const variant = tone === "primary" ? "default" : tone === "secondary" ? "secondary" : "ghost";
+
   return (
-    <Link
-      className={cx(
-        "inline-flex h-11 items-center justify-center rounded-2xl border px-4 text-sm font-medium whitespace-nowrap transition duration-200 active:translate-y-px",
-        tone === "primary" &&
-          "border-[color:var(--accent-strong)] bg-[color:var(--accent)] text-white shadow-[0_20px_30px_-18px_rgba(13,148,136,0.8)] hover:bg-[color:var(--accent-strong)] hover:text-white",
-        tone === "secondary" &&
-          "border-[color:var(--border-strong)] bg-[color:var(--panel-solid)] text-[color:var(--foreground)] hover:border-[color:var(--border-strong)] hover:bg-white hover:text-[color:var(--foreground)]",
-        tone === "ghost" &&
-          "border-transparent bg-transparent text-[color:var(--foreground)] hover:bg-white/85 hover:text-[color:var(--foreground)]",
-        className,
-      )}
-      {...props}
-    >
+    <Link className={cn(buttonVariants({ variant }), className)} {...props}>
       {children}
     </Link>
   );
 }
 
 export function Card({ children, className }: { children: ReactNode; className?: string }) {
-  return (
-    <div
-      className={cx(
-        "rounded-[2rem] border border-[color:var(--border)] bg-[color:var(--panel)] shadow-[0_30px_60px_-40px_rgba(15,23,42,0.35)] backdrop-blur-sm",
-        className,
-      )}
-    >
-      {children}
-    </div>
-  );
+  return <ShadCard className={className}>{children}</ShadCard>;
 }
 
 export function SectionHeading({
@@ -188,34 +171,18 @@ export function LoadingBlock({ label }: { label?: string }) {
 export function FieldLabel({ label, helper }: { label: string; helper?: string }) {
   return (
     <div className="space-y-1">
-      <label className="text-sm font-medium text-[color:var(--foreground)]">{label}</label>
+      <Label>{label}</Label>
       {helper ? <p className="text-xs text-[color:var(--muted)]">{helper}</p> : null}
     </div>
   );
 }
 
 export function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
-  return (
-    <input
-      {...props}
-      className={cx(
-        "h-11 w-full rounded-2xl border border-[color:var(--border-strong)] bg-white px-4 text-sm text-[color:var(--foreground)] transition outline-none placeholder:text-[color:var(--muted)] focus:border-[color:var(--accent)] focus:ring-4 focus:ring-[color:var(--accent-faint)]",
-        props.className,
-      )}
-    />
-  );
+  return <ShadInput {...props} className={props.className} />;
 }
 
 export function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  return (
-    <textarea
-      {...props}
-      className={cx(
-        "w-full rounded-2xl border border-[color:var(--border-strong)] bg-white px-4 py-3 text-sm text-[color:var(--foreground)] transition outline-none placeholder:text-[color:var(--muted)] focus:border-[color:var(--accent)] focus:ring-4 focus:ring-[color:var(--accent-faint)]",
-        props.className,
-      )}
-    />
-  );
+  return <ShadTextarea {...props} className={props.className} />;
 }
 
 export function SurfaceMeta({ label, value }: { label: string; value: ReactNode }) {
