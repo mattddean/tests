@@ -1,13 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getPunkSongs } from "@/data/demo.punk-songs";
+import { getForrestFrankSongs } from "@/data/demo.forrest-frank-songs";
 
 export const Route = createFileRoute("/demo/start/ssr/full-ssr")({
   component: RouteComponent,
-  loader: async () => await getPunkSongs(),
+  loader: async () => await getForrestFrankSongs(),
 });
 
 function RouteComponent() {
-  const punkSongs = Route.useLoaderData();
+  const songs = Route.useLoaderData();
 
   return (
     <div
@@ -18,9 +18,9 @@ function RouteComponent() {
       }}
     >
       <div className="w-full max-w-2xl p-8 rounded-xl backdrop-blur-md bg-black/50 shadow-xl border-8 border-black/10">
-        <h1 className="text-3xl font-bold mb-6 text-purple-400">Full SSR - Punk Songs</h1>
+        <h1 className="text-3xl font-bold mb-6 text-purple-400">Full SSR - Forrest Frank Songs</h1>
         <ul className="space-y-3">
-          {punkSongs.map((song) => (
+          {songs.map((song) => (
             <li
               key={song.id}
               className="bg-white/10 border border-white/20 rounded-lg p-4 backdrop-blur-sm shadow-md"
