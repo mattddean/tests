@@ -12,7 +12,9 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:pull": "drizzle-kit pull",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "^1.5.6",
@@ -53,6 +55,7 @@
     "@vitejs/plugin-react": "^5.0.4",
     "dotenv": "^16.0.0",
     "jsdom": "^27.0.0",
+    "oxfmt": "^0.42.0",
     "tsx": "^4.0.0",
     "typescript": "^5.7.2",
     "vite": "^7.1.7",
