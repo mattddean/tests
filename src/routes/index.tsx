@@ -1,106 +1,278 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Zap, Server, Route as RouteIcon, Shield, Waves, Sparkles } from "lucide-react";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { ArrowRight, CheckCircle2, FilePenLine, LayoutList, Rows3, Sparkles } from "lucide-react";
+import { dashboardQueryOptions } from "@/features/tests/queries";
+import { sessionQueryOptions } from "@/features/auth/queries";
+import { ButtonLink, Card, EmptyState, SectionHeading, StatusPill } from "@/components/ui";
+import { TestListRow } from "@/components/site-shell";
 
-export const Route = createFileRoute("/")({ component: App });
+export const Route = createFileRoute("/")({
+  loader: async ({ context }) => {
+    const session = await context.queryClient.ensureQueryData(sessionQueryOptions());
 
-function App() {
-  const features = [
-    {
-      icon: <Zap className="w-12 h-12 text-cyan-400" />,
-      title: "Powerful Server Functions",
-      description:
-        "Write server-side code that seamlessly integrates with your client components. Type-safe, secure, and simple.",
-    },
-    {
-      icon: <Server className="w-12 h-12 text-cyan-400" />,
-      title: "Flexible Server Side Rendering",
-      description:
-        "Full-document SSR, streaming, and progressive enhancement out of the box. Control exactly what renders where.",
-    },
-    {
-      icon: <RouteIcon className="w-12 h-12 text-cyan-400" />,
-      title: "API Routes",
-      description:
-        "Build type-safe API endpoints alongside your application. No separate backend needed.",
-    },
-    {
-      icon: <Shield className="w-12 h-12 text-cyan-400" />,
-      title: "Strongly Typed Everything",
-      description:
-        "End-to-end type safety from server to client. Catch errors before they reach production.",
-    },
-    {
-      icon: <Waves className="w-12 h-12 text-cyan-400" />,
-      title: "Full Streaming Support",
-      description:
-        "Stream data from server to client progressively. Perfect for AI applications and real-time updates.",
-    },
-    {
-      icon: <Sparkles className="w-12 h-12 text-cyan-400" />,
-      title: "Next Generation Ready",
-      description:
-        "Built from the ground up for modern web applications. Deploy anywhere JavaScript runs.",
-    },
-  ];
+    if (session?.user) {
+      await context.queryClient.ensureQueryData(dashboardQueryOptions());
+    }
+  },
+  component: HomePage,
+});
+
+function HomePage() {
+  const { data: session } = useSuspenseQuery(sessionQueryOptions());
+
+  if (!session?.user) {
+    return <MarketingLanding />;
+  }
+
+  const { data } = useSuspenseQuery(dashboardQueryOptions());
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-      <section className="relative py-20 px-6 text-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10"></div>
-        <div className="relative max-w-5xl mx-auto">
-          <div className="flex items-center justify-center gap-6 mb-6">
-            <img
-              src="/tanstack-circle-logo.png"
-              alt="TanStack Logo"
-              className="w-24 h-24 md:w-32 md:h-32"
-            />
-            <h1 className="text-6xl md:text-7xl font-black text-white [letter-spacing:-0.08em]">
-              <span className="text-gray-300">TANSTACK</span>{" "}
-              <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                START
-              </span>
-            </h1>
-          </div>
-          <p className="text-2xl md:text-3xl text-gray-300 mb-4 font-light">
-            The framework for next generation AI applications
-          </p>
-          <p className="text-lg text-gray-400 max-w-3xl mx-auto mb-8">
-            Full-stack framework powered by TanStack Router for React and Solid. Build modern
-            applications with server functions, streaming, and type safety.
-          </p>
-          <div className="flex flex-col items-center gap-4">
-            <a
-              href="https://tanstack.com/start"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-8 py-3 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors shadow-lg shadow-cyan-500/50"
-            >
-              Documentation
-            </a>
-            <p className="text-gray-400 text-sm mt-2">
-              Begin your TanStack Start journey by editing{" "}
-              <code className="px-2 py-1 bg-slate-700 rounded text-cyan-400">
-                /src/routes/index.tsx
-              </code>
-            </p>
-          </div>
-        </div>
-      </section>
+    <div className="space-y-10">
+      <SectionHeading
+        eyebrow="Workspace"
+        title="Build tests that read beautifully and review cleanly."
+        description="Create drafts, invite editors, publish when ready, and review every response from the same document surface."
+        actions={
+          <>
+            <ButtonLink to="/tests/new" preload={false}>
+              Create test
+            </ButtonLink>
+            <ButtonLink to="/tests" tone="secondary">
+              Browse library
+            </ButtonLink>
+          </>
+        }
+      />
 
-      <section className="py-16 px-6 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((feature, index) => (
-            <div
-              key={index}
-              className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 hover:border-cyan-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10"
-            >
-              <div className="mb-4">{feature.icon}</div>
-              <h3 className="text-xl font-semibold text-white mb-3">{feature.title}</h3>
-              <p className="text-gray-400 leading-relaxed">{feature.description}</p>
+      <div className="grid gap-5 lg:grid-cols-[1.4fr_0.9fr]">
+        <Card className="overflow-hidden p-6 md:p-8">
+          <div className="grid gap-8 md:grid-cols-[1.2fr_0.8fr]">
+            <div className="space-y-5">
+              <StatusPill tone="accent">Creator flow</StatusPill>
+              <h2 className="text-3xl font-semibold tracking-[-0.04em]">
+                One surface for writing, taking, and reviewing.
+              </h2>
+              <p className="max-w-[58ch] text-sm leading-7 text-[color:var(--muted)] md:text-base">
+                The editor uses the same document layout as the live test. Hover reveals controls,
+                click turns text into direct editing, and responses reopen inside that same reading
+                frame.
+              </p>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <MetricCard
+                  icon={<FilePenLine className="h-4 w-4" />}
+                  label="Draft tests"
+                  value={`${data.drafts.length}`}
+                />
+                <MetricCard
+                  icon={<CheckCircle2 className="h-4 w-4" />}
+                  label="Published"
+                  value={`${data.published.length}`}
+                />
+                <MetricCard
+                  icon={<Rows3 className="h-4 w-4" />}
+                  label="Recent responses"
+                  value={`${data.recentResponses.length}`}
+                />
+              </div>
             </div>
-          ))}
+            <div className="space-y-3 rounded-[1.8rem] border border-[color:var(--border)] bg-[color:var(--panel-solid)] p-5">
+              <PreviewStrip
+                icon={<LayoutList className="h-4 w-4" />}
+                title="Draft"
+                text="Shape questions inline, reorder with drag handles, and invite collaborators by email."
+              />
+              <PreviewStrip
+                icon={<Sparkles className="h-4 w-4" />}
+                title="Take"
+                text="Responses save as the reader works, with a clean final submit action when the draft is ready."
+              />
+              <PreviewStrip
+                icon={<CheckCircle2 className="h-4 w-4" />}
+                title="Review"
+                text="TanStack Table lists every submission, and row click opens the same document with answers visible."
+              />
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-6 md:p-8">
+          <h3 className="text-sm uppercase tracking-[0.26em] text-[color:var(--muted)]">
+            Recent Responses
+          </h3>
+          <div className="mt-5 space-y-3">
+            {data.recentResponses.length === 0 ? (
+              <EmptyState
+                title="No responses yet"
+                description="Published tests will surface draft and submitted responses here."
+              />
+            ) : (
+              data.recentResponses.map((response) => (
+                <a
+                  key={response.id}
+                  href={`/tests/${response.testId}`}
+                  className="block rounded-[1.5rem] border border-[color:var(--border)] bg-white/70 px-4 py-4 transition hover:border-[color:var(--border-strong)]"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="font-medium tracking-tight">{response.testTitle}</p>
+                      <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[color:var(--muted)]">
+                        {response.status}
+                      </p>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-[color:var(--muted)]" />
+                  </div>
+                </a>
+              ))
+            )}
+          </div>
+        </Card>
+      </div>
+
+      <section className="space-y-4">
+        <SectionHeading
+          eyebrow="Drafts"
+          title="Continue the work that is still in motion."
+          actions={
+            <ButtonLink to="/tests" tone="ghost">
+              View all tests
+            </ButtonLink>
+          }
+        />
+        <div className="space-y-3">
+          {data.drafts.length === 0 ? (
+            <EmptyState
+              title="No drafts yet"
+              description="Create a new test and start building the first document."
+              action={
+                <ButtonLink to="/tests/new" preload={false}>
+                  Create test
+                </ButtonLink>
+              }
+            />
+          ) : (
+            data.drafts.map((item) => (
+              <TestListRow
+                key={item.id}
+                title={item.title}
+                description={item.description}
+                status={item.status}
+                updatedAt={item.updatedAt}
+                editorCount={item.editorCount}
+                responseCount={item.responseCount}
+                editHref={`/tests/${item.id}/edit`}
+                takeHref={`/tests/${item.id}`}
+                responsesHref={`/tests/${item.id}/responses`}
+              />
+            ))
+          )}
         </div>
       </section>
+    </div>
+  );
+}
+
+function MarketingLanding() {
+  return (
+    <div className="space-y-10">
+      <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+        <Card className="p-8 md:p-10">
+          <p className="text-[11px] uppercase tracking-[0.28em] text-[color:var(--muted)]">
+            Test Builder
+          </p>
+          <h1 className="mt-5 max-w-[12ch] text-5xl font-semibold tracking-[-0.06em] md:text-7xl">
+            Write tests like documents, not admin forms.
+          </h1>
+          <p className="mt-5 max-w-[60ch] text-base leading-7 text-[color:var(--muted)]">
+            Sign in, assemble multiple-choice tests with a direct inline editor, publish when the
+            draft feels right, and review every response from the same document surface.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <ButtonLink to="/auth">Sign in to start</ButtonLink>
+            <ButtonLink to="/auth" tone="secondary">
+              Create account
+            </ButtonLink>
+          </div>
+        </Card>
+
+        <Card className="grid gap-4 p-6 md:grid-cols-2 md:p-8">
+          <FeatureCard
+            icon={<FilePenLine className="h-5 w-5" />}
+            title="Direct editing"
+            text="Click straight into a title, prompt, or answer choice and edit it in place."
+          />
+          <FeatureCard
+            icon={<Rows3 className="h-5 w-5" />}
+            title="Shared surface"
+            text="The editor and taker flows use the same layout, so the live experience stays honest."
+          />
+          <FeatureCard
+            icon={<Sparkles className="h-5 w-5" />}
+            title="Autosaved drafts"
+            text="Takers can leave and return without losing progress before final submission."
+          />
+          <FeatureCard
+            icon={<CheckCircle2 className="h-5 w-5" />}
+            title="Response review"
+            text="Open any response from a table and inspect the answers in the original test frame."
+          />
+        </Card>
+      </section>
+    </div>
+  );
+}
+
+function MetricCard({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-[1.6rem] border border-[color:var(--border)] bg-white/70 p-4">
+      <div className="flex items-center gap-2 text-[color:var(--accent-strong)]">{icon}</div>
+      <p className="mt-6 text-3xl font-semibold tracking-tight">{value}</p>
+      <p className="mt-1 text-xs uppercase tracking-[0.2em] text-[color:var(--muted)]">{label}</p>
+    </div>
+  );
+}
+
+function PreviewStrip({
+  icon,
+  title,
+  text,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  text: string;
+}) {
+  return (
+    <div className="rounded-[1.5rem] border border-[color:var(--border)] bg-white/80 p-4">
+      <div className="flex items-center gap-2 text-sm font-medium">
+        <span className="text-[color:var(--accent-strong)]">{icon}</span>
+        {title}
+      </div>
+      <p className="mt-2 text-sm leading-6 text-[color:var(--muted)]">{text}</p>
+    </div>
+  );
+}
+
+function FeatureCard({
+  icon,
+  title,
+  text,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  text: string;
+}) {
+  return (
+    <div className="rounded-[1.6rem] border border-[color:var(--border)] bg-white/70 p-5">
+      <div className="text-[color:var(--accent-strong)]">{icon}</div>
+      <h2 className="mt-4 text-xl font-semibold tracking-tight">{title}</h2>
+      <p className="mt-2 text-sm leading-6 text-[color:var(--muted)]">{text}</p>
     </div>
   );
 }
