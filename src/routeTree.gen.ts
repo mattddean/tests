@@ -9,22 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TestsRouteImport } from './routes/tests'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as TestsNewRouteImport } from './routes/tests_.new'
-import { Route as TestsTestIdRouteImport } from './routes/tests.$testId'
-import { Route as MeResponsesRouteImport } from './routes/me.responses'
-import { Route as TestsTestIdResponsesRouteImport } from './routes/tests_.$testId.responses'
-import { Route as TestsTestIdEditRouteImport } from './routes/tests_.$testId.edit'
+import { Route as TestsIndexRouteImport } from './routes/tests/index'
+import { Route as TestsNewRouteImport } from './routes/tests/new'
+import { Route as MeResponsesRouteImport } from './routes/me/responses'
+import { Route as TestsTestIdIndexRouteImport } from './routes/tests/$testId/index'
+import { Route as TestsTestIdEditRouteImport } from './routes/tests/$testId/edit'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
-import { Route as TestsTestIdResponsesResponseIdRouteImport } from './routes/tests_.$testId.responses_.$responseId'
+import { Route as TestsTestIdResponsesIndexRouteImport } from './routes/tests/$testId/responses/index'
+import { Route as TestsTestIdResponsesResponseIdRouteImport } from './routes/tests/$testId/responses/$responseId'
 
-const TestsRoute = TestsRouteImport.update({
-  id: '/tests',
-  path: '/tests',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -35,28 +30,28 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TestsNewRoute = TestsNewRouteImport.update({
-  id: '/tests_/new',
-  path: '/tests/new',
+const TestsIndexRoute = TestsIndexRouteImport.update({
+  id: '/tests/',
+  path: '/tests/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TestsTestIdRoute = TestsTestIdRouteImport.update({
-  id: '/$testId',
-  path: '/$testId',
-  getParentRoute: () => TestsRoute,
+const TestsNewRoute = TestsNewRouteImport.update({
+  id: '/tests/new',
+  path: '/tests/new',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const MeResponsesRoute = MeResponsesRouteImport.update({
   id: '/me/responses',
   path: '/me/responses',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TestsTestIdResponsesRoute = TestsTestIdResponsesRouteImport.update({
-  id: '/tests_/$testId/responses',
-  path: '/tests/$testId/responses',
+const TestsTestIdIndexRoute = TestsTestIdIndexRouteImport.update({
+  id: '/tests/$testId/',
+  path: '/tests/$testId/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TestsTestIdEditRoute = TestsTestIdEditRouteImport.update({
-  id: '/tests_/$testId/edit',
+  id: '/tests/$testId/edit',
   path: '/tests/$testId/edit',
   getParentRoute: () => rootRouteImport,
 } as any)
@@ -65,9 +60,15 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TestsTestIdResponsesIndexRoute =
+  TestsTestIdResponsesIndexRouteImport.update({
+    id: '/tests/$testId/responses/',
+    path: '/tests/$testId/responses/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const TestsTestIdResponsesResponseIdRoute =
   TestsTestIdResponsesResponseIdRouteImport.update({
-    id: '/tests_/$testId/responses_/$responseId',
+    id: '/tests/$testId/responses/$responseId',
     path: '/tests/$testId/responses/$responseId',
     getParentRoute: () => rootRouteImport,
   } as any)
@@ -75,100 +76,94 @@ const TestsTestIdResponsesResponseIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/tests': typeof TestsRouteWithChildren
   '/me/responses': typeof MeResponsesRoute
-  '/tests/$testId': typeof TestsTestIdRoute
   '/tests/new': typeof TestsNewRoute
+  '/tests/': typeof TestsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/tests/$testId/edit': typeof TestsTestIdEditRoute
-  '/tests/$testId/responses': typeof TestsTestIdResponsesRoute
+  '/tests/$testId/': typeof TestsTestIdIndexRoute
   '/tests/$testId/responses/$responseId': typeof TestsTestIdResponsesResponseIdRoute
+  '/tests/$testId/responses/': typeof TestsTestIdResponsesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/tests': typeof TestsRouteWithChildren
   '/me/responses': typeof MeResponsesRoute
-  '/tests/$testId': typeof TestsTestIdRoute
   '/tests/new': typeof TestsNewRoute
+  '/tests': typeof TestsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/tests/$testId/edit': typeof TestsTestIdEditRoute
-  '/tests/$testId/responses': typeof TestsTestIdResponsesRoute
+  '/tests/$testId': typeof TestsTestIdIndexRoute
   '/tests/$testId/responses/$responseId': typeof TestsTestIdResponsesResponseIdRoute
+  '/tests/$testId/responses': typeof TestsTestIdResponsesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/tests': typeof TestsRouteWithChildren
   '/me/responses': typeof MeResponsesRoute
-  '/tests/$testId': typeof TestsTestIdRoute
-  '/tests_/new': typeof TestsNewRoute
+  '/tests/new': typeof TestsNewRoute
+  '/tests/': typeof TestsIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/tests_/$testId/edit': typeof TestsTestIdEditRoute
-  '/tests_/$testId/responses': typeof TestsTestIdResponsesRoute
-  '/tests_/$testId/responses_/$responseId': typeof TestsTestIdResponsesResponseIdRoute
+  '/tests/$testId/edit': typeof TestsTestIdEditRoute
+  '/tests/$testId/': typeof TestsTestIdIndexRoute
+  '/tests/$testId/responses/$responseId': typeof TestsTestIdResponsesResponseIdRoute
+  '/tests/$testId/responses/': typeof TestsTestIdResponsesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
-    | '/tests'
     | '/me/responses'
-    | '/tests/$testId'
     | '/tests/new'
+    | '/tests/'
     | '/api/auth/$'
     | '/tests/$testId/edit'
-    | '/tests/$testId/responses'
+    | '/tests/$testId/'
     | '/tests/$testId/responses/$responseId'
+    | '/tests/$testId/responses/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
-    | '/tests'
     | '/me/responses'
-    | '/tests/$testId'
     | '/tests/new'
+    | '/tests'
     | '/api/auth/$'
     | '/tests/$testId/edit'
-    | '/tests/$testId/responses'
+    | '/tests/$testId'
     | '/tests/$testId/responses/$responseId'
+    | '/tests/$testId/responses'
   id:
     | '__root__'
     | '/'
     | '/auth'
-    | '/tests'
     | '/me/responses'
-    | '/tests/$testId'
-    | '/tests_/new'
+    | '/tests/new'
+    | '/tests/'
     | '/api/auth/$'
-    | '/tests_/$testId/edit'
-    | '/tests_/$testId/responses'
-    | '/tests_/$testId/responses_/$responseId'
+    | '/tests/$testId/edit'
+    | '/tests/$testId/'
+    | '/tests/$testId/responses/$responseId'
+    | '/tests/$testId/responses/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
-  TestsRoute: typeof TestsRouteWithChildren
   MeResponsesRoute: typeof MeResponsesRoute
   TestsNewRoute: typeof TestsNewRoute
+  TestsIndexRoute: typeof TestsIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   TestsTestIdEditRoute: typeof TestsTestIdEditRoute
-  TestsTestIdResponsesRoute: typeof TestsTestIdResponsesRoute
+  TestsTestIdIndexRoute: typeof TestsTestIdIndexRoute
   TestsTestIdResponsesResponseIdRoute: typeof TestsTestIdResponsesResponseIdRoute
+  TestsTestIdResponsesIndexRoute: typeof TestsTestIdResponsesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/tests': {
-      id: '/tests'
-      path: '/tests'
-      fullPath: '/tests'
-      preLoaderRoute: typeof TestsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -183,19 +178,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/tests_/new': {
-      id: '/tests_/new'
+    '/tests/': {
+      id: '/tests/'
+      path: '/tests'
+      fullPath: '/tests/'
+      preLoaderRoute: typeof TestsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tests/new': {
+      id: '/tests/new'
       path: '/tests/new'
       fullPath: '/tests/new'
       preLoaderRoute: typeof TestsNewRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/tests/$testId': {
-      id: '/tests/$testId'
-      path: '/$testId'
-      fullPath: '/tests/$testId'
-      preLoaderRoute: typeof TestsTestIdRouteImport
-      parentRoute: typeof TestsRoute
     }
     '/me/responses': {
       id: '/me/responses'
@@ -204,15 +199,15 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MeResponsesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/tests_/$testId/responses': {
-      id: '/tests_/$testId/responses'
-      path: '/tests/$testId/responses'
-      fullPath: '/tests/$testId/responses'
-      preLoaderRoute: typeof TestsTestIdResponsesRouteImport
+    '/tests/$testId/': {
+      id: '/tests/$testId/'
+      path: '/tests/$testId'
+      fullPath: '/tests/$testId/'
+      preLoaderRoute: typeof TestsTestIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/tests_/$testId/edit': {
-      id: '/tests_/$testId/edit'
+    '/tests/$testId/edit': {
+      id: '/tests/$testId/edit'
       path: '/tests/$testId/edit'
       fullPath: '/tests/$testId/edit'
       preLoaderRoute: typeof TestsTestIdEditRouteImport
@@ -225,8 +220,15 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/tests_/$testId/responses_/$responseId': {
-      id: '/tests_/$testId/responses_/$responseId'
+    '/tests/$testId/responses/': {
+      id: '/tests/$testId/responses/'
+      path: '/tests/$testId/responses'
+      fullPath: '/tests/$testId/responses/'
+      preLoaderRoute: typeof TestsTestIdResponsesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tests/$testId/responses/$responseId': {
+      id: '/tests/$testId/responses/$responseId'
       path: '/tests/$testId/responses/$responseId'
       fullPath: '/tests/$testId/responses/$responseId'
       preLoaderRoute: typeof TestsTestIdResponsesResponseIdRouteImport
@@ -235,26 +237,17 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface TestsRouteChildren {
-  TestsTestIdRoute: typeof TestsTestIdRoute
-}
-
-const TestsRouteChildren: TestsRouteChildren = {
-  TestsTestIdRoute: TestsTestIdRoute,
-}
-
-const TestsRouteWithChildren = TestsRoute._addFileChildren(TestsRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
-  TestsRoute: TestsRouteWithChildren,
   MeResponsesRoute: MeResponsesRoute,
   TestsNewRoute: TestsNewRoute,
+  TestsIndexRoute: TestsIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   TestsTestIdEditRoute: TestsTestIdEditRoute,
-  TestsTestIdResponsesRoute: TestsTestIdResponsesRoute,
+  TestsTestIdIndexRoute: TestsTestIdIndexRoute,
   TestsTestIdResponsesResponseIdRoute: TestsTestIdResponsesResponseIdRoute,
+  TestsTestIdResponsesIndexRoute: TestsTestIdResponsesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

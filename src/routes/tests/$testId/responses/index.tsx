@@ -20,7 +20,7 @@ const searchSchema = z.object({
   direction: z.enum(["asc", "desc"]).catch("desc"),
 });
 
-export const Route = createFileRoute("/tests_/$testId/responses")({
+export const Route = createFileRoute("/tests/$testId/responses/")({
   validateSearch: searchSchema,
   loaderDeps: ({ search }) => search,
   loader: async ({ context, params, deps }) => {

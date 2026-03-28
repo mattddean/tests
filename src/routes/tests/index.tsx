@@ -10,7 +10,7 @@ const searchSchema = z.object({
   scope: z.enum(["drafts", "published", "shared"]).catch("drafts"),
 });
 
-export const Route = createFileRoute("/tests")({
+export const Route = createFileRoute("/tests/")({
   validateSearch: searchSchema,
   loaderDeps: ({ search }) => ({ scope: search.scope }),
   loader: async ({ context, deps }) => {

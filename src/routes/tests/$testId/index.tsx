@@ -8,7 +8,7 @@ import { testTakeQueryOptions, testsKeys } from "@/features/tests/queries";
 import { saveAnswerAction, submitResponseAction } from "@/features/tests/server";
 import { TestDocument } from "@/features/tests/components/test-document";
 
-export const Route = createFileRoute("/tests/$testId")({
+export const Route = createFileRoute("/tests/$testId/")({
   loader: async ({ context, params }) => {
     const session = await context.queryClient.ensureQueryData(sessionQueryOptions());
     if (!session?.user) {
