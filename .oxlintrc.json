@@ -1,0 +1,36 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["oxc", "react", "typescript"],
+  "options": {
+    "typeAware": true
+  },
+  "rules": {
+    "no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
+    "react/exhaustive-deps": "warn",
+    "react/react-in-jsx-scope": "off",
+    "react/rules-of-hooks": "warn",
+    "typescript/consistent-type-imports": [
+      "warn",
+      {
+        "fixStyle": "separate-type-imports",
+        "prefer": "type-imports"
+      }
+    ],
+    "typescript/no-misused-promises": [
+      "warn",
+      {
+        "checksVoidReturn": {
+          "attributes": false
+        }
+      }
+    ],
+    "typescript/no-non-null-assertion": "warn"
+  },
+  "ignorePatterns": [".output", ".tanstack", "node_modules", "src/db/migrations/meta"]
+}
