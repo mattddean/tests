@@ -1,7 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { LogOut, SquarePen } from "lucide-react";
+import { ButtonLink } from "@/components/button-link";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { authClient } from "@/lib/auth-client";
-import { AppLogo, Button, ButtonLink, Card, StatusPill, cx } from "./ui";
+import { cn } from "@/lib/utils";
+import { AppLogo, StatusPill } from "./ui";
 import type { SessionData } from "@/features/auth/server";
 
 export function SiteShell({
@@ -94,7 +98,7 @@ function SignedOutActions() {
   return (
     <>
       <div className="hidden md:block">
-        <ButtonLink to="/auth" tone="ghost" className="px-3 whitespace-nowrap lg:px-4">
+        <ButtonLink to="/auth" variant="ghost" className="px-3 whitespace-nowrap lg:px-4">
           Sign in
         </ButtonLink>
       </div>
@@ -126,7 +130,7 @@ function SignedInActions({ session }: { session: SessionData }) {
           </p>
         </div>
         <Button
-          tone="ghost"
+          variant="ghost"
           className="h-9 rounded-full px-2 lg:px-3"
           onClick={async () => {
             await authClient.signOut();
@@ -273,7 +277,7 @@ export function TabBar({
         <Link
           key={item.value}
           to={item.href}
-          className={cx(
+          className={cn(
             "rounded-full px-4 py-2 text-sm font-medium transition",
             item.value === value
               ? "bg-[color:var(--foreground)] text-white"

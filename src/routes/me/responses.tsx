@@ -1,6 +1,8 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { ButtonLink, Card, EmptyState, SectionHeading, StatusPill } from "@/components/ui";
+import { ButtonLink } from "@/components/button-link";
+import { Card } from "@/components/ui/card";
+import { EmptyState, SectionHeading, StatusPill } from "@/components/ui";
 import { sessionQueryOptions } from "@/features/auth/queries";
 import { myResponsesQueryOptions } from "@/features/tests/queries";
 
@@ -25,7 +27,7 @@ function MyResponsesPage() {
         title="Drafts you can resume and submissions you’ve already sent."
         description="Responses are always tied to your account. Drafts stay editable until you submit, after which the document locks into review mode."
         actions={
-          <ButtonLink to="/tests" tone="secondary">
+          <ButtonLink to="/tests" variant="secondary">
             Browse tests
           </ButtonLink>
         }

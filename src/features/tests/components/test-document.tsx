@@ -9,7 +9,10 @@ import {
   ArrowRight,
   Clock3,
 } from "lucide-react";
-import { Button, Card, EmptyState, StatusPill, cx } from "@/components/ui";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { EmptyState, StatusPill } from "@/components/ui";
 import type { QuestionView, TestResponseView } from "../types";
 
 type EditHandlers = {
@@ -270,7 +273,7 @@ function QuestionBlock({
               {mode === "edit" && editable ? (
                 <div className="flex items-center gap-2 opacity-0 transition group-hover:opacity-100">
                   <button
-                    className={cx(
+                    className={cn(
                       "rounded-full border px-3 py-2 text-xs tracking-[0.18em] uppercase transition",
                       question.required
                         ? "border-[color:var(--accent-soft)] bg-[color:var(--accent-faint)] text-[color:var(--accent-strong)]"
@@ -400,7 +403,7 @@ function ChoiceRow({
     <Reorder.Item value={choice} dragListener={false} dragControls={dragControls}>
       <motion.div
         layout
-        className={cx(
+        className={cn(
           "group flex items-center gap-3 rounded-2xl border px-4 py-3 transition",
           selected
             ? "border-[color:var(--accent-soft)] bg-[color:var(--accent-faint)]"
@@ -417,7 +420,7 @@ function ChoiceRow({
           </button>
         ) : (
           <button
-            className={cx(
+            className={cn(
               "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition",
               selected
                 ? "border-[color:var(--accent-strong)] bg-[color:var(--accent-strong)] text-white"
@@ -435,7 +438,7 @@ function ChoiceRow({
             value={choice.label}
             placeholder="Choice label"
             editable={mode === "edit" && editable}
-            className={cx("text-sm leading-6", selected && "text-[color:var(--foreground)]")}
+            className={cn("text-sm leading-6", selected && "text-[color:var(--foreground)]")}
             onSave={onSave}
           />
         </div>
@@ -506,7 +509,7 @@ function InlineEditableText({
 
   if (!editable) {
     return (
-      <div className={cx(className, !trimmedValue && "text-[color:var(--muted)] italic")}>
+      <div className={cn(className, !trimmedValue && "text-[color:var(--muted)] italic")}>
         {displayValue}
       </div>
     );
@@ -515,7 +518,7 @@ function InlineEditableText({
   if (!editing) {
     return (
       <button
-        className={cx(
+        className={cn(
           "w-full rounded-2xl border border-transparent px-2 py-1 text-left transition hover:border-[color:var(--accent-soft)] hover:bg-[color:var(--accent-faint)]",
           className,
           !trimmedValue && "text-[color:var(--muted)] italic",
@@ -548,7 +551,7 @@ function InlineEditableText({
                 void save();
               }
             }}
-            className={cx(
+            className={cn(
               "w-full rounded-2xl border border-[color:var(--accent-soft)] bg-white px-3 py-2 text-sm leading-6 shadow-[0_0_0_4px_var(--accent-faint)] outline-none",
               className,
             )}
@@ -570,7 +573,7 @@ function InlineEditableText({
                 setEditing(false);
               }
             }}
-            className={cx(
+            className={cn(
               "w-full rounded-2xl border border-[color:var(--accent-soft)] bg-white px-3 py-2 shadow-[0_0_0_4px_var(--accent-faint)] outline-none",
               className,
             )}

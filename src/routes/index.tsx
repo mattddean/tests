@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ArrowRight, CheckCircle2, FilePenLine, LayoutList, Rows3, Sparkles } from "lucide-react";
+import { ButtonLink } from "@/components/button-link";
+import { Card } from "@/components/ui/card";
 import { dashboardQueryOptions } from "@/features/tests/queries";
 import { sessionQueryOptions } from "@/features/auth/queries";
-import { ButtonLink, Card, EmptyState, SectionHeading, StatusPill } from "@/components/ui";
+import { EmptyState, SectionHeading, StatusPill } from "@/components/ui";
 import { TestListRow } from "@/components/site-shell";
 
 export const Route = createFileRoute("/")({
@@ -41,7 +43,7 @@ function WorkspaceHome() {
             <ButtonLink to="/tests/new" preload={false}>
               Create test
             </ButtonLink>
-            <ButtonLink to="/tests" tone="secondary">
+            <ButtonLink to="/tests" variant="secondary">
               Browse library
             </ButtonLink>
           </>
@@ -138,7 +140,7 @@ function WorkspaceHome() {
           eyebrow="Drafts"
           title="Continue the work that is still in motion."
           actions={
-            <ButtonLink to="/tests" tone="ghost">
+            <ButtonLink to="/tests" variant="ghost">
               View all tests
             </ButtonLink>
           }
@@ -193,7 +195,7 @@ function MarketingLanding() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <ButtonLink to="/auth">Sign in to start</ButtonLink>
-            <ButtonLink to="/auth" tone="secondary">
+            <ButtonLink to="/auth" variant="secondary">
               Create account
             </ButtonLink>
           </div>

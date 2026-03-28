@@ -1,16 +1,7 @@
-import { Link } from "@tanstack/react-router";
 import { LoaderCircle } from "lucide-react";
-import type { ComponentProps, ReactNode } from "react";
-import { Button as ShadButton, buttonVariants } from "@/components/ui/button";
-import { Card as ShadCard } from "@/components/ui/card";
-import { Input as ShadInput } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea as ShadTextarea } from "@/components/ui/textarea";
+import type { ReactNode } from "react";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-
-export function cx(...values: Array<string | false | null | undefined>) {
-  return cn(...values);
-}
 
 export function AppLogo() {
   return (
@@ -28,53 +19,6 @@ export function AppLogo() {
       </div>
     </div>
   );
-}
-
-export function Button({
-  children,
-  className,
-  tone = "primary",
-  ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  tone?: "primary" | "secondary" | "ghost" | "danger";
-}) {
-  const variant =
-    tone === "primary"
-      ? "default"
-      : tone === "secondary"
-        ? "secondary"
-        : tone === "ghost"
-          ? "ghost"
-          : "destructive";
-
-  return (
-    <ShadButton className={cn("w-auto", className)} variant={variant} {...props}>
-      {children}
-    </ShadButton>
-  );
-}
-
-export function ButtonLink({
-  children,
-  className,
-  tone = "primary",
-  ...props
-}: ComponentProps<typeof Link> & {
-  children: ReactNode;
-  className?: string;
-  tone?: "primary" | "secondary" | "ghost";
-}) {
-  const variant = tone === "primary" ? "default" : tone === "secondary" ? "secondary" : "ghost";
-
-  return (
-    <Link className={cn(buttonVariants({ variant }), className)} {...props}>
-      {children}
-    </Link>
-  );
-}
-
-export function Card({ children, className }: { children: ReactNode; className?: string }) {
-  return <ShadCard className={className}>{children}</ShadCard>;
 }
 
 export function SectionHeading({
@@ -144,7 +88,7 @@ export function StatusPill({
 }) {
   return (
     <span
-      className={cx(
+      className={cn(
         "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium tracking-[0.18em] uppercase",
         tone === "neutral" && "bg-[color:var(--panel-solid)] text-[color:var(--muted)]",
         tone === "accent" && "bg-[color:var(--accent-faint)] text-[color:var(--accent-strong)]",
@@ -166,23 +110,6 @@ export function LoadingBlock({ label }: { label?: string }) {
       </div>
     </div>
   );
-}
-
-export function FieldLabel({ label, helper }: { label: string; helper?: string }) {
-  return (
-    <div className="space-y-1">
-      <Label>{label}</Label>
-      {helper ? <p className="text-xs text-[color:var(--muted)]">{helper}</p> : null}
-    </div>
-  );
-}
-
-export function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
-  return <ShadInput {...props} className={props.className} />;
-}
-
-export function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  return <ShadTextarea {...props} className={props.className} />;
 }
 
 export function SurfaceMeta({ label, value }: { label: string; value: ReactNode }) {

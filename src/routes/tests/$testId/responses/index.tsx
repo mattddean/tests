@@ -7,7 +7,9 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Card, EmptyState, SectionHeading, TextInput } from "@/components/ui";
+import { Card } from "@/components/ui/card";
+import { Input as TextInput } from "@/components/ui/input";
+import { EmptyState, SectionHeading } from "@/components/ui";
 import { sessionQueryOptions } from "@/features/auth/queries";
 import { responsesTableQueryOptions } from "@/features/tests/queries";
 import type { ResponseTableRow } from "@/features/tests/types";

@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { SectionHeading, EmptyState, ButtonLink } from "@/components/ui";
+import { ButtonLink } from "@/components/button-link";
+import { EmptyState, SectionHeading } from "@/components/ui";
 import { TestListRow } from "@/components/site-shell";
 import { sessionQueryOptions } from "@/features/auth/queries";
 import { testsListQueryOptions } from "@/features/tests/queries";
@@ -42,14 +43,14 @@ function TestsPage() {
 
       <div className="inline-flex rounded-full border border-[color:var(--border)] bg-white/70 p-1.5">
         {[
-          { value: "drafts", label: "Drafts" },
-          { value: "published", label: "Published" },
-          { value: "shared", label: "Shared with me" },
+          { value: "drafts", label: "Drafts" } as const,
+          { value: "published", label: "Published" } as const,
+          { value: "shared", label: "Shared with me" } as const,
         ].map((item) => (
           <Link
             key={item.value}
             to="/tests"
-            search={{ scope: item.value as "drafts" | "published" | "shared" }}
+            search={{ scope: item.value }}
             className={`rounded-full px-4 py-2 text-sm font-medium transition ${
               search.scope === item.value
                 ? "bg-[color:var(--foreground)] text-white"

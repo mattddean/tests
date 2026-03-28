@@ -3,7 +3,11 @@ import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useForm } from "@tanstack/react-form";
 import { CircleCheckBig, Eye, Send } from "lucide-react";
-import { Button, Card, FieldLabel, SectionHeading, SurfaceMeta, TextInput } from "@/components/ui";
+import { FieldLabel } from "@/components/field-label";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input as TextInput } from "@/components/ui/input";
+import { SectionHeading, SurfaceMeta } from "@/components/ui";
 import { sessionQueryOptions } from "@/features/auth/queries";
 import { testEditorQueryOptions, testsKeys } from "@/features/tests/queries";
 import {
@@ -287,7 +291,7 @@ function TestEditorPage() {
                 </div>
               )}
             </metaForm.Field>
-            <Button type="submit" tone="secondary" className="w-full">
+            <Button type="submit" variant="secondary" className="w-full">
               Save metadata
             </Button>
           </form>
@@ -319,7 +323,7 @@ function TestEditorPage() {
                     </div>
                   )}
                 </addEditorForm.Field>
-                <Button type="submit" tone="secondary" className="w-full">
+                <Button type="submit" variant="secondary" className="w-full">
                   Send invite
                 </Button>
               </form>
