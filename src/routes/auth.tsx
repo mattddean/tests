@@ -13,6 +13,7 @@ import { authClient } from "@/lib/auth-client";
 
 const searchSchema = z.object({
   redirect: z.string().optional(),
+  email: z.email().optional(),
 });
 
 export const Route = createFileRoute("/auth")({
@@ -39,7 +40,7 @@ function AuthPage() {
   const form = useForm({
     defaultValues: {
       name: "",
-      email: "",
+      email: search.email ?? "",
       password: "",
     },
     onSubmit: async ({ value }) => {
@@ -144,7 +145,14 @@ function AuthPage() {
           <form.Field name="email">
             {(field) => (
               <div className="space-y-2">
-                <FieldLabel label="Email" helper="Use the address collaborators can invite." />
+                <FieldLabel
+                  label="Email"
+                  helper={
+                    search.email
+                      ? "Use the invited address to open the test after signing in."
+                      : "Use the address collaborators can invite."
+                  }
+                />
                 <TextInput
                   type="email"
                   value={field.state.value}
@@ -153,6 +161,14 @@ function AuthPage() {
                   placeholder="alex@example.com"
                   required
                 />
+                {search.email &&
+                field.state.value &&
+                field.state.value.toLowerCase() !== search.email.toLowerCase() ? (
+                  <p className="text-sm text-red-600">
+                    This account will not be able to view the invited test unless the email matches{" "}
+                    {search.email}.
+                  </p>
+                ) : null}
               </div>
             )}
           </form.Field>

@@ -399,8 +399,8 @@ function TestEditorPage() {
                         label="Share with test taker"
                         helper={
                           data.test.status === "published"
-                            ? "Send a private invite link by email."
-                            : "Publish first, then send private invite links."
+                            ? "Send a private test link tied to the taker's email."
+                            : "Publish first, then send private test links."
                         }
                       />
                       <TextInput
@@ -428,7 +428,7 @@ function TestEditorPage() {
                 <FieldLabel label="Taker invites" />
                 {data.takerInvites.length === 0 ? (
                   <p className="text-sm text-[color:var(--muted)]">
-                    No taker invites have been sent yet.
+                    No pending taker links have been sent yet.
                   </p>
                 ) : (
                   data.takerInvites.map((invite) => (
@@ -444,15 +444,9 @@ function TestEditorPage() {
                           </p>
                         </div>
                         <span className="text-xs tracking-[0.18em] text-[color:var(--muted)] uppercase">
-                          {invite.acceptedAt ? "accepted" : "pending"}
+                          pending
                         </span>
                       </div>
-                      {invite.acceptedAt ? (
-                        <p className="mt-2 text-xs text-[color:var(--muted)]">
-                          Accepted {invite.acceptedByName ? `by ${invite.acceptedByName} ` : ""}
-                          {new Date(invite.acceptedAt).toLocaleString()}
-                        </p>
-                      ) : null}
                     </div>
                   ))
                 )}

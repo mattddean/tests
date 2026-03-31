@@ -43,7 +43,7 @@ import {
   updateQuestion,
   updateTestMeta,
 } from "./data";
-export { acceptTestInviteAction, shareTestAction } from "./actions/test-take-invites";
+export { shareTestAction } from "./actions/share-test-action";
 
 export const getDashboardData = createServerFn({ method: "GET" }).handler(async () => {
   const user = await requireUser();

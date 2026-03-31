@@ -4,10 +4,10 @@ import {
   questionChoice,
   responseAnswer,
   test,
-  testEditor,
-  testTakerInvite,
+  testEmailAccess,
   testQuestion,
   testResponse,
+  testUser,
   user,
 } from "@/db/schema";
 import { createId, createSlug } from "@/features/common/ids";
@@ -31,39 +31,35 @@ function toIso(value: Date | null) {
   return value ? value.toISOString() : null;
 }
 
+function normalizeEmail(email: string) {
+  return email.trim().toLowerCase();
+}
+
+async function getOwnerProfile(testId: string) {
+  const owner = await db
+    .select({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      image: user.image,
+    })
+    .from(testUser)
+    .innerJoin(user, eq(testUser.userId, user.id))
+    .where(and(eq(testUser.testId, testId), eq(testUser.role, "owner")))
+    .limit(1);
+
+  return owner[0] ?? null;
+}
+
 export async function getTestPermission(
   testId: string,
   userId: string,
 ): Promise<TestPermission | null> {
-  const currentTest = await db.query.test.findFirst({
-    where: eq(test.id, testId),
+  const membership = await db.query.testUser.findFirst({
+    where: and(eq(testUser.testId, testId), eq(testUser.userId, userId)),
   });
 
-  if (!currentTest) {
-    return null;
-  }
-
-  if (currentTest.ownerUserId === userId) {
-    return "owner";
-  }
-
-  const editorRecord = await db.query.testEditor.findFirst({
-    where: and(eq(testEditor.testId, testId), eq(testEditor.userId, userId)),
-  });
-
-  if (editorRecord) {
-    return "editor";
-  }
-
-  if (currentTest.status !== "published") {
-    return null;
-  }
-
-  const acceptedInvite = await db.query.testTakerInvite.findFirst({
-    where: and(eq(testTakerInvite.testId, testId), eq(testTakerInvite.acceptedByUserId, userId)),
-  });
-
-  return acceptedInvite ? "taker" : null;
+  return (membership?.role as TestPermission | undefined) ?? null;
 }
 
 export async function requireTestEditAccess(testId: string, userId: string) {
@@ -125,64 +121,52 @@ async function getQuestions(testId: string) {
 }
 
 async function getCollaborators(currentTest: typeof test.$inferSelect) {
-  const editorRows = await db
+  const membershipRows = await db
     .select({
       id: user.id,
       email: user.email,
       name: user.name,
       image: user.image,
-      createdAt: testEditor.createdAt,
+      role: testUser.role,
+      createdAt: testUser.createdAt,
     })
-    .from(testEditor)
-    .innerJoin(user, eq(testEditor.userId, user.id))
-    .where(eq(testEditor.testId, currentTest.id))
-    .orderBy(asc(user.name));
+    .from(testUser)
+    .innerJoin(user, eq(testUser.userId, user.id))
+    .where(
+      and(
+        eq(testUser.testId, currentTest.id),
+        or(eq(testUser.role, "owner"), eq(testUser.role, "editor")),
+      ),
+    )
+    .orderBy(asc(testUser.role), asc(user.name));
 
-  const owner = await db.query.user.findFirst({
-    where: eq(user.id, currentTest.ownerUserId),
-  });
-
-  return [
-    {
-      id: assertPresent(owner, "Missing owner").id,
-      email: assertPresent(owner, "Missing owner").email,
-      name: owner?.name ?? "Unknown owner",
-      image: owner?.image ?? null,
-      role: "owner",
-    },
-    ...editorRows.map((editor) => ({
-      id: editor.id,
-      email: editor.email,
-      name: editor.name,
-      image: editor.image ?? null,
-      role: "editor" as const,
-      invitedAt: editor.createdAt.toISOString(),
-    })),
-  ] satisfies Array<Collaborator>;
+  return membershipRows.map((member) => ({
+    id: member.id,
+    email: member.email,
+    name: member.name,
+    image: member.image ?? null,
+    role: member.role as "owner" | "editor",
+    invitedAt: member.role === "editor" ? member.createdAt.toISOString() : undefined,
+  })) satisfies Array<Collaborator>;
 }
 
 async function getTakerInvites(currentTest: typeof test.$inferSelect) {
   const inviteRows = await db
     .select({
-      id: testTakerInvite.id,
-      email: testTakerInvite.email,
-      createdAt: testTakerInvite.createdAt,
-      lastSentAt: testTakerInvite.lastSentAt,
-      acceptedAt: testTakerInvite.acceptedAt,
-      acceptedByName: user.name,
+      id: testEmailAccess.id,
+      email: testEmailAccess.email,
+      createdAt: testEmailAccess.createdAt,
+      lastSentAt: testEmailAccess.lastSentAt,
     })
-    .from(testTakerInvite)
-    .leftJoin(user, eq(testTakerInvite.acceptedByUserId, user.id))
-    .where(eq(testTakerInvite.testId, currentTest.id))
-    .orderBy(desc(testTakerInvite.lastSentAt), asc(testTakerInvite.email));
+    .from(testEmailAccess)
+    .where(and(eq(testEmailAccess.testId, currentTest.id), eq(testEmailAccess.role, "taker")))
+    .orderBy(desc(testEmailAccess.lastSentAt), asc(testEmailAccess.email));
 
   return inviteRows.map<TakerInvite>((invite) => ({
     id: invite.id,
     email: invite.email,
     invitedAt: invite.createdAt.toISOString(),
     lastSentAt: invite.lastSentAt.toISOString(),
-    acceptedAt: toIso(invite.acceptedAt),
-    acceptedByName: invite.acceptedByName ?? null,
   }));
 }
 
@@ -203,7 +187,6 @@ function toTestSummary(currentTest: {
   title: string;
   description: string | null;
   status: string;
-  ownerUserId: string;
   updatedAt: Date;
   publishedAt: Date | null;
   ownerName: string;
@@ -227,34 +210,37 @@ function toTestSummary(currentTest: {
 }
 
 export async function getDashboard(userId: string) {
-  const editableRows = await db
+  const memberships = await db
     .select({
-      id: test.id,
-      slug: test.slug,
-      title: test.title,
-      description: test.description,
-      status: test.status,
-      ownerUserId: test.ownerUserId,
-      ownerName: user.name,
-      updatedAt: test.updatedAt,
-      publishedAt: test.publishedAt,
+      testId: testUser.testId,
+      role: testUser.role,
     })
-    .from(test)
-    .innerJoin(user, eq(test.ownerUserId, user.id))
+    .from(testUser)
     .where(
-      or(
-        eq(test.ownerUserId, userId),
-        inArray(
-          test.id,
-          db
-            .select({ testId: testEditor.testId })
-            .from(testEditor)
-            .where(eq(testEditor.userId, userId)),
-        ),
+      and(
+        eq(testUser.userId, userId),
+        or(eq(testUser.role, "owner"), eq(testUser.role, "editor")),
       ),
-    )
-    .orderBy(desc(test.updatedAt))
-    .limit(8);
+    );
+
+  const editableIds = memberships.map((item) => item.testId);
+  const editableRows =
+    editableIds.length > 0
+      ? await db
+          .select({
+            id: test.id,
+            slug: test.slug,
+            title: test.title,
+            description: test.description,
+            status: test.status,
+            updatedAt: test.updatedAt,
+            publishedAt: test.publishedAt,
+          })
+          .from(test)
+          .where(inArray(test.id, editableIds))
+          .orderBy(desc(test.updatedAt))
+          .limit(8)
+      : [];
 
   const responseRows = await db
     .select({
@@ -276,12 +262,12 @@ export async function getDashboard(userId: string) {
     ids.length > 0
       ? await db
           .select({
-            testId: testEditor.testId,
-            count: count(testEditor.userId),
+            testId: testUser.testId,
+            count: count(testUser.userId),
           })
-          .from(testEditor)
-          .where(inArray(testEditor.testId, ids))
-          .groupBy(testEditor.testId)
+          .from(testUser)
+          .where(and(inArray(testUser.testId, ids), eq(testUser.role, "editor")))
+          .groupBy(testUser.testId)
       : [];
   const responseCounts =
     ids.length > 0
@@ -297,14 +283,21 @@ export async function getDashboard(userId: string) {
 
   const editorCountMap = new Map(editorCounts.map((item) => [item.testId, item.count]));
   const responseCountMap = new Map(responseCounts.map((item) => [item.testId, item.count]));
+  const membershipMap = new Map(memberships.map((item) => [item.testId, item.role as TestPermission]));
   const summaries = editableRows.map((row) =>
     toTestSummary({
       ...row,
-      viewerPermission: row.ownerUserId === userId ? "owner" : "editor",
+      ownerName: "",
+      viewerPermission: membershipMap.get(row.id) ?? "editor",
       editorCount: editorCountMap.get(row.id) ?? 0,
       responseCount: responseCountMap.get(row.id) ?? 0,
     }),
   );
+
+  for (const summary of summaries) {
+    const owner = await getOwnerProfile(summary.id);
+    summary.ownerName = owner?.name ?? "Unknown owner";
+  }
 
   return {
     drafts: summaries.filter((item) => item.status === "draft").slice(0, 4),
@@ -321,66 +314,55 @@ export async function getDashboard(userId: string) {
 }
 
 export async function getTestsList(userId: string, scope: "drafts" | "published" | "shared") {
-  const baseRows = await db
+  const memberships = await db
     .select({
-      id: test.id,
-      slug: test.slug,
-      title: test.title,
-      description: test.description,
-      status: test.status,
-      ownerUserId: test.ownerUserId,
-      ownerName: user.name,
-      updatedAt: test.updatedAt,
-      publishedAt: test.publishedAt,
-      sharedAsEditor: inArray(
-        test.id,
-        db
-          .select({ testId: testEditor.testId })
-          .from(testEditor)
-          .where(eq(testEditor.userId, userId)),
-      ),
+      testId: testUser.testId,
+      role: testUser.role,
     })
-    .from(test)
-    .innerJoin(user, eq(test.ownerUserId, user.id))
-    .where(
-      scope === "shared"
-        ? and(
-            eq(test.status, "published"),
-            or(
-              inArray(
-                test.id,
-                db
-                  .select({ testId: testEditor.testId })
-                  .from(testEditor)
-                  .where(eq(testEditor.userId, userId)),
-              ),
-              inArray(
-                test.id,
-                db
-                  .select({ testId: testTakerInvite.testId })
-                  .from(testTakerInvite)
-                  .where(eq(testTakerInvite.acceptedByUserId, userId)),
-              ),
+    .from(testUser)
+    .where(eq(testUser.userId, userId));
+  const membershipMap = new Map(memberships.map((item) => [item.testId, item.role as TestPermission]));
+  const ownedIds = memberships.filter((item) => item.role === "owner").map((item) => item.testId);
+  const sharedMembershipIds = memberships
+    .filter((item) => item.role !== "owner")
+    .map((item) => item.testId);
+  const targetIds =
+    scope === "shared" ? sharedMembershipIds : ownedIds;
+  const baseRows =
+    targetIds.length > 0
+      ? await db
+          .select({
+            id: test.id,
+            slug: test.slug,
+            title: test.title,
+            description: test.description,
+            status: test.status,
+            updatedAt: test.updatedAt,
+            publishedAt: test.publishedAt,
+          })
+          .from(test)
+          .where(
+            and(
+              inArray(test.id, targetIds),
+              scope === "shared"
+                ? eq(test.status, "published")
+                : eq(test.status, scope === "drafts" ? "draft" : "published"),
             ),
           )
-        : and(
-            eq(test.ownerUserId, userId),
-            eq(test.status, scope === "drafts" ? "draft" : "published"),
-          ),
-    )
-    .orderBy(desc(test.updatedAt));
+          .orderBy(desc(test.updatedAt))
+      : [];
 
   const ids = baseRows.map((row) => row.id);
   const editorCounts =
     ids.length > 0
       ? await db
           .select({
-            testId: testEditor.testId,
-            count: count(testEditor.userId),
+            testId: testUser.testId,
+            count: count(testUser.userId),
           })
-          .from(testEditor)
-          .where(inArray(testEditor.testId, ids))
-          .groupBy(testEditor.testId)
+          .from(testUser)
+          .where(and(inArray(testUser.testId, ids), eq(testUser.role, "editor")))
+          .groupBy(testUser.testId)
       : [];
   const responseCounts =
     ids.length > 0
@@ -397,15 +379,22 @@ export async function getTestsList(userId: string, scope: "drafts" | "published"
   const editorCountMap = new Map(editorCounts.map((item) => [item.testId, item.count]));
   const responseCountMap = new Map(responseCounts.map((item) => [item.testId, item.count]));
 
-  return baseRows.map((row) =>
+  const summaries = baseRows.map((row) =>
     toTestSummary({
       ...row,
-      viewerPermission:
-        row.ownerUserId === userId ? "owner" : row.sharedAsEditor ? "editor" : "taker",
+      ownerName: "Unknown owner",
+      viewerPermission: membershipMap.get(row.id) ?? "taker",
       editorCount: editorCountMap.get(row.id) ?? 0,
       responseCount: responseCountMap.get(row.id) ?? 0,
     }),
   );
+
+  for (const summary of summaries) {
+    const owner = await getOwnerProfile(summary.id);
+    summary.ownerName = owner?.name ?? "Unknown owner";
+  }
+
+  return summaries;
 }
 
 export async function createTestRecord(userId: string, title: string) {
@@ -418,9 +407,15 @@ export async function createTestRecord(userId: string, title: string) {
       title,
       description: "",
       status: "draft",
-      ownerUserId: userId,
     })
     .returning();
+
+  await db.insert(testUser).values({
+    testId: id,
+    userId,
+    role: "owner",
+    grantedByUserId: userId,
+  });
 
   return assertPresent(created, "Failed to create test");
 }
@@ -431,9 +426,7 @@ export async function getEditorView(testId: string, userId: string) {
     where: eq(test.id, testId),
   });
   const resolvedTest = assertPresent(currentTest, "Test not found");
-  const owner = await db.query.user.findFirst({
-    where: eq(user.id, resolvedTest.ownerUserId),
-  });
+  const owner = await getOwnerProfile(resolvedTest.id);
 
   return {
     test: {
@@ -442,7 +435,7 @@ export async function getEditorView(testId: string, userId: string) {
       title: resolvedTest.title,
       description: resolvedTest.description,
       status: resolvedTest.status as TestEditorView["test"]["status"],
-      ownerUserId: resolvedTest.ownerUserId,
+      ownerUserId: owner?.id ?? "",
       ownerName: owner?.name ?? "Unknown owner",
       publishedAt: toIso(resolvedTest.publishedAt),
       updatedAt: resolvedTest.updatedAt.toISOString(),
@@ -457,17 +450,49 @@ export async function getEditorView(testId: string, userId: string) {
 }
 
 export async function getTakeView(testId: string, userId: string) {
-  const permission = await requireTestViewAccess(testId, userId);
+  const currentUser = await db.query.user.findFirst({
+    where: eq(user.id, userId),
+  });
+  const resolvedUser = assertPresent(currentUser, "User not found");
   const currentTest = await db.query.test.findFirst({
     where: eq(test.id, testId),
   });
   const resolvedTest = assertPresent(currentTest, "Test not found");
-  const owner = await db.query.user.findFirst({
-    where: eq(user.id, resolvedTest.ownerUserId),
-  });
+  let permission = await getTestPermission(testId, userId);
+  const owner = await getOwnerProfile(resolvedTest.id);
   const response = await db.query.testResponse.findFirst({
     where: and(eq(testResponse.testId, testId), eq(testResponse.userId, userId)),
   });
+  const invite =
+    !permission && resolvedTest.status === "published"
+      ? await db.query.testEmailAccess.findFirst({
+          where: and(
+            eq(testEmailAccess.testId, testId),
+            eq(testEmailAccess.email, normalizeEmail(resolvedUser.email)),
+            eq(testEmailAccess.role, "taker"),
+          ),
+        })
+      : null;
+
+  if (invite?.role === "taker") {
+    await db
+      .insert(testUser)
+      .values({
+        testId,
+        userId,
+        role: invite.role,
+        grantedByUserId: invite.grantedByUserId,
+      })
+      .onConflictDoNothing();
+
+    await db.delete(testEmailAccess).where(eq(testEmailAccess.id, invite.id));
+    permission = "taker";
+  }
+
+  if (!permission) {
+    throw new Error("Forbidden");
+  }
+
   const answerRows = response
     ? await db.select().from(responseAnswer).where(eq(responseAnswer.responseId, response.id))
     : [];
@@ -479,7 +504,7 @@ export async function getTakeView(testId: string, userId: string) {
       title: resolvedTest.title,
       description: resolvedTest.description,
       status: resolvedTest.status as TestTakeView["test"]["status"],
-      ownerUserId: resolvedTest.ownerUserId,
+      ownerUserId: owner?.id ?? "",
       ownerName: owner?.name ?? "Unknown owner",
       publishedAt: toIso(resolvedTest.publishedAt),
       updatedAt: resolvedTest.updatedAt.toISOString(),
@@ -870,23 +895,36 @@ export async function addEditor(testId: string, ownerUserId: string, email: stri
     throw new Error("No registered user exists with that email");
   }
 
-  const currentTest = await db.query.test.findFirst({
-    where: eq(test.id, testId),
+  const existingMembership = await db.query.testUser.findFirst({
+    where: and(eq(testUser.testId, testId), eq(testUser.userId, invitedUser.id)),
   });
-  const resolvedTest = assertPresent(currentTest, "Test not found");
 
-  if (invitedUser.id === resolvedTest.ownerUserId) {
+  if (existingMembership?.role === "owner") {
     throw new Error("The owner already has access");
   }
 
-  await db
-    .insert(testEditor)
-    .values({
-      testId,
-      userId: invitedUser.id,
-      invitedByUserId: ownerUserId,
-    })
-    .onConflictDoNothing();
+  if (existingMembership?.role === "editor") {
+    return;
+  }
+
+  if (existingMembership) {
+    await db
+      .update(testUser)
+      .set({
+        role: "editor",
+        grantedByUserId: ownerUserId,
+      })
+      .where(and(eq(testUser.testId, testId), eq(testUser.userId, invitedUser.id)));
+
+    return;
+  }
+
+  await db.insert(testUser).values({
+    testId,
+    userId: invitedUser.id,
+    role: "editor",
+    grantedByUserId: ownerUserId,
+  });
 }
 
 export async function removeEditor(testId: string, ownerUserId: string, targetUserId: string) {
@@ -897,8 +935,14 @@ export async function removeEditor(testId: string, ownerUserId: string, targetUs
   }
 
   await db
-    .delete(testEditor)
-    .where(and(eq(testEditor.testId, testId), eq(testEditor.userId, targetUserId)));
+    .delete(testUser)
+    .where(
+      and(
+        eq(testUser.testId, testId),
+        eq(testUser.userId, targetUserId),
+        eq(testUser.role, "editor"),
+      ),
+    );
 }
 
 async function getOrCreateResponse(testId: string, userId: string) {
@@ -1102,9 +1146,7 @@ export async function getResponseReview(testId: string, responseId: string, user
     where: eq(test.id, testId),
   });
   const resolvedTest = assertPresent(currentTest, "Test not found");
-  const owner = await db.query.user.findFirst({
-    where: eq(user.id, resolvedTest.ownerUserId),
-  });
+  const owner = await getOwnerProfile(resolvedTest.id);
   const currentResponse = await db.query.testResponse.findFirst({
     where: and(eq(testResponse.id, responseId), eq(testResponse.testId, testId)),
   });
@@ -1124,7 +1166,7 @@ export async function getResponseReview(testId: string, responseId: string, user
       title: resolvedTest.title,
       description: resolvedTest.description,
       status: resolvedTest.status as ResponseReviewView["test"]["status"],
-      ownerUserId: resolvedTest.ownerUserId,
+      ownerUserId: owner?.id ?? "",
       ownerName: owner?.name ?? "Unknown owner",
       publishedAt: toIso(resolvedTest.publishedAt),
       updatedAt: resolvedTest.updatedAt.toISOString(),

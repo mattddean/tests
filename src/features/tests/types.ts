@@ -17,8 +17,6 @@ export type TakerInvite = {
   email: string;
   invitedAt: string;
   lastSentAt: string;
-  acceptedAt: string | null;
-  acceptedByName: string | null;
 };
 
 export type ChoiceView = {
