@@ -1,5 +1,8 @@
 import { AgentMailClient } from "agentmail";
+import { render, toPlainText } from "@react-email/render";
+import { createElement } from "react";
 import { env } from "@/env";
+import { TestInvitationEmail } from "@/features/tests/emails/test-invitation-email";
 
 export async function sendTestInvitationEmail(input: {
   to: string;
@@ -7,21 +10,20 @@ export async function sendTestInvitationEmail(input: {
   testTitle: string;
   invitationUrl: string;
 }) {
+  const html = await render(
+    createElement(TestInvitationEmail, {
+      ownerName: input.ownerName,
+      recipientEmail: input.to,
+      testTitle: input.testTitle,
+      invitationUrl: input.invitationUrl,
+    }),
+  );
+
   await getClient().inboxes.messages.send(env.AGENTMAIL_INBOX_ID, {
     to: input.to,
     subject: `${input.ownerName} shared a test: ${input.testTitle}`,
-    text: [
-      `${input.ownerName} invited you to take "${input.testTitle}".`,
-      "",
-      `Open your invitation: ${input.invitationUrl}`,
-      "",
-      "Sign in or create an account with this email address to open the test.",
-    ].join("\n"),
-    html: [
-      `<p>${escapeHtml(input.ownerName)} invited you to take <strong>${escapeHtml(input.testTitle)}</strong>.</p>`,
-      `<p><a href="${escapeAttribute(input.invitationUrl)}">Open your invitation</a></p>`,
-      `<p>Sign in or create an account with <strong>${escapeHtml(input.to)}</strong> to open the test.</p>`,
-    ].join(""),
+    text: toPlainText(html),
+    html,
   });
 }
 
@@ -29,17 +31,4 @@ function getClient() {
   return new AgentMailClient({
     apiKey: env.AGENTMAIL_API_KEY,
   });
-}
-
-function escapeHtml(value: string) {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
-function escapeAttribute(value: string) {
-  return escapeHtml(value);
 }
