@@ -9,13 +9,12 @@ import { requireUser } from "@/features/auth/server";
 import { createId } from "@/features/common/ids";
 import { assertPresent } from "@/lib/assert-present";
 import { sendTestInvitationEmail } from "@/lib/agentmail";
-import { requireTestEditAccess } from "./data";
+import { requireTestEditAccess } from "../data";
 
 const shareTestInputSchema = z.object({
   testId: z.string(),
   email: z.email().transform((value) => value.toLowerCase()),
 });
-export type ShareTestInputSchema = z.infer<typeof shareTestInputSchema>;
 
 export const shareTestAction = createServerFn({ method: "POST" })
   .inputValidator(shareTestInputSchema)
@@ -81,7 +80,6 @@ export const shareTestAction = createServerFn({ method: "POST" })
 const testInviteTokenInputSchema = z.object({
   token: z.string().min(1),
 });
-export type TestInviteTokenInputSchema = z.infer<typeof testInviteTokenInputSchema>;
 
 export const acceptTestInviteAction = createServerFn({ method: "GET" })
   .inputValidator(testInviteTokenInputSchema)
