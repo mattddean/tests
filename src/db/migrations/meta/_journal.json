@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1774666975952,
-      "tag": "0000_nifty_landau",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1774676954789,
-      "tag": "0001_marvelous_echo",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1774924453420,
-      "tag": "0002_blue_magma",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1774959403607,
-      "tag": "0003_unified_test_access",
+      "when": 1774960118948,
+      "tag": "0000_wandering_wendigo",
       "breakpoints": true
     }
   ]
