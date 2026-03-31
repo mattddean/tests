@@ -12,6 +12,13 @@ export type Collaborator = {
   invitedAt?: string;
 };
 
+export type TakerInvite = {
+  id: string;
+  email: string;
+  invitedAt: string;
+  lastSentAt: string;
+};
+
 export type ChoiceView = {
   id: string;
   position: number;
@@ -58,6 +65,7 @@ export type TestSummary = {
 export type TestEditorView = {
   test: TestMetaView;
   collaborators: Array<Collaborator>;
+  takerInvites: Array<TakerInvite>;
   questions: Array<QuestionView>;
   responseCount: number;
   viewerPermission: "owner" | "editor";

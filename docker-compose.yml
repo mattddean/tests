@@ -15,8 +15,6 @@ services:
       POSTGRES_DB: tests
       POSTGRES_PASSWORD: password
     volumes:
-      # this automatically runs drizzle migrations in alphabetical order
-      - ./src/db/migrations:/docker-entrypoint-initdb.d
       # Persistent data storage
       - postgres_data:/var/lib/postgresql
 

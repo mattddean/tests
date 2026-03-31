@@ -19,9 +19,6 @@ export const test = pgTable(
     title: text("title").notNull(),
     description: text("description"),
     status: text("status").notNull().default("draft"),
-    ownerUserId: text("owner_user_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
     publishedAt: timestamp("published_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at")
@@ -31,13 +28,12 @@ export const test = pgTable(
   },
   (table) => [
     uniqueIndex("test_slug_uidx").on(table.slug),
-    index("test_owner_user_id_idx").on(table.ownerUserId),
     index("test_status_published_at_idx").on(table.status, table.publishedAt),
   ],
 );
 
-export const testEditor = pgTable(
-  "test_editor",
+export const testUser = pgTable(
+  "test_user",
   {
     testId: text("test_id")
       .notNull()
@@ -45,15 +41,48 @@ export const testEditor = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    invitedByUserId: text("invited_by_user_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+    role: text("role").notNull(),
+    grantedByUserId: text("granted_by_user_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => [
-    primaryKey({ columns: [table.testId, table.userId], name: "test_editor_pk" }),
-    index("test_editor_test_id_idx").on(table.testId),
-    index("test_editor_user_id_idx").on(table.userId),
+    primaryKey({ columns: [table.testId, table.userId], name: "test_user_pk" }),
+    index("test_user_test_id_idx").on(table.testId),
+    index("test_user_user_id_idx").on(table.userId),
+    index("test_user_role_idx").on(table.role),
+  ],
+);
+
+export const testEmailAccess = pgTable(
+  "test_email_access",
+  {
+    id: text("id").primaryKey(),
+    testId: text("test_id")
+      .notNull()
+      .references(() => test.id, { onDelete: "cascade" }),
+    email: text("email").notNull(),
+    role: text("role").notNull(),
+    grantedByUserId: text("granted_by_user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+    lastSentAt: timestamp("last_sent_at").notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("test_email_access_test_id_email_role_uidx").on(
+      table.testId,
+      table.email,
+      table.role,
+    ),
+    index("test_email_access_test_id_idx").on(table.testId),
+    index("test_email_access_email_idx").on(table.email),
+    index("test_email_access_role_idx").on(table.role),
   ],
 );
 
@@ -161,27 +190,37 @@ export const responseAnswer = pgTable(
 
 export * from "./auth-schema";
 
-export const testRelations = relations(test, ({ one, many }) => ({
-  owner: one(user, {
-    fields: [test.ownerUserId],
-    references: [user.id],
-  }),
-  editors: many(testEditor),
+export const testRelations = relations(test, ({ many }) => ({
+  members: many(testUser),
+  emailAccesses: many(testEmailAccess),
   questions: many(testQuestion),
   responses: many(testResponse),
 }));
 
-export const testEditorRelations = relations(testEditor, ({ one }) => ({
+export const testUserRelations = relations(testUser, ({ one }) => ({
   test: one(test, {
-    fields: [testEditor.testId],
+    fields: [testUser.testId],
     references: [test.id],
   }),
   user: one(user, {
-    fields: [testEditor.userId],
+    fields: [testUser.userId],
     references: [user.id],
   }),
-  invitedBy: one(user, {
-    fields: [testEditor.invitedByUserId],
+  grantedBy: one(user, {
+    relationName: "grantedByMembership",
+    fields: [testUser.grantedByUserId],
+    references: [user.id],
+  }),
+}));
+
+export const testEmailAccessRelations = relations(testEmailAccess, ({ one }) => ({
+  test: one(test, {
+    fields: [testEmailAccess.testId],
+    references: [test.id],
+  }),
+  grantedBy: one(user, {
+    relationName: "grantedByEmailAccess",
+    fields: [testEmailAccess.grantedByUserId],
     references: [user.id],
   }),
 }));
@@ -231,8 +270,13 @@ export const responseAnswerRelations = relations(responseAnswer, ({ one }) => ({
 }));
 
 export const userTestRelations = relations(user, ({ many }) => ({
-  ownedTests: many(test),
-  editableTests: many(testEditor),
+  memberships: many(testUser),
+  grantedMemberships: many(testUser, {
+    relationName: "grantedByMembership",
+  }),
+  grantedEmailAccesses: many(testEmailAccess, {
+    relationName: "grantedByEmailAccess",
+  }),
   responses: many(testResponse),
 }));
 
