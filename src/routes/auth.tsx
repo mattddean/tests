@@ -3,6 +3,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useForm } from "@tanstack/react-form";
 import { AlertCircle, ArrowRight } from "lucide-react";
+import { z } from "zod";
 import { FieldLabel } from "@/components/field-label";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,18 +11,27 @@ import { Input as TextInput } from "@/components/ui/input";
 import { sessionQueryOptions } from "@/features/auth/queries";
 import { authClient } from "@/lib/auth-client";
 
+const searchSchema = z.object({
+  redirect: z.string().optional(),
+});
+
 export const Route = createFileRoute("/auth")({
-  loader: async ({ context }) => {
+  validateSearch: searchSchema,
+  loaderDeps: ({ search }) => ({ redirect: search.redirect }),
+  loader: async ({ context, deps }) => {
     const session = await context.queryClient.ensureQueryData(sessionQueryOptions());
 
+    // If we load this page with a redirect and we already have a user session,
+    // go straight to the redirect instead of showing this page.
     if (session?.user) {
-      throw redirect({ to: "/" });
+      throw redirect(getSafeRedirect(deps.redirect));
     }
   },
   component: AuthPage,
 });
 
 function AuthPage() {
+  const search = Route.useSearch();
   const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { data: session } = useSuspenseQuery(sessionQueryOptions());
@@ -51,7 +61,8 @@ function AuthPage() {
         return;
       }
 
-      window.location.assign("/");
+      const redirect = getSafeRedirect(search.redirect);
+      window.location.assign(redirect.href ?? redirect.to);
     },
   });
 
@@ -202,4 +213,11 @@ function AuthFeature({ title, text }: { title: string; text: string }) {
       <p className="mt-2 text-sm leading-6 text-[color:var(--muted)]">{text}</p>
     </div>
   );
+}
+
+function getSafeRedirect(redirect: string | undefined) {
+  if (redirect?.startsWith("/")) {
+    return { href: redirect };
+  }
+  return { to: "/" };
 }

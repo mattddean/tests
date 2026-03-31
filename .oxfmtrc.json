@@ -8,5 +8,5 @@
     "functions": ["clsx", "cn", "cx"],
     "preserveWhitespace": true
   },
-  "ignorePatterns": ["src/db/migrations/meta"]
+  "ignorePatterns": ["src/db/migrations/meta", "src/routeTree.gen.ts"]
 }

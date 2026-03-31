@@ -15,6 +15,13 @@
       "when": 1774676954789,
       "tag": "0001_marvelous_echo",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1774924453420,
+      "tag": "0002_blue_magma",
+      "breakpoints": true
     }
   ]
 }

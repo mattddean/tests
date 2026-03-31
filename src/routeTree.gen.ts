@@ -14,6 +14,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as TestsIndexRouteImport } from './routes/tests/index'
 import { Route as TestsNewRouteImport } from './routes/tests/new'
 import { Route as MeResponsesRouteImport } from './routes/me/responses'
+import { Route as InvitationsTokenRouteImport } from './routes/invitations/$token'
 import { Route as TestsTestIdIndexRouteImport } from './routes/tests/$testId/index'
 import { Route as TestsTestIdEditRouteImport } from './routes/tests/$testId/edit'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -43,6 +44,11 @@ const TestsNewRoute = TestsNewRouteImport.update({
 const MeResponsesRoute = MeResponsesRouteImport.update({
   id: '/me/responses',
   path: '/me/responses',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvitationsTokenRoute = InvitationsTokenRouteImport.update({
+  id: '/invitations/$token',
+  path: '/invitations/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TestsTestIdIndexRoute = TestsTestIdIndexRouteImport.update({
@@ -76,6 +82,7 @@ const TestsTestIdResponsesResponseIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/invitations/$token': typeof InvitationsTokenRoute
   '/me/responses': typeof MeResponsesRoute
   '/tests/new': typeof TestsNewRoute
   '/tests/': typeof TestsIndexRoute
@@ -88,6 +95,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/invitations/$token': typeof InvitationsTokenRoute
   '/me/responses': typeof MeResponsesRoute
   '/tests/new': typeof TestsNewRoute
   '/tests': typeof TestsIndexRoute
@@ -101,6 +109,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/invitations/$token': typeof InvitationsTokenRoute
   '/me/responses': typeof MeResponsesRoute
   '/tests/new': typeof TestsNewRoute
   '/tests/': typeof TestsIndexRoute
@@ -115,6 +124,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/invitations/$token'
     | '/me/responses'
     | '/tests/new'
     | '/tests/'
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/invitations/$token'
     | '/me/responses'
     | '/tests/new'
     | '/tests'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/auth'
+    | '/invitations/$token'
     | '/me/responses'
     | '/tests/new'
     | '/tests/'
@@ -152,6 +164,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  InvitationsTokenRoute: typeof InvitationsTokenRoute
   MeResponsesRoute: typeof MeResponsesRoute
   TestsNewRoute: typeof TestsNewRoute
   TestsIndexRoute: typeof TestsIndexRoute
@@ -199,6 +212,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MeResponsesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/invitations/$token': {
+      id: '/invitations/$token'
+      path: '/invitations/$token'
+      fullPath: '/invitations/$token'
+      preLoaderRoute: typeof InvitationsTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tests/$testId/': {
       id: '/tests/$testId/'
       path: '/tests/$testId'
@@ -240,6 +260,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  InvitationsTokenRoute: InvitationsTokenRoute,
   MeResponsesRoute: MeResponsesRoute,
   TestsNewRoute: TestsNewRoute,
   TestsIndexRoute: TestsIndexRoute,

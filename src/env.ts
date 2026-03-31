@@ -6,6 +6,8 @@ export const env = createEnv({
     DATABASE_URL: z.url(),
     BETTER_AUTH_URL: z.url(),
     BETTER_AUTH_SECRET: z.string().min(1),
+    AGENTMAIL_API_KEY: z.string().min(1),
+    AGENTMAIL_INBOX_ID: z.string().min(1),
   },
   /**
    * The prefix that client-side variables must have. This is enforced both at
@@ -17,7 +19,10 @@ export const env = createEnv({
    * What object holds the environment variables at runtime. This is usually
    * `process.env` or `import.meta.env`.
    */
-  runtimeEnv: import.meta.env,
+  runtimeEnv: {
+    ...process.env,
+    ...import.meta.env,
+  },
   /**
    * By default, this library will feed the environment variables directly to
    * the Zod validator.

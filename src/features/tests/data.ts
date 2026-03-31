@@ -5,11 +5,13 @@ import {
   responseAnswer,
   test,
   testEditor,
+  testTakerInvite,
   testQuestion,
   testResponse,
   user,
 } from "@/db/schema";
 import { createId, createSlug } from "@/features/common/ids";
+import { assertPresent } from "@/lib/assert-present";
 import type {
   Collaborator,
   DashboardView,
@@ -20,20 +22,13 @@ import type {
   TestPermission,
   TestSummary,
   TestTakeView,
+  TakerInvite,
 } from "./types";
 
 type DbClient = Pick<typeof db, "insert" | "select" | "update">;
 
 function toIso(value: Date | null) {
   return value ? value.toISOString() : null;
-}
-
-function assertPresent<T>(value: T | undefined | null, message: string): T {
-  if (!value) {
-    throw new Error(message);
-  }
-
-  return value;
 }
 
 export async function getTestPermission(
@@ -60,7 +55,15 @@ export async function getTestPermission(
     return "editor";
   }
 
-  return currentTest.status === "published" ? "taker" : null;
+  if (currentTest.status !== "published") {
+    return null;
+  }
+
+  const acceptedInvite = await db.query.testTakerInvite.findFirst({
+    where: and(eq(testTakerInvite.testId, testId), eq(testTakerInvite.acceptedByUserId, userId)),
+  });
+
+  return acceptedInvite ? "taker" : null;
 }
 
 export async function requireTestEditAccess(testId: string, userId: string) {
@@ -156,6 +159,31 @@ async function getCollaborators(currentTest: typeof test.$inferSelect) {
       invitedAt: editor.createdAt.toISOString(),
     })),
   ] satisfies Array<Collaborator>;
+}
+
+async function getTakerInvites(currentTest: typeof test.$inferSelect) {
+  const inviteRows = await db
+    .select({
+      id: testTakerInvite.id,
+      email: testTakerInvite.email,
+      createdAt: testTakerInvite.createdAt,
+      lastSentAt: testTakerInvite.lastSentAt,
+      acceptedAt: testTakerInvite.acceptedAt,
+      acceptedByName: user.name,
+    })
+    .from(testTakerInvite)
+    .leftJoin(user, eq(testTakerInvite.acceptedByUserId, user.id))
+    .where(eq(testTakerInvite.testId, currentTest.id))
+    .orderBy(desc(testTakerInvite.lastSentAt), asc(testTakerInvite.email));
+
+  return inviteRows.map<TakerInvite>((invite) => ({
+    id: invite.id,
+    email: invite.email,
+    invitedAt: invite.createdAt.toISOString(),
+    lastSentAt: invite.lastSentAt.toISOString(),
+    acceptedAt: toIso(invite.acceptedAt),
+    acceptedByName: invite.acceptedByName ?? null,
+  }));
 }
 
 async function getResponseCount(testId: string) {
@@ -304,17 +332,36 @@ export async function getTestsList(userId: string, scope: "drafts" | "published"
       ownerName: user.name,
       updatedAt: test.updatedAt,
       publishedAt: test.publishedAt,
+      sharedAsEditor: inArray(
+        test.id,
+        db
+          .select({ testId: testEditor.testId })
+          .from(testEditor)
+          .where(eq(testEditor.userId, userId)),
+      ),
     })
     .from(test)
     .innerJoin(user, eq(test.ownerUserId, user.id))
     .where(
       scope === "shared"
-        ? inArray(
-            test.id,
-            db
-              .select({ testId: testEditor.testId })
-              .from(testEditor)
-              .where(eq(testEditor.userId, userId)),
+        ? and(
+            eq(test.status, "published"),
+            or(
+              inArray(
+                test.id,
+                db
+                  .select({ testId: testEditor.testId })
+                  .from(testEditor)
+                  .where(eq(testEditor.userId, userId)),
+              ),
+              inArray(
+                test.id,
+                db
+                  .select({ testId: testTakerInvite.testId })
+                  .from(testTakerInvite)
+                  .where(eq(testTakerInvite.acceptedByUserId, userId)),
+              ),
+            ),
           )
         : and(
             eq(test.ownerUserId, userId),
@@ -353,7 +400,8 @@ export async function getTestsList(userId: string, scope: "drafts" | "published"
   return baseRows.map((row) =>
     toTestSummary({
       ...row,
-      viewerPermission: row.ownerUserId === userId ? "owner" : "editor",
+      viewerPermission:
+        row.ownerUserId === userId ? "owner" : row.sharedAsEditor ? "editor" : "taker",
       editorCount: editorCountMap.get(row.id) ?? 0,
       responseCount: responseCountMap.get(row.id) ?? 0,
     }),
@@ -401,6 +449,7 @@ export async function getEditorView(testId: string, userId: string) {
       createdAt: resolvedTest.createdAt.toISOString(),
     },
     collaborators: await getCollaborators(resolvedTest),
+    takerInvites: await getTakerInvites(resolvedTest),
     questions: await getQuestions(resolvedTest.id),
     responseCount: await getResponseCount(resolvedTest.id),
     viewerPermission: permission,

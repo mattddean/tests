@@ -20,6 +20,7 @@ import {
   removeEditorAction,
   reorderChoicesAction,
   reorderQuestionsAction,
+  shareTestAction,
   updateChoiceAction,
   updateQuestionAction,
   updateTestMetaAction,
@@ -74,6 +75,10 @@ function TestEditorPage() {
     mutationFn: addEditorAction,
     onSuccess: async () => invalidate(),
   });
+  const shareTestMutation = useMutation({
+    mutationFn: shareTestAction,
+    onSuccess: async () => invalidate(),
+  });
   const removeEditorMutation = useMutation({
     mutationFn: removeEditorAction,
     onSuccess: async () => invalidate(),
@@ -108,6 +113,23 @@ function TestEditorPage() {
     onSubmit: async ({ value, formApi }) => {
       await withSaveState(async () => {
         await addEditorMutation.mutateAsync({
+          data: {
+            testId,
+            email: value.email,
+          },
+        });
+      });
+      formApi.reset();
+    },
+  });
+
+  const shareTestForm = useForm({
+    defaultValues: {
+      email: "",
+    },
+    onSubmit: async ({ value, formApi }) => {
+      await withSaveState(async () => {
+        await shareTestMutation.mutateAsync({
           data: {
             testId,
             email: value.email,
@@ -360,6 +382,80 @@ function TestEditorPage() {
                     )}
                   </div>
                 ))}
+              </div>
+
+              <div className="h-px bg-[color:var(--border)]" />
+              <form
+                className="space-y-4"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void shareTestForm.handleSubmit();
+                }}
+              >
+                <shareTestForm.Field name="email">
+                  {(field) => (
+                    <div className="space-y-2">
+                      <FieldLabel
+                        label="Share with test taker"
+                        helper={
+                          data.test.status === "published"
+                            ? "Send a private invite link by email."
+                            : "Publish first, then send private invite links."
+                        }
+                      />
+                      <TextInput
+                        type="email"
+                        value={field.state.value}
+                        onChange={(event) => field.handleChange(event.target.value)}
+                        onBlur={field.handleBlur}
+                        placeholder="candidate@example.com"
+                        disabled={data.test.status !== "published"}
+                      />
+                    </div>
+                  )}
+                </shareTestForm.Field>
+                <Button
+                  type="submit"
+                  variant="secondary"
+                  className="w-full"
+                  disabled={data.test.status !== "published"}
+                >
+                  Email invitation
+                </Button>
+              </form>
+
+              <div className="space-y-3">
+                <FieldLabel label="Taker invites" />
+                {data.takerInvites.length === 0 ? (
+                  <p className="text-sm text-[color:var(--muted)]">
+                    No taker invites have been sent yet.
+                  </p>
+                ) : (
+                  data.takerInvites.map((invite) => (
+                    <div
+                      key={invite.id}
+                      className="rounded-2xl border border-[color:var(--border)] bg-white/70 px-4 py-3"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-medium">{invite.email}</p>
+                          <p className="text-xs text-[color:var(--muted)]">
+                            Sent {new Date(invite.lastSentAt).toLocaleString()}
+                          </p>
+                        </div>
+                        <span className="text-xs tracking-[0.18em] text-[color:var(--muted)] uppercase">
+                          {invite.acceptedAt ? "accepted" : "pending"}
+                        </span>
+                      </div>
+                      {invite.acceptedAt ? (
+                        <p className="mt-2 text-xs text-[color:var(--muted)]">
+                          Accepted {invite.acceptedByName ? `by ${invite.acceptedByName} ` : ""}
+                          {new Date(invite.acceptedAt).toLocaleString()}
+                        </p>
+                      ) : null}
+                    </div>
+                  ))
+                )}
               </div>
 
               <Button
