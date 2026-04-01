@@ -28,14 +28,6 @@ const PgClientLive = PgClient.layer({
   },
 });
 
-console.log("[effect-db]", {
-  host: databaseUrl.hostname,
-  port: databaseUrl.port || "5432",
-  database: databaseUrl.pathname.replace(/^\//, ""),
-  user: decodeURIComponent(databaseUrl.username),
-  ssl: databaseUrl.searchParams.get("sslmode"),
-});
-
 const dbEffect = PgDrizzle.make({ relations }).pipe(Effect.provide(PgDrizzle.DefaultServices));
 
 export type Database = Effect.Effect.Success<typeof dbEffect>;
