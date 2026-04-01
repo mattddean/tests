@@ -1,8 +1,7 @@
 import { Data } from "effect";
+import { UnauthorizedError } from "@/domains/auth/errors";
 
-export class UnauthorizedError extends Data.TaggedError("UnauthorizedError")<{
-  readonly message: string;
-}> {}
+export { UnauthorizedError };
 
 export class ForbiddenError extends Data.TaggedError("ForbiddenError")<{
   readonly message: string;
@@ -24,12 +23,3 @@ export class UnexpectedServerError extends Data.TaggedError("UnexpectedServerErr
   readonly message: string;
   readonly cause?: unknown;
 }> {}
-
-export type BackendError =
-  | ConflictError
-  | ForbiddenError
-  | InvalidStateError
-  | NotFoundError
-  | UnauthorizedError
-  | UnexpectedServerError
-  | Error;
