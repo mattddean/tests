@@ -1,4 +1,4 @@
-import { relations, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import {
   boolean,
   index,
@@ -189,95 +189,5 @@ export const responseAnswer = pgTable(
 );
 
 export * from "./auth-schema";
-
-export const testRelations = relations(test, ({ many }) => ({
-  members: many(testUser),
-  emailAccesses: many(testEmailAccess),
-  questions: many(testQuestion),
-  responses: many(testResponse),
-}));
-
-export const testUserRelations = relations(testUser, ({ one }) => ({
-  test: one(test, {
-    fields: [testUser.testId],
-    references: [test.id],
-  }),
-  user: one(user, {
-    fields: [testUser.userId],
-    references: [user.id],
-  }),
-  grantedBy: one(user, {
-    relationName: "grantedByMembership",
-    fields: [testUser.grantedByUserId],
-    references: [user.id],
-  }),
-}));
-
-export const testEmailAccessRelations = relations(testEmailAccess, ({ one }) => ({
-  test: one(test, {
-    fields: [testEmailAccess.testId],
-    references: [test.id],
-  }),
-  grantedBy: one(user, {
-    relationName: "grantedByEmailAccess",
-    fields: [testEmailAccess.grantedByUserId],
-    references: [user.id],
-  }),
-}));
-
-export const testQuestionRelations = relations(testQuestion, ({ one, many }) => ({
-  test: one(test, {
-    fields: [testQuestion.testId],
-    references: [test.id],
-  }),
-  choices: many(questionChoice),
-  answers: many(responseAnswer),
-}));
-
-export const questionChoiceRelations = relations(questionChoice, ({ one, many }) => ({
-  question: one(testQuestion, {
-    fields: [questionChoice.questionId],
-    references: [testQuestion.id],
-  }),
-  answers: many(responseAnswer),
-}));
-
-export const testResponseRelations = relations(testResponse, ({ one, many }) => ({
-  test: one(test, {
-    fields: [testResponse.testId],
-    references: [test.id],
-  }),
-  user: one(user, {
-    fields: [testResponse.userId],
-    references: [user.id],
-  }),
-  answers: many(responseAnswer),
-}));
-
-export const responseAnswerRelations = relations(responseAnswer, ({ one }) => ({
-  response: one(testResponse, {
-    fields: [responseAnswer.responseId],
-    references: [testResponse.id],
-  }),
-  question: one(testQuestion, {
-    fields: [responseAnswer.questionId],
-    references: [testQuestion.id],
-  }),
-  choice: one(questionChoice, {
-    fields: [responseAnswer.choiceId],
-    references: [questionChoice.id],
-  }),
-}));
-
-export const userTestRelations = relations(user, ({ many }) => ({
-  memberships: many(testUser),
-  grantedMemberships: many(testUser, {
-    relationName: "grantedByMembership",
-  }),
-  grantedEmailAccesses: many(testEmailAccess, {
-    relationName: "grantedByEmailAccess",
-  }),
-  responses: many(testResponse),
-}));
 
 export const nowExpression = sql`now()`;

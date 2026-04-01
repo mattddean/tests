@@ -1,7 +1,6 @@
 {
-  "ts.tsdk": "node_modules/typescript/lib",
-  "ts.enablePromptUseWorkspaceTsdk": true,
-  "ts.experimental.useTsgo": true,
+  "js/ts.tsdk.path": "node_modules/typescript/lib",
+  "js/ts.tsdk.promptToUseWorkspaceVersion": true,
 
   "editor.insertSpaces": true,
   "editor.tabSize": 2,
@@ -26,11 +25,9 @@
     "editor.defaultFormatter": "hashicorp.terraform"
   },
 
-  "ts.preferences.importModuleSpecifier": "non-relative",
-  "js.preferences.importModuleSpecifier": "non-relative",
-  "js.preferences.importModuleSpecifierEnding": "minimal",
-  "ts.preferences.importModuleSpecifierEnding": "minimal",
-  "ts.preferences.autoImportFileExcludePatterns": [
+  "js/ts.preferences.importModuleSpecifier": "non-relative",
+  "js/ts.preferences.importModuleSpecifierEnding": "minimal",
+  "js/ts.preferences.autoImportFileExcludePatterns": [
     "next/router.d.ts",
     "next/dist/client/router.d.ts",
     "lucide-react"

@@ -1,5 +1,8 @@
+import { Effect } from "effect";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 import { redirect } from "@tanstack/react-router";
+import { runServerEffect, tryServerPromise } from "@/backend/effect";
+import { UnauthorizedError } from "@/backend/errors";
 import { auth } from "@/lib/auth";
 
 export type SessionUser = {
@@ -13,33 +16,41 @@ export type SessionData = {
   user: SessionUser;
 };
 
-export async function getServerSession() {
-  const session = await auth.api.getSession({
+export const getServerSessionEffect = tryServerPromise("Failed to load session", () =>
+  auth.api.getSession({
     headers: getRequestHeaders(),
-  });
+  }),
+).pipe(
+  Effect.map((session) => {
+    if (!session?.user) {
+      return null;
+    }
 
-  if (!session?.user) {
-    return null;
-  }
+    return {
+      user: {
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.name,
+        image: session.user.image ?? null,
+      },
+    } satisfies SessionData;
+  }),
+);
 
-  return {
-    user: {
-      id: session.user.id,
-      email: session.user.email,
-      name: session.user.name,
-      image: session.user.image ?? null,
-    },
-  } satisfies SessionData;
+export const requireUserEffect = getServerSessionEffect.pipe(
+  Effect.flatMap((session) =>
+    session?.user
+      ? Effect.succeed(session.user)
+      : Effect.fail(new UnauthorizedError({ message: "Unauthorized" })),
+  ),
+);
+
+export async function getServerSession() {
+  return await runServerEffect(getServerSessionEffect);
 }
 
 export async function requireUser() {
-  const session = await getServerSession();
-
-  if (!session?.user) {
-    throw new Error("Unauthorized");
-  }
-
-  return session.user;
+  return await runServerEffect(requireUserEffect);
 }
 
 export async function requireRouteUser() {
