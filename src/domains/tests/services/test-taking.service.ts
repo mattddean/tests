@@ -1,5 +1,5 @@
 import { and, asc, eq, inArray } from "drizzle-orm";
-import { Context, Effect, Layer } from "effect";
+import { Effect } from "effect";
 
 import type { Database } from "@/server/db/live";
 
@@ -188,28 +188,12 @@ function saveAnswerRecord(
   });
 }
 
-export type TestTakingServiceShape = {
-  readonly saveAnswer: (
-    testId: string,
-    userId: string,
-    questionId: string,
-    choiceId: string,
-  ) => Effect.Effect<unknown, unknown>;
-  readonly submitResponse: (testId: string, userId: string) => Effect.Effect<unknown, unknown>;
-};
-
-export class TestTakingService extends Context.Tag("TestTakingService")<
-  TestTakingService,
-  TestTakingServiceShape
->() {}
-
-export const TestTakingServiceLive = Layer.effect(
-  TestTakingService,
-  Effect.gen(function* () {
+export class TestTakingService extends Effect.Service<TestTakingService>()("TestTakingService", {
+  effect: Effect.gen(function* () {
     const db = yield* DB;
 
     return {
-      saveAnswer: (testId, userId, questionId, choiceId) =>
+      saveAnswer: (testId: string, userId: string, questionId: string, choiceId: string) =>
         Effect.gen(function* () {
           const permission = yield* requireViewAccess(db, testId, userId);
           if (permission === "owner" || permission === "editor") {
@@ -222,7 +206,7 @@ export const TestTakingServiceLive = Layer.effect(
           }
           return yield* saveAnswerRecord(db, testId, userId, questionId, choiceId);
         }),
-      submitResponse: (testId, userId) =>
+      submitResponse: (testId: string, userId: string) =>
         Effect.gen(function* () {
           yield* requireViewAccess(db, testId, userId);
           const resolvedTest = yield* getCurrentTestRecord(db, testId);
@@ -269,4 +253,6 @@ export const TestTakingServiceLive = Layer.effect(
         }),
     };
   }),
-);
+}) {}
+
+export const TestTakingServiceLive = TestTakingService.Default;

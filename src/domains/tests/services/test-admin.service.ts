@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import { Context, Effect, Layer } from "effect";
+import { Effect } from "effect";
 
 import type { Database } from "@/server/db/live";
 
@@ -59,48 +59,14 @@ function getCurrentTestRecord(db: TestsDb, testId: string) {
   });
 }
 
-export type TestAdminServiceShape = {
-  readonly createTestRecord: (
-    userId: string,
-    title: string,
-  ) => Effect.Effect<{ id: string }, unknown>;
-  readonly updateTestMeta: (
-    testId: string,
-    userId: string,
-    values: { title: string; description: string | null },
-  ) => Effect.Effect<void, unknown>;
-  readonly publishTest: (testId: string, userId: string) => Effect.Effect<void, unknown>;
-  readonly addEditor: (
-    testId: string,
-    ownerUserId: string,
-    email: string,
-  ) => Effect.Effect<void, unknown>;
-  readonly removeEditor: (
-    testId: string,
-    ownerUserId: string,
-    targetUserId: string,
-  ) => Effect.Effect<void, unknown>;
-  readonly shareTest: (
-    testId: string,
-    ownerUserId: string,
-    email: string,
-  ) => Effect.Effect<void, unknown>;
-};
-
-export class TestAdminService extends Context.Tag("TestAdminService")<
-  TestAdminService,
-  TestAdminServiceShape
->() {}
-
-export const TestAdminServiceLive = Layer.effect(
-  TestAdminService,
-  Effect.gen(function* () {
+export class TestAdminService extends Effect.Service<TestAdminService>()("TestAdminService", {
+  effect: Effect.gen(function* () {
     const db = yield* DB;
     const mailer = yield* Mailer;
     const config = yield* ServerConfig;
 
     return {
-      createTestRecord: (userId, title) =>
+      createTestRecord: (userId: string, title: string) =>
         Effect.gen(function* () {
           const id = createId();
           yield* db.insert(test).values({
@@ -120,7 +86,11 @@ export const TestAdminServiceLive = Layer.effect(
 
           return { id };
         }),
-      updateTestMeta: (testId, userId, values) =>
+      updateTestMeta: (
+        testId: string,
+        userId: string,
+        values: { title: string; description: string | null },
+      ) =>
         Effect.gen(function* () {
           yield* requireEditAccess(db, testId, userId);
           yield* db
@@ -132,7 +102,7 @@ export const TestAdminServiceLive = Layer.effect(
             })
             .where(eq(test.id, testId));
         }),
-      publishTest: (testId, userId) =>
+      publishTest: (testId: string, userId: string) =>
         Effect.gen(function* () {
           const permission = yield* requireEditAccess(db, testId, userId);
           if (permission !== "owner") {
@@ -162,7 +132,7 @@ export const TestAdminServiceLive = Layer.effect(
             })
             .where(eq(test.id, testId));
         }),
-      addEditor: (testId, ownerUserId, email) =>
+      addEditor: (testId: string, ownerUserId: string, email: string) =>
         Effect.gen(function* () {
           const permission = yield* requireEditAccess(db, testId, ownerUserId);
           const normalizedEmail = normalizeEmail(email);
@@ -213,7 +183,7 @@ export const TestAdminServiceLive = Layer.effect(
             grantedByUserId: ownerUserId,
           });
         }),
-      removeEditor: (testId, ownerUserId, targetUserId) =>
+      removeEditor: (testId: string, ownerUserId: string, targetUserId: string) =>
         Effect.gen(function* () {
           const permission = yield* requireEditAccess(db, testId, ownerUserId);
           if (permission !== "owner") {
@@ -232,7 +202,7 @@ export const TestAdminServiceLive = Layer.effect(
               ),
             );
         }),
-      shareTest: (testId, ownerUserId, email) =>
+      shareTest: (testId: string, ownerUserId: string, email: string) =>
         Effect.gen(function* () {
           const permission = yield* requireEditAccess(db, testId, ownerUserId);
           const normalizedEmail = normalizeEmail(email);
@@ -300,4 +270,6 @@ export const TestAdminServiceLive = Layer.effect(
         }),
     };
   }),
-);
+}) {}
+
+export const TestAdminServiceLive = TestAdminService.Default;

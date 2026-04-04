@@ -1,5 +1,5 @@
 import { and, asc, eq } from "drizzle-orm";
-import { Context, Effect, Layer } from "effect";
+import { Effect } from "effect";
 
 import type { Database } from "@/server/db/live";
 
@@ -205,53 +205,12 @@ function deleteChoiceRecord(db: TestsDb, choiceId: string) {
   });
 }
 
-export type TestEditorServiceShape = {
-  readonly addQuestion: (
-    testId: string,
-    userId: string,
-    afterQuestionId?: string | null,
-  ) => Effect.Effect<void, unknown>;
-  readonly updateQuestion: (
-    questionId: string,
-    userId: string,
-    values: { prompt?: string; description?: string | null; required?: boolean },
-  ) => Effect.Effect<void, unknown>;
-  readonly reorderQuestions: (
-    testId: string,
-    userId: string,
-    questionIds: Array<string>,
-  ) => Effect.Effect<void, unknown>;
-  readonly addChoice: (
-    questionId: string,
-    userId: string,
-    afterChoiceId?: string | null,
-  ) => Effect.Effect<void, unknown>;
-  readonly updateChoice: (
-    choiceId: string,
-    userId: string,
-    label: string,
-  ) => Effect.Effect<void, unknown>;
-  readonly reorderChoices: (
-    questionId: string,
-    userId: string,
-    choiceIds: Array<string>,
-  ) => Effect.Effect<void, unknown>;
-  readonly deleteQuestion: (questionId: string, userId: string) => Effect.Effect<void, unknown>;
-  readonly deleteChoice: (choiceId: string, userId: string) => Effect.Effect<void, unknown>;
-};
-
-export class TestEditorService extends Context.Tag("TestEditorService")<
-  TestEditorService,
-  TestEditorServiceShape
->() {}
-
-export const TestEditorServiceLive = Layer.effect(
-  TestEditorService,
-  Effect.gen(function* () {
+export class TestEditorService extends Effect.Service<TestEditorService>()("TestEditorService", {
+  effect: Effect.gen(function* () {
     const db = yield* DB;
 
     return {
-      addQuestion: (testId, userId, afterQuestionId) =>
+      addQuestion: (testId: string, userId: string, afterQuestionId?: string | null) =>
         Effect.gen(function* () {
           yield* requireEditAccess(db, testId, userId);
           const questions = yield* db
@@ -285,7 +244,11 @@ export const TestEditorServiceLive = Layer.effect(
             }),
           );
         }),
-      updateQuestion: (questionId, userId, values) =>
+      updateQuestion: (
+        questionId: string,
+        userId: string,
+        values: { prompt?: string; description?: string | null; required?: boolean },
+      ) =>
         Effect.gen(function* () {
           yield* requireQuestionEditAccess(db, questionId, userId);
           yield* db
@@ -293,7 +256,7 @@ export const TestEditorServiceLive = Layer.effect(
             .set({ ...values, updatedAt: new Date() })
             .where(eq(testQuestion.id, questionId));
         }),
-      reorderQuestions: (testId, userId, questionIds) =>
+      reorderQuestions: (testId: string, userId: string, questionIds: Array<string>) =>
         Effect.gen(function* () {
           yield* requireEditAccess(db, testId, userId);
           yield* db.transaction((tx) =>
@@ -303,7 +266,7 @@ export const TestEditorServiceLive = Layer.effect(
             }),
           );
         }),
-      addChoice: (questionId, userId, afterChoiceId) =>
+      addChoice: (questionId: string, userId: string, afterChoiceId?: string | null) =>
         Effect.gen(function* () {
           const resolvedQuestion = yield* requireQuestionEditAccess(db, questionId, userId);
           const choices = yield* db
@@ -318,14 +281,12 @@ export const TestEditorServiceLive = Layer.effect(
           yield* db.transaction((tx) =>
             Effect.gen(function* () {
               yield* shiftChoicePositions(tx, questionId, anchorPosition);
-              yield* tx
-                .insert(questionChoice)
-                .values({
-                  id: createId(),
-                  questionId,
-                  position: anchorPosition,
-                  label: "New option",
-                });
+              yield* tx.insert(questionChoice).values({
+                id: createId(),
+                questionId,
+                position: anchorPosition,
+                label: "New option",
+              });
               yield* tx
                 .update(test)
                 .set({ updatedAt: new Date() })
@@ -333,7 +294,7 @@ export const TestEditorServiceLive = Layer.effect(
             }),
           );
         }),
-      updateChoice: (choiceId, userId, label) =>
+      updateChoice: (choiceId: string, userId: string, label: string) =>
         Effect.gen(function* () {
           yield* requireChoiceEditAccess(db, choiceId, userId);
           yield* db
@@ -341,7 +302,7 @@ export const TestEditorServiceLive = Layer.effect(
             .set({ label, updatedAt: new Date() })
             .where(eq(questionChoice.id, choiceId));
         }),
-      reorderChoices: (questionId, userId, choiceIds) =>
+      reorderChoices: (questionId: string, userId: string, choiceIds: Array<string>) =>
         Effect.gen(function* () {
           const resolvedQuestion = yield* requireQuestionEditAccess(db, questionId, userId);
           yield* db.transaction((tx) =>
@@ -354,7 +315,7 @@ export const TestEditorServiceLive = Layer.effect(
             }),
           );
         }),
-      deleteQuestion: (questionId, userId) =>
+      deleteQuestion: (questionId: string, userId: string) =>
         Effect.gen(function* () {
           const resolvedQuestion = yield* requireQuestionEditAccess(db, questionId, userId);
           yield* db.delete(testQuestion).where(eq(testQuestion.id, questionId));
@@ -370,11 +331,13 @@ export const TestEditorServiceLive = Layer.effect(
               .where(eq(testQuestion.id, item.id)),
           );
         }),
-      deleteChoice: (choiceId, userId) =>
+      deleteChoice: (choiceId: string, userId: string) =>
         Effect.gen(function* () {
           yield* requireChoiceEditAccess(db, choiceId, userId);
           yield* deleteChoiceRecord(db, choiceId);
         }),
     };
   }),
-);
+}) {}
+
+export const TestEditorServiceLive = TestEditorService.Default;

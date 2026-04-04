@@ -29,7 +29,6 @@
     "@fontsource-variable/geist": "^5.2.8",
     "@react-email/components": "^1.0.10",
     "@react-email/render": "^2.0.4",
-    "@t3-oss/env-core": "^0.13.8",
     "@tailwindcss/vite": "^4.0.6",
     "@tanstack/match-sorter-utils": "^8.19.4",
     "@tanstack/react-devtools": "^0.7.0",

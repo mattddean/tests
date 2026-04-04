@@ -1,5 +1,5 @@
 import { and, asc, count, desc, eq, ilike, inArray, or } from "drizzle-orm";
-import { Context, Effect, Layer } from "effect";
+import { Effect } from "effect";
 
 import type { Database } from "@/server/db/live";
 
@@ -285,50 +285,12 @@ function getResponsesTableRows(
   });
 }
 
-export type TestReadServiceShape = {
-  readonly getDashboard: (userId: string) => Effect.Effect<DashboardView, unknown>;
-  readonly getTestsList: (
-    userId: string,
-    scope: "drafts" | "published" | "shared",
-  ) => Effect.Effect<Array<TestSummary>, unknown>;
-  readonly getEditorView: (
-    testId: string,
-    userId: string,
-  ) => Effect.Effect<TestEditorView, unknown>;
-  readonly getTakeView: (testId: string, userId: string) => Effect.Effect<TestTakeView, unknown>;
-  readonly getMyResponses: (
-    userId: string,
-  ) => Effect.Effect<DashboardView["recentResponses"], unknown>;
-  readonly getResponsesTable: (
-    testId: string,
-    userId: string,
-    search: {
-      page: number;
-      query: string;
-      status: "all" | "draft" | "submitted";
-      sortBy: "startedAt" | "submittedAt";
-      direction: "asc" | "desc";
-    },
-  ) => Effect.Effect<Array<ResponseTableRow>, unknown>;
-  readonly getResponseReview: (
-    testId: string,
-    responseId: string,
-    userId: string,
-  ) => Effect.Effect<ResponseReviewView, unknown>;
-};
-
-export class TestReadService extends Context.Tag("TestReadService")<
-  TestReadService,
-  TestReadServiceShape
->() {}
-
-export const TestReadServiceLive = Layer.effect(
-  TestReadService,
-  Effect.gen(function* () {
+export class TestReadService extends Effect.Service<TestReadService>()("TestReadService", {
+  effect: Effect.gen(function* () {
     const db = yield* DB;
 
     return {
-      getDashboard: (userId) =>
+      getDashboard: (userId: string) =>
         Effect.gen(function* () {
           const memberships = yield* db
             .select({ testId: testUser.testId, role: testUser.role })
@@ -424,7 +386,7 @@ export const TestReadServiceLive = Layer.effect(
             })),
           } satisfies DashboardView;
         }),
-      getTestsList: (userId, scope) =>
+      getTestsList: (userId: string, scope: "drafts" | "published" | "shared") =>
         Effect.gen(function* () {
           const memberships = yield* db
             .select({ testId: testUser.testId, role: testUser.role })
@@ -498,7 +460,7 @@ export const TestReadServiceLive = Layer.effect(
             }),
           );
         }),
-      getEditorView: (testId, userId) =>
+      getEditorView: (testId: string, userId: string) =>
         Effect.gen(function* () {
           const permission = yield* getTestPermission(db, testId, userId);
           if (permission !== "owner" && permission !== "editor") {
@@ -517,7 +479,7 @@ export const TestReadServiceLive = Layer.effect(
             viewerPermission: permission,
           } satisfies TestEditorView;
         }),
-      getTakeView: (testId, userId) =>
+      getTakeView: (testId: string, userId: string) =>
         Effect.gen(function* () {
           const resolvedUser = yield* getCurrentUserRecord(db, userId);
           const resolvedTest = yield* getCurrentTestRecord(db, testId);
@@ -585,7 +547,7 @@ export const TestReadServiceLive = Layer.effect(
             canEdit: permission === "owner" || permission === "editor",
           } satisfies TestTakeView;
         }),
-      getMyResponses: (userId) =>
+      getMyResponses: (userId: string) =>
         Effect.gen(function* () {
           const rows = yield* db
             .select({
@@ -610,12 +572,22 @@ export const TestReadServiceLive = Layer.effect(
             submittedAt: toIso(row.submittedAt),
           }));
         }),
-      getResponsesTable: (testId, userId, search) =>
+      getResponsesTable: (
+        testId: string,
+        userId: string,
+        search: {
+          page: number;
+          query: string;
+          status: "all" | "draft" | "submitted";
+          sortBy: "startedAt" | "submittedAt";
+          direction: "asc" | "desc";
+        },
+      ) =>
         Effect.gen(function* () {
           yield* requireEditAccess(db, testId, userId);
           return yield* getResponsesTableRows(db, testId, search);
         }),
-      getResponseReview: (testId, responseId, userId) =>
+      getResponseReview: (testId: string, responseId: string, userId: string) =>
         Effect.gen(function* () {
           const permission = yield* requireEditAccess(db, testId, userId);
           const resolvedTest = yield* getCurrentTestRecord(db, testId);
@@ -661,4 +633,6 @@ export const TestReadServiceLive = Layer.effect(
         }),
     };
   }),
-);
+}) {}
+
+export const TestReadServiceLive = TestReadService.Default;
