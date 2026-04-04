@@ -5,7 +5,9 @@ import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Redacted from "effect/Redacted";
 import { types } from "pg";
+
 import { serverConfig } from "@/server/config/server-config";
+
 import { relations } from "./relations";
 
 const databaseUrl = new URL(serverConfig.DATABASE_URL);

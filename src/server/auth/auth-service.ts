@@ -1,5 +1,7 @@
 import { Context, Effect, Layer } from "effect";
+
 import { type SessionData } from "@/domains/auth/model";
+
 import { auth } from "./better-auth";
 
 export type AuthServiceShape = {

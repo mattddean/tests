@@ -1,5 +1,7 @@
 import { Context, Effect, Layer } from "effect";
+
 import type { SessionData, SessionUser } from "@/domains/auth/model";
+
 import { UnauthorizedError } from "@/domains/auth/errors";
 import { AuthService } from "@/server/auth/auth-service";
 

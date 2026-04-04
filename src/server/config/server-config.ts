@@ -1,4 +1,5 @@
 import { Context, Layer, Schema } from "effect";
+
 import { decodeUnknownSync } from "@/lib/effect-schema";
 
 export const ServerConfigSchema = Schema.Struct({

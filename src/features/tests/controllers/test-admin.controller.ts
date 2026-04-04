@@ -1,6 +1,6 @@
-import { Effect } from "effect";
 import { createServerFn } from "@tanstack/react-start";
-import { TestAdminService } from "@/domains/tests/services/test-admin.service";
+import { Effect } from "effect";
+
 import {
   addEditorInputValidator,
   createTestInputValidator,
@@ -9,7 +9,9 @@ import {
   testIdInputValidator,
   updateTestMetaInputValidator,
 } from "@/domains/tests/schema";
+import { TestAdminService } from "@/domains/tests/services/test-admin.service";
 import { runServerEffect } from "@/server/runtime/run-server-effect";
+
 import { withCurrentUser } from "./shared";
 
 export const createTest = createServerFn({ method: "POST" })
@@ -42,9 +44,9 @@ export const publishTestAction = createServerFn({ method: "POST" })
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>
-        Effect.flatMap(TestAdminService, (service) => service.publishTest(data.testId, userId)).pipe(
-          Effect.as({ ok: true }),
-        ),
+        Effect.flatMap(TestAdminService, (service) =>
+          service.publishTest(data.testId, userId),
+        ).pipe(Effect.as({ ok: true })),
       ),
     ),
   );
@@ -54,9 +56,9 @@ export const addEditorAction = createServerFn({ method: "POST" })
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>
-        Effect.flatMap(TestAdminService, (service) => service.addEditor(data.testId, userId, data.email)).pipe(
-          Effect.as({ ok: true }),
-        ),
+        Effect.flatMap(TestAdminService, (service) =>
+          service.addEditor(data.testId, userId, data.email),
+        ).pipe(Effect.as({ ok: true })),
       ),
     ),
   );
@@ -66,9 +68,9 @@ export const removeEditorAction = createServerFn({ method: "POST" })
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>
-        Effect.flatMap(TestAdminService, (service) => service.removeEditor(data.testId, userId, data.userId)).pipe(
-          Effect.as({ ok: true }),
-        ),
+        Effect.flatMap(TestAdminService, (service) =>
+          service.removeEditor(data.testId, userId, data.userId),
+        ).pipe(Effect.as({ ok: true })),
       ),
     ),
   );
@@ -78,9 +80,9 @@ export const shareTestAction = createServerFn({ method: "POST" })
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>
-        Effect.flatMap(TestAdminService, (service) => service.shareTest(data.testId, userId, data.email)).pipe(
-          Effect.as({ ok: true }),
-        ),
+        Effect.flatMap(TestAdminService, (service) =>
+          service.shareTest(data.testId, userId, data.email),
+        ).pipe(Effect.as({ ok: true })),
       ),
     ),
   );

@@ -1,4 +1,5 @@
 import { Schema } from "effect";
+
 import { decodeUnknownSync } from "@/lib/effect-schema";
 
 export const AuthSearchSchema = Schema.Struct({

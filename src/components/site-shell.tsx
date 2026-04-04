@@ -1,12 +1,15 @@
 import { Link } from "@tanstack/react-router";
 import { LogOut, SquarePen } from "lucide-react";
+
+import type { SessionData } from "@/features/auth/server";
+
 import { ButtonLink } from "@/components/button-link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
+
 import { AppLogo, StatusPill } from "./ui";
-import type { SessionData } from "@/features/auth/server";
 
 export function SiteShell({
   session,

@@ -1,8 +1,20 @@
 import { and, asc, count, desc, eq, ilike, inArray, or } from "drizzle-orm";
 import { Context, Effect, Layer } from "effect";
-import { DB } from "@/server/db/live";
+
 import type { Database } from "@/server/db/live";
-import { questionChoice, responseAnswer, test, testEmailAccess, testQuestion, testResponse, testUser, user } from "@/server/db/schema";
+
+import { DB } from "@/server/db/live";
+import {
+  questionChoice,
+  responseAnswer,
+  test,
+  testEmailAccess,
+  testQuestion,
+  testResponse,
+  testUser,
+  user,
+} from "@/server/db/schema";
+
 import type {
   Collaborator,
   DashboardView,
@@ -14,8 +26,9 @@ import type {
   TestSummary,
   TestTakeView,
 } from "../dto";
-import { ForbiddenTestAccess, ResponseNotFound, TestNotFound, UserNotFound } from "../errors";
 import type { TestPermission } from "../model";
+
+import { ForbiddenTestAccess, ResponseNotFound, TestNotFound, UserNotFound } from "../errors";
 
 type TestsDb = Omit<Database, "$client">;
 
@@ -81,11 +94,19 @@ function getOwnerProfile(db: TestsDb, testId: string) {
 
 function getQuestions(db: TestsDb, testId: string) {
   return Effect.gen(function* () {
-    const questions = yield* db.select().from(testQuestion).where(eq(testQuestion.testId, testId)).orderBy(asc(testQuestion.position));
+    const questions = yield* db
+      .select()
+      .from(testQuestion)
+      .where(eq(testQuestion.testId, testId))
+      .orderBy(asc(testQuestion.position));
     const questionIds = questions.map((item) => item.id);
     const choices =
       questionIds.length > 0
-        ? yield* db.select().from(questionChoice).where(inArray(questionChoice.questionId, questionIds)).orderBy(asc(questionChoice.position))
+        ? yield* db
+            .select()
+            .from(questionChoice)
+            .where(inArray(questionChoice.questionId, questionIds))
+            .orderBy(asc(questionChoice.position))
         : [];
 
     return questions.map((item) => ({
@@ -119,10 +140,7 @@ function getCollaborators(db: TestsDb, testId: string) {
     .from(testUser)
     .innerJoin(user, eq(testUser.userId, user.id))
     .where(
-      and(
-        eq(testUser.testId, testId),
-        or(eq(testUser.role, "owner"), eq(testUser.role, "editor")),
-      ),
+      and(eq(testUser.testId, testId), or(eq(testUser.role, "owner"), eq(testUser.role, "editor"))),
     )
     .orderBy(asc(testUser.role), asc(user.name))
     .pipe(
@@ -152,14 +170,13 @@ function getTakerInvites(db: TestsDb, testId: string) {
     .where(and(eq(testEmailAccess.testId, testId), eq(testEmailAccess.role, "taker")))
     .orderBy(desc(testEmailAccess.lastSentAt), asc(testEmailAccess.email))
     .pipe(
-      Effect.map(
-        (inviteRows) =>
-          inviteRows.map<TakerInvite>((invite) => ({
-            id: invite.id,
-            email: invite.email,
-            invitedAt: invite.createdAt.toISOString(),
-            lastSentAt: invite.lastSentAt.toISOString(),
-          })),
+      Effect.map((inviteRows) =>
+        inviteRows.map<TakerInvite>((invite) => ({
+          id: invite.id,
+          email: invite.email,
+          invitedAt: invite.createdAt.toISOString(),
+          lastSentAt: invite.lastSentAt.toISOString(),
+        })),
       ),
     );
 }
@@ -230,12 +247,15 @@ function getResponsesTableRows(
   },
 ) {
   return Effect.gen(function* () {
-    const sortColumn = search.sortBy === "startedAt" ? testResponse.startedAt : testResponse.submittedAt;
+    const sortColumn =
+      search.sortBy === "startedAt" ? testResponse.startedAt : testResponse.submittedAt;
     const order = search.direction === "asc" ? asc(sortColumn) : desc(sortColumn);
     const conditions = [
       eq(testResponse.testId, testId),
       search.status === "all" ? undefined : eq(testResponse.status, search.status),
-      search.query ? or(ilike(user.name, `%${search.query}%`), ilike(user.email, `%${search.query}%`)) : undefined,
+      search.query
+        ? or(ilike(user.name, `%${search.query}%`), ilike(user.email, `%${search.query}%`))
+        : undefined,
     ].filter(Boolean);
 
     const rows = yield* db
@@ -267,10 +287,18 @@ function getResponsesTableRows(
 
 export type TestReadServiceShape = {
   readonly getDashboard: (userId: string) => Effect.Effect<DashboardView, unknown>;
-  readonly getTestsList: (userId: string, scope: "drafts" | "published" | "shared") => Effect.Effect<Array<TestSummary>, unknown>;
-  readonly getEditorView: (testId: string, userId: string) => Effect.Effect<TestEditorView, unknown>;
+  readonly getTestsList: (
+    userId: string,
+    scope: "drafts" | "published" | "shared",
+  ) => Effect.Effect<Array<TestSummary>, unknown>;
+  readonly getEditorView: (
+    testId: string,
+    userId: string,
+  ) => Effect.Effect<TestEditorView, unknown>;
   readonly getTakeView: (testId: string, userId: string) => Effect.Effect<TestTakeView, unknown>;
-  readonly getMyResponses: (userId: string) => Effect.Effect<DashboardView["recentResponses"], unknown>;
+  readonly getMyResponses: (
+    userId: string,
+  ) => Effect.Effect<DashboardView["recentResponses"], unknown>;
   readonly getResponsesTable: (
     testId: string,
     userId: string,
@@ -282,10 +310,17 @@ export type TestReadServiceShape = {
       direction: "asc" | "desc";
     },
   ) => Effect.Effect<Array<ResponseTableRow>, unknown>;
-  readonly getResponseReview: (testId: string, responseId: string, userId: string) => Effect.Effect<ResponseReviewView, unknown>;
+  readonly getResponseReview: (
+    testId: string,
+    responseId: string,
+    userId: string,
+  ) => Effect.Effect<ResponseReviewView, unknown>;
 };
 
-export class TestReadService extends Context.Tag("TestReadService")<TestReadService, TestReadServiceShape>() {}
+export class TestReadService extends Context.Tag("TestReadService")<
+  TestReadService,
+  TestReadServiceShape
+>() {}
 
 export const TestReadServiceLive = Layer.effect(
   TestReadService,
@@ -298,7 +333,12 @@ export const TestReadServiceLive = Layer.effect(
           const memberships = yield* db
             .select({ testId: testUser.testId, role: testUser.role })
             .from(testUser)
-            .where(and(eq(testUser.userId, userId), or(eq(testUser.role, "owner"), eq(testUser.role, "editor"))));
+            .where(
+              and(
+                eq(testUser.userId, userId),
+                or(eq(testUser.role, "owner"), eq(testUser.role, "editor")),
+              ),
+            );
 
           const editableIds = memberships.map((item) => item.testId);
           const editableRows =
@@ -354,7 +394,9 @@ export const TestReadServiceLive = Layer.effect(
 
           const editorCountMap = new Map(editorCounts.map((item) => [item.testId, item.count]));
           const responseCountMap = new Map(responseCounts.map((item) => [item.testId, item.count]));
-          const membershipMap = new Map(memberships.map((item) => [item.testId, item.role as TestPermission]));
+          const membershipMap = new Map(
+            memberships.map((item) => [item.testId, item.role as TestPermission]),
+          );
 
           const summaries = yield* Effect.forEach(editableRows, (row) =>
             Effect.gen(function* () {
@@ -384,10 +426,19 @@ export const TestReadServiceLive = Layer.effect(
         }),
       getTestsList: (userId, scope) =>
         Effect.gen(function* () {
-          const memberships = yield* db.select({ testId: testUser.testId, role: testUser.role }).from(testUser).where(eq(testUser.userId, userId));
-          const membershipMap = new Map(memberships.map((item) => [item.testId, item.role as TestPermission]));
-          const ownedIds = memberships.filter((item) => item.role === "owner").map((item) => item.testId);
-          const sharedMembershipIds = memberships.filter((item) => item.role !== "owner").map((item) => item.testId);
+          const memberships = yield* db
+            .select({ testId: testUser.testId, role: testUser.role })
+            .from(testUser)
+            .where(eq(testUser.userId, userId));
+          const membershipMap = new Map(
+            memberships.map((item) => [item.testId, item.role as TestPermission]),
+          );
+          const ownedIds = memberships
+            .filter((item) => item.role === "owner")
+            .map((item) => item.testId);
+          const sharedMembershipIds = memberships
+            .filter((item) => item.role !== "owner")
+            .map((item) => item.testId);
           const targetIds = scope === "shared" ? sharedMembershipIds : ownedIds;
           const baseRows =
             targetIds.length > 0
@@ -405,7 +456,9 @@ export const TestReadServiceLive = Layer.effect(
                   .where(
                     and(
                       inArray(test.id, targetIds),
-                      scope === "shared" ? eq(test.status, "published") : eq(test.status, scope === "drafts" ? "draft" : "published"),
+                      scope === "shared"
+                        ? eq(test.status, "published")
+                        : eq(test.status, scope === "drafts" ? "draft" : "published"),
                     ),
                   )
                   .orderBy(desc(test.updatedAt))
@@ -470,7 +523,11 @@ export const TestReadServiceLive = Layer.effect(
           const resolvedTest = yield* getCurrentTestRecord(db, testId);
           let permission = yield* getTestPermission(db, testId, userId);
           const owner = yield* getOwnerProfile(db, resolvedTest.id);
-          const [response] = yield* db.select().from(testResponse).where(and(eq(testResponse.testId, testId), eq(testResponse.userId, userId))).limit(1);
+          const [response] = yield* db
+            .select()
+            .from(testResponse)
+            .where(and(eq(testResponse.testId, testId), eq(testResponse.userId, userId)))
+            .limit(1);
           const invite =
             !permission && resolvedTest.status === "published"
               ? yield* db
@@ -488,12 +545,15 @@ export const TestReadServiceLive = Layer.effect(
               : null;
 
           if (invite?.role === "taker") {
-            yield* db.insert(testUser).values({
-              testId,
-              userId,
-              role: invite.role,
-              grantedByUserId: invite.grantedByUserId,
-            }).onConflictDoNothing();
+            yield* db
+              .insert(testUser)
+              .values({
+                testId,
+                userId,
+                role: invite.role,
+                grantedByUserId: invite.grantedByUserId,
+              })
+              .onConflictDoNothing();
 
             yield* db.delete(testEmailAccess).where(eq(testEmailAccess.id, invite.id));
             permission = "taker";
@@ -503,7 +563,12 @@ export const TestReadServiceLive = Layer.effect(
             return yield* Effect.fail(new ForbiddenTestAccess({ message: "Forbidden" }));
           }
 
-          const answerRows = response ? yield* db.select().from(responseAnswer).where(eq(responseAnswer.responseId, response.id)) : [];
+          const answerRows = response
+            ? yield* db
+                .select()
+                .from(responseAnswer)
+                .where(eq(responseAnswer.responseId, response.id))
+            : [];
 
           return {
             test: toTestMetaView(resolvedTest, owner),
@@ -560,9 +625,19 @@ export const TestReadServiceLive = Layer.effect(
             .from(testResponse)
             .where(and(eq(testResponse.id, responseId), eq(testResponse.testId, testId)))
             .limit(1);
-          const resolvedResponse = yield* requirePresent(currentResponse, new ResponseNotFound({ message: "Response not found" }));
-          const [responder] = yield* db.select().from(user).where(eq(user.id, resolvedResponse.userId)).limit(1);
-          const answers = yield* db.select().from(responseAnswer).where(eq(responseAnswer.responseId, resolvedResponse.id));
+          const resolvedResponse = yield* requirePresent(
+            currentResponse,
+            new ResponseNotFound({ message: "Response not found" }),
+          );
+          const [responder] = yield* db
+            .select()
+            .from(user)
+            .where(eq(user.id, resolvedResponse.userId))
+            .limit(1);
+          const answers = yield* db
+            .select()
+            .from(responseAnswer)
+            .where(eq(responseAnswer.responseId, resolvedResponse.id));
 
           return {
             test: toTestMetaView(resolvedTest, owner),

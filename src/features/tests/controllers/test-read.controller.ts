@@ -1,24 +1,32 @@
-import { Effect } from "effect";
 import { createServerFn } from "@tanstack/react-start";
-import { TestReadService } from "@/domains/tests/services/test-read.service";
+import { Effect } from "effect";
+
 import {
   parseResponseSearchInput,
   responseDetailInputValidator,
   testIdInputValidator,
   testScopeValidator,
 } from "@/domains/tests/schema";
+import { TestReadService } from "@/domains/tests/services/test-read.service";
 import { runServerEffect } from "@/server/runtime/run-server-effect";
+
 import { withCurrentUser } from "./shared";
 
 export const getDashboardData = createServerFn({ method: "GET" }).handler(() =>
-  runServerEffect(withCurrentUser((userId) => Effect.flatMap(TestReadService, (service) => service.getDashboard(userId)))),
+  runServerEffect(
+    withCurrentUser((userId) =>
+      Effect.flatMap(TestReadService, (service) => service.getDashboard(userId)),
+    ),
+  ),
 );
 
 export const getTests = createServerFn({ method: "GET" })
   .inputValidator(testScopeValidator)
   .handler(({ data }) =>
     runServerEffect(
-      withCurrentUser((userId) => Effect.flatMap(TestReadService, (service) => service.getTestsList(userId, data))),
+      withCurrentUser((userId) =>
+        Effect.flatMap(TestReadService, (service) => service.getTestsList(userId, data)),
+      ),
     ),
   );
 
@@ -26,7 +34,9 @@ export const getTestEditor = createServerFn({ method: "GET" })
   .inputValidator(testIdInputValidator)
   .handler(({ data }) =>
     runServerEffect(
-      withCurrentUser((userId) => Effect.flatMap(TestReadService, (service) => service.getEditorView(data.testId, userId))),
+      withCurrentUser((userId) =>
+        Effect.flatMap(TestReadService, (service) => service.getEditorView(data.testId, userId)),
+      ),
     ),
   );
 
@@ -34,7 +44,9 @@ export const getTestTake = createServerFn({ method: "GET" })
   .inputValidator(testIdInputValidator)
   .handler(({ data }) =>
     runServerEffect(
-      withCurrentUser((userId) => Effect.flatMap(TestReadService, (service) => service.getTakeView(data.testId, userId))),
+      withCurrentUser((userId) =>
+        Effect.flatMap(TestReadService, (service) => service.getTakeView(data.testId, userId)),
+      ),
     ),
   );
 
@@ -63,13 +75,17 @@ export const getResponseDetail = createServerFn({ method: "GET" })
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>
-        Effect.flatMap(TestReadService, (service) => service.getResponseReview(data.testId, data.responseId, userId)),
+        Effect.flatMap(TestReadService, (service) =>
+          service.getResponseReview(data.testId, data.responseId, userId),
+        ),
       ),
     ),
   );
 
 export const getMyResponsesData = createServerFn({ method: "GET" }).handler(() =>
   runServerEffect(
-    withCurrentUser((userId) => Effect.flatMap(TestReadService, (service) => service.getMyResponses(userId))),
+    withCurrentUser((userId) =>
+      Effect.flatMap(TestReadService, (service) => service.getMyResponses(userId)),
+    ),
   ),
 );

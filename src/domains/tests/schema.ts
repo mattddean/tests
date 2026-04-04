@@ -1,4 +1,5 @@
 import { Schema } from "effect";
+
 import { decodeUnknownSync } from "@/lib/effect-schema";
 
 type Infer<S extends Schema.Schema.AnyNoContext> = Schema.Schema.Type<S>;

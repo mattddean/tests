@@ -1,5 +1,7 @@
-import { UnauthorizedError } from "@/domains/auth/errors";
 import type { TestsError } from "@/domains/tests/errors";
+
+import { UnauthorizedError } from "@/domains/auth/errors";
+
 import { TransportError } from "./transport-error";
 
 function getMessage(error: unknown) {

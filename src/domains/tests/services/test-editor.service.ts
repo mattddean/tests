@@ -1,16 +1,20 @@
 import { and, asc, eq } from "drizzle-orm";
 import { Context, Effect, Layer } from "effect";
+
+import type { Database } from "@/server/db/live";
+
 import { createId } from "@/features/common/ids";
 import { DB } from "@/server/db/live";
-import type { Database } from "@/server/db/live";
 import { questionChoice, test, testQuestion, testUser } from "@/server/db/schema";
+
+import type { TestPermission } from "../model";
+
 import {
   AtLeastTwoChoicesRequired,
   ChoiceNotFound,
   ForbiddenTestAccess,
   QuestionNotFound,
 } from "../errors";
-import type { TestPermission } from "../model";
 
 type TestsDb = Omit<Database, "$client">;
 
@@ -58,7 +62,10 @@ function getChoiceById(db: TestsDb, choiceId: string) {
 function requireQuestionEditAccess(db: TestsDb, questionId: string, userId: string) {
   return Effect.gen(function* () {
     const question = yield* getQuestionById(db, questionId);
-    const resolvedQuestion = yield* requirePresent(question, new QuestionNotFound({ message: "Question not found" }));
+    const resolvedQuestion = yield* requirePresent(
+      question,
+      new QuestionNotFound({ message: "Question not found" }),
+    );
     yield* requireEditAccess(db, resolvedQuestion.testId, userId);
     return resolvedQuestion;
   });
@@ -67,9 +74,15 @@ function requireQuestionEditAccess(db: TestsDb, questionId: string, userId: stri
 function requireChoiceEditAccess(db: TestsDb, choiceId: string, userId: string) {
   return Effect.gen(function* () {
     const choice = yield* getChoiceById(db, choiceId);
-    const resolvedChoice = yield* requirePresent(choice, new ChoiceNotFound({ message: "Choice not found" }));
+    const resolvedChoice = yield* requirePresent(
+      choice,
+      new ChoiceNotFound({ message: "Choice not found" }),
+    );
     const question = yield* getQuestionById(db, resolvedChoice.questionId);
-    const resolvedQuestion = yield* requirePresent(question, new QuestionNotFound({ message: "Question not found" }));
+    const resolvedQuestion = yield* requirePresent(
+      question,
+      new QuestionNotFound({ message: "Question not found" }),
+    );
     yield* requireEditAccess(db, resolvedQuestion.testId, userId);
     return { choice: resolvedChoice, question: resolvedQuestion };
   });
@@ -77,18 +90,36 @@ function requireChoiceEditAccess(db: TestsDb, choiceId: string, userId: string) 
 
 function shiftQuestionPositions(client: TestsDb, testId: string, fromPosition: number) {
   return Effect.gen(function* () {
-    const questions = yield* client.select().from(testQuestion).where(eq(testQuestion.testId, testId)).orderBy(asc(testQuestion.position));
-    for (const item of questions.filter((question) => question.position >= fromPosition).sort((left, right) => right.position - left.position)) {
-      yield* client.update(testQuestion).set({ position: item.position + 1, updatedAt: new Date() }).where(eq(testQuestion.id, item.id));
+    const questions = yield* client
+      .select()
+      .from(testQuestion)
+      .where(eq(testQuestion.testId, testId))
+      .orderBy(asc(testQuestion.position));
+    for (const item of questions
+      .filter((question) => question.position >= fromPosition)
+      .sort((left, right) => right.position - left.position)) {
+      yield* client
+        .update(testQuestion)
+        .set({ position: item.position + 1, updatedAt: new Date() })
+        .where(eq(testQuestion.id, item.id));
     }
   });
 }
 
 function shiftChoicePositions(client: TestsDb, questionId: string, fromPosition: number) {
   return Effect.gen(function* () {
-    const choices = yield* client.select().from(questionChoice).where(eq(questionChoice.questionId, questionId)).orderBy(asc(questionChoice.position));
-    for (const item of choices.filter((choice) => choice.position >= fromPosition).sort((left, right) => right.position - left.position)) {
-      yield* client.update(questionChoice).set({ position: item.position + 1, updatedAt: new Date() }).where(eq(questionChoice.id, item.id));
+    const choices = yield* client
+      .select()
+      .from(questionChoice)
+      .where(eq(questionChoice.questionId, questionId))
+      .orderBy(asc(questionChoice.position));
+    for (const item of choices
+      .filter((choice) => choice.position >= fromPosition)
+      .sort((left, right) => right.position - left.position)) {
+      yield* client
+        .update(questionChoice)
+        .set({ position: item.position + 1, updatedAt: new Date() })
+        .where(eq(questionChoice.id, item.id));
     }
   });
 }
@@ -96,10 +127,16 @@ function shiftChoicePositions(client: TestsDb, questionId: string, fromPosition:
 function applyQuestionOrder(client: TestsDb, testId: string, questionIds: Array<string>) {
   return Effect.gen(function* () {
     for (const [index, questionId] of questionIds.entries()) {
-      yield* client.update(testQuestion).set({ position: questionIds.length + index, updatedAt: new Date() }).where(and(eq(testQuestion.id, questionId), eq(testQuestion.testId, testId)));
+      yield* client
+        .update(testQuestion)
+        .set({ position: questionIds.length + index, updatedAt: new Date() })
+        .where(and(eq(testQuestion.id, questionId), eq(testQuestion.testId, testId)));
     }
     for (const [index, questionId] of questionIds.entries()) {
-      yield* client.update(testQuestion).set({ position: index, updatedAt: new Date() }).where(and(eq(testQuestion.id, questionId), eq(testQuestion.testId, testId)));
+      yield* client
+        .update(testQuestion)
+        .set({ position: index, updatedAt: new Date() })
+        .where(and(eq(testQuestion.id, questionId), eq(testQuestion.testId, testId)));
     }
   });
 }
@@ -107,51 +144,106 @@ function applyQuestionOrder(client: TestsDb, testId: string, questionIds: Array<
 function applyChoiceOrder(client: TestsDb, questionId: string, choiceIds: Array<string>) {
   return Effect.gen(function* () {
     for (const [index, choiceId] of choiceIds.entries()) {
-      yield* client.update(questionChoice).set({ position: choiceIds.length + index, updatedAt: new Date() }).where(and(eq(questionChoice.id, choiceId), eq(questionChoice.questionId, questionId)));
+      yield* client
+        .update(questionChoice)
+        .set({ position: choiceIds.length + index, updatedAt: new Date() })
+        .where(and(eq(questionChoice.id, choiceId), eq(questionChoice.questionId, questionId)));
     }
     for (const [index, choiceId] of choiceIds.entries()) {
-      yield* client.update(questionChoice).set({ position: index, updatedAt: new Date() }).where(and(eq(questionChoice.id, choiceId), eq(questionChoice.questionId, questionId)));
+      yield* client
+        .update(questionChoice)
+        .set({ position: index, updatedAt: new Date() })
+        .where(and(eq(questionChoice.id, choiceId), eq(questionChoice.questionId, questionId)));
     }
   });
 }
 
 function deleteChoiceRecord(db: TestsDb, choiceId: string) {
   return Effect.gen(function* () {
-    const [choice] = yield* db.select().from(questionChoice).where(eq(questionChoice.id, choiceId)).limit(1);
-    const resolvedChoice = yield* requirePresent(choice, new ChoiceNotFound({ message: "Choice not found" }));
-    const [question] = yield* db.select().from(testQuestion).where(eq(testQuestion.id, resolvedChoice.questionId)).limit(1);
-    const resolvedQuestion = yield* requirePresent(question, new QuestionNotFound({ message: "Question not found" }));
+    const [choice] = yield* db
+      .select()
+      .from(questionChoice)
+      .where(eq(questionChoice.id, choiceId))
+      .limit(1);
+    const resolvedChoice = yield* requirePresent(
+      choice,
+      new ChoiceNotFound({ message: "Choice not found" }),
+    );
+    const [question] = yield* db
+      .select()
+      .from(testQuestion)
+      .where(eq(testQuestion.id, resolvedChoice.questionId))
+      .limit(1);
+    const resolvedQuestion = yield* requirePresent(
+      question,
+      new QuestionNotFound({ message: "Question not found" }),
+    );
 
-    const existingChoices = yield* db.select().from(questionChoice).where(eq(questionChoice.questionId, resolvedQuestion.id));
+    const existingChoices = yield* db
+      .select()
+      .from(questionChoice)
+      .where(eq(questionChoice.questionId, resolvedQuestion.id));
     if (existingChoices.length <= 2) {
-      return yield* Effect.fail(new AtLeastTwoChoicesRequired({ message: "Each question must keep at least two choices" }));
+      return yield* Effect.fail(
+        new AtLeastTwoChoicesRequired({ message: "Each question must keep at least two choices" }),
+      );
     }
 
     yield* db.delete(questionChoice).where(eq(questionChoice.id, choiceId));
 
-    const remaining = yield* db.select().from(questionChoice).where(eq(questionChoice.questionId, resolvedQuestion.id)).orderBy(asc(questionChoice.position));
+    const remaining = yield* db
+      .select()
+      .from(questionChoice)
+      .where(eq(questionChoice.questionId, resolvedQuestion.id))
+      .orderBy(asc(questionChoice.position));
     yield* Effect.forEach(remaining, (item, index) =>
-      db.update(questionChoice).set({ position: index, updatedAt: new Date() }).where(eq(questionChoice.id, item.id)),
+      db
+        .update(questionChoice)
+        .set({ position: index, updatedAt: new Date() })
+        .where(eq(questionChoice.id, item.id)),
     );
   });
 }
 
 export type TestEditorServiceShape = {
-  readonly addQuestion: (testId: string, userId: string, afterQuestionId?: string | null) => Effect.Effect<void, unknown>;
+  readonly addQuestion: (
+    testId: string,
+    userId: string,
+    afterQuestionId?: string | null,
+  ) => Effect.Effect<void, unknown>;
   readonly updateQuestion: (
     questionId: string,
     userId: string,
     values: { prompt?: string; description?: string | null; required?: boolean },
   ) => Effect.Effect<void, unknown>;
-  readonly reorderQuestions: (testId: string, userId: string, questionIds: Array<string>) => Effect.Effect<void, unknown>;
-  readonly addChoice: (questionId: string, userId: string, afterChoiceId?: string | null) => Effect.Effect<void, unknown>;
-  readonly updateChoice: (choiceId: string, userId: string, label: string) => Effect.Effect<void, unknown>;
-  readonly reorderChoices: (questionId: string, userId: string, choiceIds: Array<string>) => Effect.Effect<void, unknown>;
+  readonly reorderQuestions: (
+    testId: string,
+    userId: string,
+    questionIds: Array<string>,
+  ) => Effect.Effect<void, unknown>;
+  readonly addChoice: (
+    questionId: string,
+    userId: string,
+    afterChoiceId?: string | null,
+  ) => Effect.Effect<void, unknown>;
+  readonly updateChoice: (
+    choiceId: string,
+    userId: string,
+    label: string,
+  ) => Effect.Effect<void, unknown>;
+  readonly reorderChoices: (
+    questionId: string,
+    userId: string,
+    choiceIds: Array<string>,
+  ) => Effect.Effect<void, unknown>;
   readonly deleteQuestion: (questionId: string, userId: string) => Effect.Effect<void, unknown>;
   readonly deleteChoice: (choiceId: string, userId: string) => Effect.Effect<void, unknown>;
 };
 
-export class TestEditorService extends Context.Tag("TestEditorService")<TestEditorService, TestEditorServiceShape>() {}
+export class TestEditorService extends Context.Tag("TestEditorService")<
+  TestEditorService,
+  TestEditorServiceShape
+>() {}
 
 export const TestEditorServiceLive = Layer.effect(
   TestEditorService,
@@ -162,8 +254,15 @@ export const TestEditorServiceLive = Layer.effect(
       addQuestion: (testId, userId, afterQuestionId) =>
         Effect.gen(function* () {
           yield* requireEditAccess(db, testId, userId);
-          const questions = yield* db.select().from(testQuestion).where(eq(testQuestion.testId, testId)).orderBy(asc(testQuestion.position));
-          const anchorPosition = afterQuestionId ? (questions.find((item) => item.id === afterQuestionId)?.position ?? questions.length - 1) + 1 : questions.length;
+          const questions = yield* db
+            .select()
+            .from(testQuestion)
+            .where(eq(testQuestion.testId, testId))
+            .orderBy(asc(testQuestion.position));
+          const anchorPosition = afterQuestionId
+            ? (questions.find((item) => item.id === afterQuestionId)?.position ??
+                questions.length - 1) + 1
+            : questions.length;
           const questionId = createId();
           yield* db.transaction((tx) =>
             Effect.gen(function* () {
@@ -178,7 +277,9 @@ export const TestEditorServiceLive = Layer.effect(
                 type: "multiple_choice",
               });
               for (const [index, label] of ["Option A", "Option B"].entries()) {
-                yield* tx.insert(questionChoice).values({ id: createId(), questionId, position: index, label });
+                yield* tx
+                  .insert(questionChoice)
+                  .values({ id: createId(), questionId, position: index, label });
               }
               yield* tx.update(test).set({ updatedAt: new Date() }).where(eq(test.id, testId));
             }),
@@ -187,7 +288,10 @@ export const TestEditorServiceLive = Layer.effect(
       updateQuestion: (questionId, userId, values) =>
         Effect.gen(function* () {
           yield* requireQuestionEditAccess(db, questionId, userId);
-          yield* db.update(testQuestion).set({ ...values, updatedAt: new Date() }).where(eq(testQuestion.id, questionId));
+          yield* db
+            .update(testQuestion)
+            .set({ ...values, updatedAt: new Date() })
+            .where(eq(testQuestion.id, questionId));
         }),
       reorderQuestions: (testId, userId, questionIds) =>
         Effect.gen(function* () {
@@ -202,20 +306,40 @@ export const TestEditorServiceLive = Layer.effect(
       addChoice: (questionId, userId, afterChoiceId) =>
         Effect.gen(function* () {
           const resolvedQuestion = yield* requireQuestionEditAccess(db, questionId, userId);
-          const choices = yield* db.select().from(questionChoice).where(eq(questionChoice.questionId, questionId)).orderBy(asc(questionChoice.position));
-          const anchorPosition = afterChoiceId ? (choices.find((item) => item.id === afterChoiceId)?.position ?? choices.length - 1) + 1 : choices.length;
+          const choices = yield* db
+            .select()
+            .from(questionChoice)
+            .where(eq(questionChoice.questionId, questionId))
+            .orderBy(asc(questionChoice.position));
+          const anchorPosition = afterChoiceId
+            ? (choices.find((item) => item.id === afterChoiceId)?.position ?? choices.length - 1) +
+              1
+            : choices.length;
           yield* db.transaction((tx) =>
             Effect.gen(function* () {
               yield* shiftChoicePositions(tx, questionId, anchorPosition);
-              yield* tx.insert(questionChoice).values({ id: createId(), questionId, position: anchorPosition, label: "New option" });
-              yield* tx.update(test).set({ updatedAt: new Date() }).where(eq(test.id, resolvedQuestion.testId));
+              yield* tx
+                .insert(questionChoice)
+                .values({
+                  id: createId(),
+                  questionId,
+                  position: anchorPosition,
+                  label: "New option",
+                });
+              yield* tx
+                .update(test)
+                .set({ updatedAt: new Date() })
+                .where(eq(test.id, resolvedQuestion.testId));
             }),
           );
         }),
       updateChoice: (choiceId, userId, label) =>
         Effect.gen(function* () {
           yield* requireChoiceEditAccess(db, choiceId, userId);
-          yield* db.update(questionChoice).set({ label, updatedAt: new Date() }).where(eq(questionChoice.id, choiceId));
+          yield* db
+            .update(questionChoice)
+            .set({ label, updatedAt: new Date() })
+            .where(eq(questionChoice.id, choiceId));
         }),
       reorderChoices: (questionId, userId, choiceIds) =>
         Effect.gen(function* () {
@@ -223,7 +347,10 @@ export const TestEditorServiceLive = Layer.effect(
           yield* db.transaction((tx) =>
             Effect.gen(function* () {
               yield* applyChoiceOrder(tx, questionId, choiceIds);
-              yield* tx.update(test).set({ updatedAt: new Date() }).where(eq(test.id, resolvedQuestion.testId));
+              yield* tx
+                .update(test)
+                .set({ updatedAt: new Date() })
+                .where(eq(test.id, resolvedQuestion.testId));
             }),
           );
         }),
@@ -231,9 +358,16 @@ export const TestEditorServiceLive = Layer.effect(
         Effect.gen(function* () {
           const resolvedQuestion = yield* requireQuestionEditAccess(db, questionId, userId);
           yield* db.delete(testQuestion).where(eq(testQuestion.id, questionId));
-          const remaining = yield* db.select().from(testQuestion).where(eq(testQuestion.testId, resolvedQuestion.testId)).orderBy(asc(testQuestion.position));
+          const remaining = yield* db
+            .select()
+            .from(testQuestion)
+            .where(eq(testQuestion.testId, resolvedQuestion.testId))
+            .orderBy(asc(testQuestion.position));
           yield* Effect.forEach(remaining, (item, index) =>
-            db.update(testQuestion).set({ position: index, updatedAt: new Date() }).where(eq(testQuestion.id, item.id)),
+            db
+              .update(testQuestion)
+              .set({ position: index, updatedAt: new Date() })
+              .where(eq(testQuestion.id, item.id)),
           );
         }),
       deleteChoice: (choiceId, userId) =>

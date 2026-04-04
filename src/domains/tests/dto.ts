@@ -1,9 +1,4 @@
-import type {
-  QuestionType,
-  ResponseStatus,
-  TestPermission,
-  TestStatus,
-} from "./model";
+import type { QuestionType, ResponseStatus, TestPermission, TestStatus } from "./model";
 
 export type Collaborator = {
   id: string;

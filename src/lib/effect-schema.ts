@@ -1,5 +1,6 @@
-import { ParseResult } from "effect";
 import type { Schema } from "effect";
+
+import { ParseResult } from "effect";
 
 export function decodeUnknownSync<S extends Schema.Schema.AnyNoContext>(
   schema: S,

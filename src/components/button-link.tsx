@@ -1,5 +1,7 @@
-import { Link } from "@tanstack/react-router";
 import type { ComponentProps, ReactNode } from "react";
+
+import { Link } from "@tanstack/react-router";
+
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 

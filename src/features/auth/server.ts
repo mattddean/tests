@@ -1,8 +1,9 @@
-import { Effect } from "effect";
 import { redirect } from "@tanstack/react-router";
-import { runServerEffect } from "@/server/runtime/run-server-effect";
-import { runRouteLoaderEffect } from "@/server/runtime/route-loader";
+import { Effect } from "effect";
+
 import { CurrentSession, currentUserEffect } from "@/server/runtime/request-context";
+import { runRouteLoaderEffect } from "@/server/runtime/route-loader";
+import { runServerEffect } from "@/server/runtime/run-server-effect";
 
 export type { SessionData, SessionUser } from "@/domains/auth/model";
 

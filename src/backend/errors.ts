@@ -1,4 +1,5 @@
 import { Data } from "effect";
+
 import { UnauthorizedError } from "@/domains/auth/errors";
 
 export { UnauthorizedError };

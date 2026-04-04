@@ -1,8 +1,10 @@
-import { AgentMailClient } from "agentmail";
 import { render, toPlainText } from "@react-email/render";
-import { createElement } from "react";
+import { AgentMailClient } from "agentmail";
 import { Effect, Layer } from "effect";
+import { createElement } from "react";
+
 import { serverConfig } from "@/server/config/server-config";
+
 import { Mailer } from "./mailer";
 import { TestInvitationEmail } from "./templates/test-invitation-email";
 
@@ -32,6 +34,7 @@ export const MailerLive = Layer.succeed(Mailer, {
           html,
         });
       },
-      catch: (cause) => (cause instanceof Error ? cause : new Error("Failed to send test invitation email")),
+      catch: (cause) =>
+        cause instanceof Error ? cause : new Error("Failed to send test invitation email"),
     }),
 });
