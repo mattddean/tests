@@ -2,18 +2,18 @@ import { Effect } from "effect";
 import { createServerFn } from "@tanstack/react-start";
 import { TestAdminService } from "@/domains/tests/services/test-admin.service";
 import {
-  parseAddEditorInput,
-  parseCreateTestInput,
-  parseRemoveEditorInput,
-  parseShareTestInput,
-  parseTestIdInput,
-  parseUpdateTestMetaInput,
+  addEditorInputValidator,
+  createTestInputValidator,
+  removeEditorInputValidator,
+  shareTestInputValidator,
+  testIdInputValidator,
+  updateTestMetaInputValidator,
 } from "@/domains/tests/schema";
 import { runServerEffect } from "@/server/runtime/run-server-effect";
 import { withCurrentUser } from "./shared";
 
 export const createTest = createServerFn({ method: "POST" })
-  .inputValidator(parseCreateTestInput)
+  .inputValidator(createTestInputValidator)
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>
@@ -23,7 +23,7 @@ export const createTest = createServerFn({ method: "POST" })
   );
 
 export const updateTestMetaAction = createServerFn({ method: "POST" })
-  .inputValidator(parseUpdateTestMetaInput)
+  .inputValidator(updateTestMetaInputValidator)
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>
@@ -38,7 +38,7 @@ export const updateTestMetaAction = createServerFn({ method: "POST" })
   );
 
 export const publishTestAction = createServerFn({ method: "POST" })
-  .inputValidator(parseTestIdInput)
+  .inputValidator(testIdInputValidator)
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>
@@ -50,7 +50,7 @@ export const publishTestAction = createServerFn({ method: "POST" })
   );
 
 export const addEditorAction = createServerFn({ method: "POST" })
-  .inputValidator(parseAddEditorInput)
+  .inputValidator(addEditorInputValidator)
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>
@@ -62,7 +62,7 @@ export const addEditorAction = createServerFn({ method: "POST" })
   );
 
 export const removeEditorAction = createServerFn({ method: "POST" })
-  .inputValidator(parseRemoveEditorInput)
+  .inputValidator(removeEditorInputValidator)
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>
@@ -74,7 +74,7 @@ export const removeEditorAction = createServerFn({ method: "POST" })
   );
 
 export const shareTestAction = createServerFn({ method: "POST" })
-  .inputValidator(parseShareTestInput)
+  .inputValidator(shareTestInputValidator)
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>

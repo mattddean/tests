@@ -56,19 +56,37 @@ function getCurrentTestRecord(db: TestsDb, testId: string) {
 }
 
 export type TestAdminServiceShape = {
-  readonly createTestRecord: (userId: string, title: string) => Effect.Effect<{ id: string }, unknown>;
+  readonly createTestRecord: (
+    userId: string,
+    title: string,
+  ) => Effect.Effect<{ id: string }, unknown>;
   readonly updateTestMeta: (
     testId: string,
     userId: string,
     values: { title: string; description: string | null },
   ) => Effect.Effect<void, unknown>;
   readonly publishTest: (testId: string, userId: string) => Effect.Effect<void, unknown>;
-  readonly addEditor: (testId: string, ownerUserId: string, email: string) => Effect.Effect<void, unknown>;
-  readonly removeEditor: (testId: string, ownerUserId: string, targetUserId: string) => Effect.Effect<void, unknown>;
-  readonly shareTest: (testId: string, ownerUserId: string, email: string) => Effect.Effect<void, unknown>;
+  readonly addEditor: (
+    testId: string,
+    ownerUserId: string,
+    email: string,
+  ) => Effect.Effect<void, unknown>;
+  readonly removeEditor: (
+    testId: string,
+    ownerUserId: string,
+    targetUserId: string,
+  ) => Effect.Effect<void, unknown>;
+  readonly shareTest: (
+    testId: string,
+    ownerUserId: string,
+    email: string,
+  ) => Effect.Effect<void, unknown>;
 };
 
-export class TestAdminService extends Context.Tag("TestAdminService")<TestAdminService, TestAdminServiceShape>() {}
+export class TestAdminService extends Context.Tag("TestAdminService")<
+  TestAdminService,
+  TestAdminServiceShape
+>() {}
 
 export const TestAdminServiceLive = Layer.effect(
   TestAdminService,
@@ -114,12 +132,21 @@ export const TestAdminServiceLive = Layer.effect(
         Effect.gen(function* () {
           const permission = yield* requireEditAccess(db, testId, userId);
           if (permission !== "owner") {
-            return yield* Effect.fail(new OnlyOwnerCanPublish({ message: "Only owners can publish tests" }));
+            return yield* Effect.fail(
+              new OnlyOwnerCanPublish({ message: "Only owners can publish tests" }),
+            );
           }
 
-          const questions = yield* db.select().from(testQuestion).where(eq(testQuestion.testId, testId));
+          const questions = yield* db
+            .select()
+            .from(testQuestion)
+            .where(eq(testQuestion.testId, testId));
           if (questions.length === 0) {
-            return yield* Effect.fail(new CannotPublishEmptyTest({ message: "Add at least one question before publishing" }));
+            return yield* Effect.fail(
+              new CannotPublishEmptyTest({
+                message: "Add at least one question before publishing",
+              }),
+            );
           }
 
           yield* db
@@ -137,12 +164,20 @@ export const TestAdminServiceLive = Layer.effect(
           const normalizedEmail = normalizeEmail(email);
 
           if (permission !== "owner") {
-            return yield* Effect.fail(new OnlyOwnerCanManageEditors({ message: "Only owners can add editors" }));
+            return yield* Effect.fail(
+              new OnlyOwnerCanManageEditors({ message: "Only owners can add editors" }),
+            );
           }
 
-          const [invitedUser] = yield* db.select().from(user).where(eq(user.email, normalizedEmail)).limit(1);
+          const [invitedUser] = yield* db
+            .select()
+            .from(user)
+            .where(eq(user.email, normalizedEmail))
+            .limit(1);
           if (!invitedUser) {
-            return yield* Effect.fail(new UserNotFound({ message: "No registered user exists with that email" }));
+            return yield* Effect.fail(
+              new UserNotFound({ message: "No registered user exists with that email" }),
+            );
           }
 
           const [existingMembership] = yield* db
@@ -152,7 +187,9 @@ export const TestAdminServiceLive = Layer.effect(
             .limit(1);
 
           if (existingMembership?.role === "owner") {
-            return yield* Effect.fail(new OwnerAlreadyHasAccess({ message: "The owner already has access" }));
+            return yield* Effect.fail(
+              new OwnerAlreadyHasAccess({ message: "The owner already has access" }),
+            );
           }
           if (existingMembership?.role === "editor") {
             return;
@@ -176,12 +213,20 @@ export const TestAdminServiceLive = Layer.effect(
         Effect.gen(function* () {
           const permission = yield* requireEditAccess(db, testId, ownerUserId);
           if (permission !== "owner") {
-            return yield* Effect.fail(new OnlyOwnerCanManageEditors({ message: "Only owners can remove editors" }));
+            return yield* Effect.fail(
+              new OnlyOwnerCanManageEditors({ message: "Only owners can remove editors" }),
+            );
           }
 
           yield* db
             .delete(testUser)
-            .where(and(eq(testUser.testId, testId), eq(testUser.userId, targetUserId), eq(testUser.role, "editor")));
+            .where(
+              and(
+                eq(testUser.testId, testId),
+                eq(testUser.userId, targetUserId),
+                eq(testUser.role, "editor"),
+              ),
+            );
         }),
       shareTest: (testId, ownerUserId, email) =>
         Effect.gen(function* () {
@@ -190,17 +235,24 @@ export const TestAdminServiceLive = Layer.effect(
 
           if (permission !== "owner") {
             return yield* Effect.fail(
-              new OnlyOwnerCanShareWithTakers({ message: "Only owners can share tests with takers" }),
+              new OnlyOwnerCanShareWithTakers({
+                message: "Only owners can share tests with takers",
+              }),
             );
           }
 
           const resolvedTest = yield* getCurrentTestRecord(db, testId);
           if (resolvedTest.status !== "published") {
-            return yield* Effect.fail(new TestMustBePublished({ message: "Publish the test before inviting takers" }));
+            return yield* Effect.fail(
+              new TestMustBePublished({ message: "Publish the test before inviting takers" }),
+            );
           }
 
           const [owner] = yield* db.select().from(user).where(eq(user.id, ownerUserId)).limit(1);
-          const resolvedOwner = yield* requirePresent(owner, new UserNotFound({ message: "Owner not found" }));
+          const resolvedOwner = yield* requirePresent(
+            owner,
+            new UserNotFound({ message: "Owner not found" }),
+          );
 
           const now = new Date();
           const [existingInvite] = yield* db

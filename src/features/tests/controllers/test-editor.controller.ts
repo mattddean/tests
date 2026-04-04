@@ -2,20 +2,20 @@ import { Effect } from "effect";
 import { createServerFn } from "@tanstack/react-start";
 import { TestEditorService } from "@/domains/tests/services/test-editor.service";
 import {
-  parseAddChoiceInput,
-  parseAddQuestionInput,
-  parseDeleteChoiceInput,
-  parseDeleteQuestionInput,
-  parseReorderChoicesInput,
-  parseReorderQuestionsInput,
-  parseUpdateChoiceInput,
-  parseUpdateQuestionInput,
+  addChoiceInputValidator,
+  addQuestionInputValidator,
+  deleteChoiceInputValidator,
+  deleteQuestionInputValidator,
+  reorderChoicesInputValidator,
+  reorderQuestionsInputValidator,
+  updateChoiceInputValidator,
+  updateQuestionInputValidator,
 } from "@/domains/tests/schema";
 import { runServerEffect } from "@/server/runtime/run-server-effect";
 import { withCurrentUser } from "./shared";
 
 export const addQuestionAction = createServerFn({ method: "POST" })
-  .inputValidator(parseAddQuestionInput)
+  .inputValidator(addQuestionInputValidator)
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>
@@ -27,7 +27,7 @@ export const addQuestionAction = createServerFn({ method: "POST" })
   );
 
 export const updateQuestionAction = createServerFn({ method: "POST" })
-  .inputValidator(parseUpdateQuestionInput)
+  .inputValidator(updateQuestionInputValidator)
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>
@@ -43,7 +43,7 @@ export const updateQuestionAction = createServerFn({ method: "POST" })
   );
 
 export const reorderQuestionsAction = createServerFn({ method: "POST" })
-  .inputValidator(parseReorderQuestionsInput)
+  .inputValidator(reorderQuestionsInputValidator)
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>
@@ -55,7 +55,7 @@ export const reorderQuestionsAction = createServerFn({ method: "POST" })
   );
 
 export const addChoiceAction = createServerFn({ method: "POST" })
-  .inputValidator(parseAddChoiceInput)
+  .inputValidator(addChoiceInputValidator)
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>
@@ -67,7 +67,7 @@ export const addChoiceAction = createServerFn({ method: "POST" })
   );
 
 export const updateChoiceAction = createServerFn({ method: "POST" })
-  .inputValidator(parseUpdateChoiceInput)
+  .inputValidator(updateChoiceInputValidator)
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>
@@ -79,7 +79,7 @@ export const updateChoiceAction = createServerFn({ method: "POST" })
   );
 
 export const reorderChoicesAction = createServerFn({ method: "POST" })
-  .inputValidator(parseReorderChoicesInput)
+  .inputValidator(reorderChoicesInputValidator)
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>
@@ -91,7 +91,7 @@ export const reorderChoicesAction = createServerFn({ method: "POST" })
   );
 
 export const deleteQuestionAction = createServerFn({ method: "POST" })
-  .inputValidator(parseDeleteQuestionInput)
+  .inputValidator(deleteQuestionInputValidator)
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>
@@ -103,7 +103,7 @@ export const deleteQuestionAction = createServerFn({ method: "POST" })
   );
 
 export const deleteChoiceAction = createServerFn({ method: "POST" })
-  .inputValidator(parseDeleteChoiceInput)
+  .inputValidator(deleteChoiceInputValidator)
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>

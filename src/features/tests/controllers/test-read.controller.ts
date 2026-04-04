@@ -2,9 +2,10 @@ import { Effect } from "effect";
 import { createServerFn } from "@tanstack/react-start";
 import { TestReadService } from "@/domains/tests/services/test-read.service";
 import {
-  parseResponseDetailInput,
   parseResponseSearchInput,
-  parseTestIdInput,
+  responseDetailInputValidator,
+  testIdInputValidator,
+  testScopeValidator,
 } from "@/domains/tests/schema";
 import { runServerEffect } from "@/server/runtime/run-server-effect";
 import { withCurrentUser } from "./shared";
@@ -14,7 +15,7 @@ export const getDashboardData = createServerFn({ method: "GET" }).handler(() =>
 );
 
 export const getTests = createServerFn({ method: "GET" })
-  .inputValidator((value) => value as "drafts" | "published" | "shared")
+  .inputValidator(testScopeValidator)
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) => Effect.flatMap(TestReadService, (service) => service.getTestsList(userId, data))),
@@ -22,7 +23,7 @@ export const getTests = createServerFn({ method: "GET" })
   );
 
 export const getTestEditor = createServerFn({ method: "GET" })
-  .inputValidator(parseTestIdInput)
+  .inputValidator(testIdInputValidator)
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) => Effect.flatMap(TestReadService, (service) => service.getEditorView(data.testId, userId))),
@@ -30,7 +31,7 @@ export const getTestEditor = createServerFn({ method: "GET" })
   );
 
 export const getTestTake = createServerFn({ method: "GET" })
-  .inputValidator(parseTestIdInput)
+  .inputValidator(testIdInputValidator)
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) => Effect.flatMap(TestReadService, (service) => service.getTakeView(data.testId, userId))),
@@ -58,7 +59,7 @@ export const getResponsesTableData = createServerFn({ method: "GET" })
   );
 
 export const getResponseDetail = createServerFn({ method: "GET" })
-  .inputValidator(parseResponseDetailInput)
+  .inputValidator(responseDetailInputValidator)
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>

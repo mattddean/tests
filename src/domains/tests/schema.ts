@@ -271,6 +271,25 @@ export const parseTakeTestSearch = makeUnknownParser(
   },
 );
 
+export const testScopeValidator = Schema.standardSchemaV1(testScopeSchema);
+export const createTestInputValidator = Schema.standardSchemaV1(createTestInputSchema);
+export const updateTestMetaInputValidator = Schema.standardSchemaV1(updateTestMetaInputSchema);
+export const addQuestionInputValidator = Schema.standardSchemaV1(addQuestionInputSchema);
+export const updateQuestionInputValidator = Schema.standardSchemaV1(updateQuestionInputSchema);
+export const reorderQuestionsInputValidator = Schema.standardSchemaV1(reorderQuestionsInputSchema);
+export const addChoiceInputValidator = Schema.standardSchemaV1(addChoiceInputSchema);
+export const updateChoiceInputValidator = Schema.standardSchemaV1(updateChoiceInputSchema);
+export const reorderChoicesInputValidator = Schema.standardSchemaV1(reorderChoicesInputSchema);
+export const deleteQuestionInputValidator = Schema.standardSchemaV1(deleteQuestionInputSchema);
+export const deleteChoiceInputValidator = Schema.standardSchemaV1(deleteChoiceInputSchema);
+export const addEditorInputValidator = Schema.standardSchemaV1(addEditorInputSchema);
+export const shareTestInputValidator = Schema.standardSchemaV1(shareTestInputSchema);
+export const removeEditorInputValidator = Schema.standardSchemaV1(removeEditorInputSchema);
+export const testIdInputValidator = Schema.standardSchemaV1(testIdInputSchema);
+export const responseDetailInputValidator = Schema.standardSchemaV1(responseDetailInputSchema);
+export const saveAnswerInputValidator = Schema.standardSchemaV1(saveAnswerInputSchema);
+export const submitResponseInputValidator = Schema.standardSchemaV1(submitResponseInputSchema);
+
 export {
   testStatusSchema as TestStatusSchema,
   responseStatusSchema as ResponseStatusSchema,
