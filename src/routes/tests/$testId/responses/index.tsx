@@ -1,4 +1,3 @@
-import { z } from "zod";
 import { Link, createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import {
@@ -10,20 +9,13 @@ import {
 import { Card } from "@/components/ui/card";
 import { Input as TextInput } from "@/components/ui/input";
 import { EmptyState, SectionHeading } from "@/components/ui";
+import { parseResponseSearchInput } from "@/domains/tests/schema";
 import { sessionQueryOptions } from "@/features/auth/queries";
 import { responsesTableQueryOptions } from "@/features/tests/queries";
 import type { ResponseTableRow } from "@/features/tests/types";
 
-const searchSchema = z.object({
-  page: z.coerce.number().catch(1),
-  query: z.string().catch(""),
-  status: z.enum(["all", "draft", "submitted"]).catch("all"),
-  sortBy: z.enum(["startedAt", "submittedAt"]).catch("submittedAt"),
-  direction: z.enum(["asc", "desc"]).catch("desc"),
-});
-
 export const Route = createFileRoute("/tests/$testId/responses/")({
-  validateSearch: searchSchema,
+  validateSearch: parseResponseSearchInput,
   loaderDeps: ({ search }) => search,
   loader: async ({ context, params, deps }) => {
     const session = await context.queryClient.ensureQueryData(sessionQueryOptions());

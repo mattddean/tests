@@ -1,49 +1,16 @@
 import { Effect } from "effect";
-import { getRequestHeaders } from "@tanstack/react-start/server";
 import { redirect } from "@tanstack/react-router";
-import { runServerEffect, tryServerPromise } from "@/backend/effect";
-import { UnauthorizedError } from "@/backend/errors";
-import { auth } from "@/lib/auth";
+import { runServerEffect } from "@/server/runtime/run-server-effect";
+import { runRouteLoaderEffect } from "@/server/runtime/route-loader";
+import { CurrentSession, currentUserEffect } from "@/server/runtime/request-context";
 
-export type SessionUser = {
-  id: string;
-  email: string;
-  name: string;
-  image: string | null;
-};
+export type { SessionData, SessionUser } from "@/domains/auth/model";
 
-export type SessionData = {
-  user: SessionUser;
-};
+export const getServerSessionEffect = Effect.gen(function* () {
+  return yield* CurrentSession;
+});
 
-export const getServerSessionEffect = tryServerPromise("Failed to load session", () =>
-  auth.api.getSession({
-    headers: getRequestHeaders(),
-  }),
-).pipe(
-  Effect.map((session) => {
-    if (!session?.user) {
-      return null;
-    }
-
-    return {
-      user: {
-        id: session.user.id,
-        email: session.user.email,
-        name: session.user.name,
-        image: session.user.image ?? null,
-      },
-    } satisfies SessionData;
-  }),
-);
-
-export const requireUserEffect = getServerSessionEffect.pipe(
-  Effect.flatMap((session) =>
-    session?.user
-      ? Effect.succeed(session.user)
-      : Effect.fail(new UnauthorizedError({ message: "Unauthorized" })),
-  ),
-);
+export const requireUserEffect = currentUserEffect;
 
 export async function getServerSession() {
   return await runServerEffect(getServerSessionEffect);
@@ -54,13 +21,21 @@ export async function requireUser() {
 }
 
 export async function requireRouteUser() {
-  const session = await getServerSession();
+  try {
+    return await runRouteLoaderEffect(requireUserEffect);
+  } catch (error) {
+    if (error && typeof error === "object" && "status" in error && error.status === 401) {
+      throw redirect({
+        to: "/auth",
+      });
+    }
 
-  if (!session?.user) {
+    if (error && typeof error === "object" && "to" in error) {
+      throw error;
+    }
+
     throw redirect({
       to: "/auth",
     });
   }
-
-  return session.user;
 }

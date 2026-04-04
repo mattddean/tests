@@ -3,21 +3,16 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useForm } from "@tanstack/react-form";
 import { AlertCircle, ArrowRight } from "lucide-react";
-import { z } from "zod";
 import { FieldLabel } from "@/components/field-label";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input as TextInput } from "@/components/ui/input";
+import { parseAuthSearch } from "@/domains/auth/schema";
 import { sessionQueryOptions } from "@/features/auth/queries";
 import { authClient } from "@/lib/auth-client";
 
-const searchSchema = z.object({
-  redirect: z.string().optional(),
-  email: z.email().optional(),
-});
-
 export const Route = createFileRoute("/auth")({
-  validateSearch: searchSchema,
+  validateSearch: parseAuthSearch,
   loaderDeps: ({ search }) => ({ redirect: search.redirect }),
   loader: async ({ context, deps }) => {
     const session = await context.queryClient.ensureQueryData(sessionQueryOptions());
