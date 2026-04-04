@@ -132,9 +132,6 @@ importers:
         specifier: ^4.1.11
         version: 4.3.6
     devDependencies:
-      '@effect/language-service':
-        specifier: ^0.84.2
-        version: 0.84.2
       '@tanstack/devtools-vite':
         specifier: ^0.3.11
         version: 0.3.12(vite@7.3.1(@types/node@22.19.15)(jiti@2.6.1)(lightningcss@1.32.0)(tsx@4.21.0))
@@ -584,10 +581,6 @@ packages:
         optional: true
       lmdb:
         optional: true
-
-  '@effect/language-service@0.84.2':
-    resolution: {integrity: sha512-l04qNxpiA8rY5yXWckRPJ7Mk5MNerXuNymSFf+IdflfI5i8jgL1bpBNLuP6ijg7wgjdHc/KmTnCj2kT0SCntuA==}
-    hasBin: true
 
   '@effect/platform@0.96.0':
     resolution: {integrity: sha512-U7PLhkVzg7zzrgFvyWATOzD6reL87KG/fcdOxgLWBQ/J5CCU6qdPAVG+0o6o+IxcsLoqGwxs+rFxaFzrdtDV1A==}
@@ -5364,8 +5357,6 @@ snapshots:
       '@effect/platform': 0.96.0(effect@3.21.0)
       effect: 3.21.0
       uuid: 11.1.0
-
-  '@effect/language-service@0.84.2': {}
 
   '@effect/platform@0.96.0(effect@3.21.0)':
     dependencies:
