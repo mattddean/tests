@@ -30,6 +30,9 @@ export async function runServerEffect<A, E, R>(
   },
 ) {
   const headers = options?.headers ?? getRequestHeaders();
+  // Request-scoped values are created fresh on each call and provided on top of
+  // the shared rootRuntime. That keeps headers/session/user isolated per request
+  // while still reusing long-lived services from RootLayer.
   const requestLayer = makeRequestLayer(headers);
 
   try {
