@@ -16,13 +16,6 @@ function unwrapEffectCause(error: unknown): unknown {
   return error;
 }
 
-export function tryServerPromise<A>(message: string, try_: () => Promise<A>) {
-  return Effect.tryPromise({
-    try: try_,
-    catch: (cause) => (cause instanceof Error ? cause : new Error(message)),
-  });
-}
-
 export async function runServerEffect<A, E, R>(
   program: Effect.Effect<A, E, R>,
   options?: {
