@@ -49,20 +49,17 @@ function makeUnknownParser<S extends Schema.Schema.AnyNoContext>(
   return (input: unknown): Infer<S> => decode(normalize(input));
 }
 
-export const testStatusSchema = Schema.Literal("draft", "published", "archived");
-export const responseStatusSchema = Schema.Literal("draft", "submitted");
-export const testScopeSchema = Schema.Literal("drafts", "published", "shared");
-export const responsesStatusFilterSchema = Schema.Literal("all", "draft", "submitted");
-export const responsesSortBySchema = Schema.Literal("startedAt", "submittedAt");
-export const sortDirectionSchema = Schema.Literal("asc", "desc");
+export const TestStatusSchema = Schema.Literal("draft", "published", "archived");
+export const ResponseStatusSchema = Schema.Literal("draft", "submitted");
+export const TestScopeSchema = Schema.Literal("drafts", "published", "shared");
+export const ResponsesStatusFilterSchema = Schema.Literal("all", "draft", "submitted");
+export const ResponsesSortBySchema = Schema.Literal("startedAt", "submittedAt");
+export const SortDirectionSchema = Schema.Literal("asc", "desc");
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const vStrTrim = Schema.String.pipe(Schema.compose(Schema.Trim));
-export const vStr = Schema.String.pipe(
-  Schema.compose(Schema.Trim),
-  Schema.nonEmptyString(),
-);
+export const vStr = Schema.String.pipe(Schema.compose(Schema.Trim), Schema.nonEmptyString());
 export const vStrTrimOpt = opt(vStrTrim);
 export const vStrNullOpt = nullOpt(vStr);
 export const vStrLower = Schema.String.pipe(
@@ -79,10 +76,7 @@ export const vTitle = Schema.String.pipe(
   Schema.nonEmptyString(),
   Schema.maxLength(120),
 );
-export const vDescription = Schema.String.pipe(
-  Schema.compose(Schema.Trim),
-  Schema.maxLength(2000),
-);
+export const vDescription = Schema.String.pipe(Schema.compose(Schema.Trim), Schema.maxLength(2000));
 export const vDescriptionNull = Schema.NullOr(vDescription);
 export const vDescriptionNullOpt = opt(vDescriptionNull);
 export const vPrompt = Schema.String.pipe(
@@ -98,147 +92,147 @@ export const vChoiceLabel = Schema.String.pipe(
 );
 export const vBooleanOpt = opt(Schema.Boolean);
 
-export const createTestInputSchema = Schema.Struct({
+export const CreateTestInputSchema = Schema.Struct({
   title: vTitle,
 });
 
-export const updateTestMetaInputSchema = Schema.Struct({
+export const UpdateTestMetaInputSchema = Schema.Struct({
   testId: vStr,
   title: vTitle,
   description: vDescriptionNull,
 });
 
-export const addQuestionInputSchema = Schema.Struct({
+export const AddQuestionInputSchema = Schema.Struct({
   testId: vStr,
   afterQuestionId: vStrNullOpt,
 });
 
-export const updateQuestionInputSchema = Schema.Struct({
+export const UpdateQuestionInputSchema = Schema.Struct({
   questionId: vStr,
   prompt: vPromptOpt,
   description: vDescriptionNullOpt,
   required: vBooleanOpt,
 });
 
-export const reorderQuestionsInputSchema = Schema.Struct({
+export const ReorderQuestionsInputSchema = Schema.Struct({
   testId: vStr,
   questionIds: Schema.Array(vStr),
 });
 
-export const addChoiceInputSchema = Schema.Struct({
+export const AddChoiceInputSchema = Schema.Struct({
   questionId: vStr,
   afterChoiceId: vStrNullOpt,
 });
 
-export const updateChoiceInputSchema = Schema.Struct({
+export const UpdateChoiceInputSchema = Schema.Struct({
   choiceId: vStr,
   label: vChoiceLabel,
 });
 
-export const reorderChoicesInputSchema = Schema.Struct({
+export const ReorderChoicesInputSchema = Schema.Struct({
   questionId: vStr,
   choiceIds: Schema.Array(vStr),
 });
 
-export const deleteQuestionInputSchema = Schema.Struct({
+export const DeleteQuestionInputSchema = Schema.Struct({
   questionId: vStr,
 });
 
-export const deleteChoiceInputSchema = Schema.Struct({
+export const DeleteChoiceInputSchema = Schema.Struct({
   choiceId: vStr,
 });
 
-export const addEditorInputSchema = Schema.Struct({
+export const AddEditorInputSchema = Schema.Struct({
   testId: vStr,
   email: vEmailLower,
 });
 
-export const shareTestInputSchema = Schema.Struct({
+export const ShareTestInputSchema = Schema.Struct({
   testId: vStr,
   email: vEmailLower,
 });
 
-export const removeEditorInputSchema = Schema.Struct({
+export const RemoveEditorInputSchema = Schema.Struct({
   testId: vStr,
   userId: vStr,
 });
 
-export const testIdInputSchema = Schema.Struct({
+export const TestIdInputSchema = Schema.Struct({
   testId: vStr,
 });
 
-export const responseSearchSchema = Schema.Struct({
+export const ResponseSearchSchema = Schema.Struct({
   page: Schema.Number,
   query: Schema.String,
-  status: responsesStatusFilterSchema,
-  sortBy: responsesSortBySchema,
-  direction: sortDirectionSchema,
+  status: ResponsesStatusFilterSchema,
+  sortBy: ResponsesSortBySchema,
+  direction: SortDirectionSchema,
 });
 
-export const responseDetailInputSchema = Schema.Struct({
+export const ResponseDetailInputSchema = Schema.Struct({
   testId: vStr,
   responseId: vStr,
 });
 
-export const saveAnswerInputSchema = Schema.Struct({
+export const SaveAnswerInputSchema = Schema.Struct({
   testId: vStr,
   questionId: vStr,
   choiceId: vStr,
 });
 
-export const submitResponseInputSchema = Schema.Struct({
+export const SubmitResponseInputSchema = Schema.Struct({
   testId: vStr,
 });
 
-export const librarySearchSchema = Schema.Struct({
-  scope: testScopeSchema,
+export const LibrarySearchSchema = Schema.Struct({
+  scope: TestScopeSchema,
 });
 
-export const takeTestSearchSchema = Schema.Struct({
+export const TakeTestSearchSchema = Schema.Struct({
   inviteEmail: vStrTrimOpt,
 });
 
-export type CreateTestInput = Infer<typeof createTestInputSchema>;
-export type UpdateTestMetaInput = Infer<typeof updateTestMetaInputSchema>;
-export type AddQuestionInput = Infer<typeof addQuestionInputSchema>;
-export type UpdateQuestionInput = Infer<typeof updateQuestionInputSchema>;
-export type ReorderQuestionsInput = Infer<typeof reorderQuestionsInputSchema>;
-export type AddChoiceInput = Infer<typeof addChoiceInputSchema>;
-export type UpdateChoiceInput = Infer<typeof updateChoiceInputSchema>;
-export type ReorderChoicesInput = Infer<typeof reorderChoicesInputSchema>;
-export type DeleteQuestionInput = Infer<typeof deleteQuestionInputSchema>;
-export type DeleteChoiceInput = Infer<typeof deleteChoiceInputSchema>;
-export type AddEditorInput = Infer<typeof addEditorInputSchema>;
-export type ShareTestInput = Infer<typeof shareTestInputSchema>;
-export type RemoveEditorInput = Infer<typeof removeEditorInputSchema>;
-export type TestIdInput = Infer<typeof testIdInputSchema>;
-export type ResponseSearchInput = Infer<typeof responseSearchSchema>;
-export type ResponseDetailInput = Infer<typeof responseDetailInputSchema>;
-export type SaveAnswerInput = Infer<typeof saveAnswerInputSchema>;
-export type SubmitResponseInput = Infer<typeof submitResponseInputSchema>;
-export type LibrarySearch = Infer<typeof librarySearchSchema>;
-export type TakeTestSearch = Infer<typeof takeTestSearchSchema>;
+export type CreateTestInput = Infer<typeof CreateTestInputSchema>;
+export type UpdateTestMetaInput = Infer<typeof UpdateTestMetaInputSchema>;
+export type AddQuestionInput = Infer<typeof AddQuestionInputSchema>;
+export type UpdateQuestionInput = Infer<typeof UpdateQuestionInputSchema>;
+export type ReorderQuestionsInput = Infer<typeof ReorderQuestionsInputSchema>;
+export type AddChoiceInput = Infer<typeof AddChoiceInputSchema>;
+export type UpdateChoiceInput = Infer<typeof UpdateChoiceInputSchema>;
+export type ReorderChoicesInput = Infer<typeof ReorderChoicesInputSchema>;
+export type DeleteQuestionInput = Infer<typeof DeleteQuestionInputSchema>;
+export type DeleteChoiceInput = Infer<typeof DeleteChoiceInputSchema>;
+export type AddEditorInput = Infer<typeof AddEditorInputSchema>;
+export type ShareTestInput = Infer<typeof ShareTestInputSchema>;
+export type RemoveEditorInput = Infer<typeof RemoveEditorInputSchema>;
+export type TestIdInput = Infer<typeof TestIdInputSchema>;
+export type ResponseSearchInput = Infer<typeof ResponseSearchSchema>;
+export type ResponseDetailInput = Infer<typeof ResponseDetailInputSchema>;
+export type SaveAnswerInput = Infer<typeof SaveAnswerInputSchema>;
+export type SubmitResponseInput = Infer<typeof SubmitResponseInputSchema>;
+export type LibrarySearch = Infer<typeof LibrarySearchSchema>;
+export type TakeTestSearch = Infer<typeof TakeTestSearchSchema>;
 
-export const parseCreateTestInput = makeTypedDecoder(createTestInputSchema);
-export const parseUpdateTestMetaInput = makeTypedDecoder(updateTestMetaInputSchema);
-export const parseAddQuestionInput = makeTypedDecoder(addQuestionInputSchema);
-export const parseUpdateQuestionInput = makeTypedDecoder(updateQuestionInputSchema);
-export const parseReorderQuestionsInput = makeTypedDecoder(reorderQuestionsInputSchema);
-export const parseAddChoiceInput = makeTypedDecoder(addChoiceInputSchema);
-export const parseUpdateChoiceInput = makeTypedDecoder(updateChoiceInputSchema);
-export const parseReorderChoicesInput = makeTypedDecoder(reorderChoicesInputSchema);
-export const parseDeleteQuestionInput = makeTypedDecoder(deleteQuestionInputSchema);
-export const parseDeleteChoiceInput = makeTypedDecoder(deleteChoiceInputSchema);
-export const parseAddEditorInput = makeTypedDecoder(addEditorInputSchema);
-export const parseShareTestInput = makeTypedDecoder(shareTestInputSchema);
-export const parseRemoveEditorInput = makeTypedDecoder(removeEditorInputSchema);
-export const parseTestIdInput = makeTypedDecoder(testIdInputSchema);
-export const parseResponseDetailInput = makeTypedDecoder(responseDetailInputSchema);
-export const parseSaveAnswerInput = makeTypedDecoder(saveAnswerInputSchema);
-export const parseSubmitResponseInput = makeTypedDecoder(submitResponseInputSchema);
+export const parseCreateTestInput = makeTypedDecoder(CreateTestInputSchema);
+export const parseUpdateTestMetaInput = makeTypedDecoder(UpdateTestMetaInputSchema);
+export const parseAddQuestionInput = makeTypedDecoder(AddQuestionInputSchema);
+export const parseUpdateQuestionInput = makeTypedDecoder(UpdateQuestionInputSchema);
+export const parseReorderQuestionsInput = makeTypedDecoder(ReorderQuestionsInputSchema);
+export const parseAddChoiceInput = makeTypedDecoder(AddChoiceInputSchema);
+export const parseUpdateChoiceInput = makeTypedDecoder(UpdateChoiceInputSchema);
+export const parseReorderChoicesInput = makeTypedDecoder(ReorderChoicesInputSchema);
+export const parseDeleteQuestionInput = makeTypedDecoder(DeleteQuestionInputSchema);
+export const parseDeleteChoiceInput = makeTypedDecoder(DeleteChoiceInputSchema);
+export const parseAddEditorInput = makeTypedDecoder(AddEditorInputSchema);
+export const parseShareTestInput = makeTypedDecoder(ShareTestInputSchema);
+export const parseRemoveEditorInput = makeTypedDecoder(RemoveEditorInputSchema);
+export const parseTestIdInput = makeTypedDecoder(TestIdInputSchema);
+export const parseResponseDetailInput = makeTypedDecoder(ResponseDetailInputSchema);
+export const parseSaveAnswerInput = makeTypedDecoder(SaveAnswerInputSchema);
+export const parseSubmitResponseInput = makeTypedDecoder(SubmitResponseInputSchema);
 
 export const parseResponseSearchInput = makeUnknownParser(
-  responseSearchSchema,
+  ResponseSearchSchema,
   (input): ResponseSearchInput => {
     const record = isRecord(input) ? input : {};
     return {
@@ -251,18 +245,15 @@ export const parseResponseSearchInput = makeUnknownParser(
   },
 );
 
-export const parseLibrarySearch = makeUnknownParser(
-  librarySearchSchema,
-  (input): LibrarySearch => {
-    const record = isRecord(input) ? input : {};
-    return {
-      scope: oneOf(record.scope, ["drafts", "published", "shared"], "drafts"),
-    };
-  },
-);
+export const parseLibrarySearch = makeUnknownParser(LibrarySearchSchema, (input): LibrarySearch => {
+  const record = isRecord(input) ? input : {};
+  return {
+    scope: oneOf(record.scope, ["drafts", "published", "shared"], "drafts"),
+  };
+});
 
 export const parseTakeTestSearch = makeUnknownParser(
-  takeTestSearchSchema,
+  TakeTestSearchSchema,
   (input): TakeTestSearch => {
     const record = isRecord(input) ? input : {};
     return {
@@ -271,50 +262,21 @@ export const parseTakeTestSearch = makeUnknownParser(
   },
 );
 
-export const testScopeValidator = Schema.standardSchemaV1(testScopeSchema);
-export const createTestInputValidator = Schema.standardSchemaV1(createTestInputSchema);
-export const updateTestMetaInputValidator = Schema.standardSchemaV1(updateTestMetaInputSchema);
-export const addQuestionInputValidator = Schema.standardSchemaV1(addQuestionInputSchema);
-export const updateQuestionInputValidator = Schema.standardSchemaV1(updateQuestionInputSchema);
-export const reorderQuestionsInputValidator = Schema.standardSchemaV1(reorderQuestionsInputSchema);
-export const addChoiceInputValidator = Schema.standardSchemaV1(addChoiceInputSchema);
-export const updateChoiceInputValidator = Schema.standardSchemaV1(updateChoiceInputSchema);
-export const reorderChoicesInputValidator = Schema.standardSchemaV1(reorderChoicesInputSchema);
-export const deleteQuestionInputValidator = Schema.standardSchemaV1(deleteQuestionInputSchema);
-export const deleteChoiceInputValidator = Schema.standardSchemaV1(deleteChoiceInputSchema);
-export const addEditorInputValidator = Schema.standardSchemaV1(addEditorInputSchema);
-export const shareTestInputValidator = Schema.standardSchemaV1(shareTestInputSchema);
-export const removeEditorInputValidator = Schema.standardSchemaV1(removeEditorInputSchema);
-export const testIdInputValidator = Schema.standardSchemaV1(testIdInputSchema);
-export const responseDetailInputValidator = Schema.standardSchemaV1(responseDetailInputSchema);
-export const saveAnswerInputValidator = Schema.standardSchemaV1(saveAnswerInputSchema);
-export const submitResponseInputValidator = Schema.standardSchemaV1(submitResponseInputSchema);
-
-export {
-  testStatusSchema as TestStatusSchema,
-  responseStatusSchema as ResponseStatusSchema,
-  testScopeSchema as TestScopeSchema,
-  responsesStatusFilterSchema as ResponsesStatusFilterSchema,
-  responsesSortBySchema as ResponsesSortBySchema,
-  sortDirectionSchema as SortDirectionSchema,
-  createTestInputSchema as CreateTestInputSchema,
-  updateTestMetaInputSchema as UpdateTestMetaInputSchema,
-  addQuestionInputSchema as AddQuestionInputSchema,
-  updateQuestionInputSchema as UpdateQuestionInputSchema,
-  reorderQuestionsInputSchema as ReorderQuestionsInputSchema,
-  addChoiceInputSchema as AddChoiceInputSchema,
-  updateChoiceInputSchema as UpdateChoiceInputSchema,
-  reorderChoicesInputSchema as ReorderChoicesInputSchema,
-  deleteQuestionInputSchema as DeleteQuestionInputSchema,
-  deleteChoiceInputSchema as DeleteChoiceInputSchema,
-  addEditorInputSchema as AddEditorInputSchema,
-  shareTestInputSchema as ShareTestInputSchema,
-  removeEditorInputSchema as RemoveEditorInputSchema,
-  testIdInputSchema as TestIdInputSchema,
-  responseSearchSchema as ResponseSearchSchema,
-  responseDetailInputSchema as ResponseDetailInputSchema,
-  saveAnswerInputSchema as SaveAnswerInputSchema,
-  submitResponseInputSchema as SubmitResponseInputSchema,
-  librarySearchSchema as LibrarySearchSchema,
-  takeTestSearchSchema as TakeTestSearchSchema,
-};
+export const testScopeValidator = Schema.standardSchemaV1(TestScopeSchema);
+export const createTestInputValidator = Schema.standardSchemaV1(CreateTestInputSchema);
+export const updateTestMetaInputValidator = Schema.standardSchemaV1(UpdateTestMetaInputSchema);
+export const addQuestionInputValidator = Schema.standardSchemaV1(AddQuestionInputSchema);
+export const updateQuestionInputValidator = Schema.standardSchemaV1(UpdateQuestionInputSchema);
+export const reorderQuestionsInputValidator = Schema.standardSchemaV1(ReorderQuestionsInputSchema);
+export const addChoiceInputValidator = Schema.standardSchemaV1(AddChoiceInputSchema);
+export const updateChoiceInputValidator = Schema.standardSchemaV1(UpdateChoiceInputSchema);
+export const reorderChoicesInputValidator = Schema.standardSchemaV1(ReorderChoicesInputSchema);
+export const deleteQuestionInputValidator = Schema.standardSchemaV1(DeleteQuestionInputSchema);
+export const deleteChoiceInputValidator = Schema.standardSchemaV1(DeleteChoiceInputSchema);
+export const addEditorInputValidator = Schema.standardSchemaV1(AddEditorInputSchema);
+export const shareTestInputValidator = Schema.standardSchemaV1(ShareTestInputSchema);
+export const removeEditorInputValidator = Schema.standardSchemaV1(RemoveEditorInputSchema);
+export const testIdInputValidator = Schema.standardSchemaV1(TestIdInputSchema);
+export const responseDetailInputValidator = Schema.standardSchemaV1(ResponseDetailInputSchema);
+export const saveAnswerInputValidator = Schema.standardSchemaV1(SaveAnswerInputSchema);
+export const submitResponseInputValidator = Schema.standardSchemaV1(SubmitResponseInputSchema);
