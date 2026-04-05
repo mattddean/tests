@@ -1,22 +1,19 @@
-import { useMemo, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Edit3 } from "lucide-react";
-import { z } from "zod";
-import { Card } from "@/components/ui/card";
+import { useMemo, useState } from "react";
+
 import { SectionHeading } from "@/components/ui";
+import { Card } from "@/components/ui/card";
 import { sessionQueryOptions } from "@/features/auth/queries";
+import { TestDocument } from "@/features/tests/components/test-document";
 import { testTakeQueryOptions, testsKeys } from "@/features/tests/queries";
 import { saveAnswerAction, submitResponseAction } from "@/features/tests/server";
-import { TestDocument } from "@/features/tests/components/test-document";
 import { authClient } from "@/lib/auth-client";
-
-const searchSchema = z.object({
-  inviteEmail: z.email().optional(),
-});
+import { parseTakeTestSearch } from "@/schemas/search";
 
 export const Route = createFileRoute("/tests/$testId/")({
-  validateSearch: searchSchema,
+  validateSearch: parseTakeTestSearch,
   loader: async ({ context }) => {
     await context.queryClient.ensureQueryData(sessionQueryOptions());
   },

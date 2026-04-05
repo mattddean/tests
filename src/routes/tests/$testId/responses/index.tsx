@@ -1,29 +1,23 @@
-import { z } from "zod";
-import { Link, createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { Link, createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+
+import type { GetResponsesTableDataItem } from "@/features/tests/types";
+
+import { EmptyState, SectionHeading } from "@/components/ui";
 import { Card } from "@/components/ui/card";
 import { Input as TextInput } from "@/components/ui/input";
-import { EmptyState, SectionHeading } from "@/components/ui";
 import { sessionQueryOptions } from "@/features/auth/queries";
 import { responsesTableQueryOptions } from "@/features/tests/queries";
-import type { ResponseTableRow } from "@/features/tests/types";
-
-const searchSchema = z.object({
-  page: z.coerce.number().catch(1),
-  query: z.string().catch(""),
-  status: z.enum(["all", "draft", "submitted"]).catch("all"),
-  sortBy: z.enum(["startedAt", "submittedAt"]).catch("submittedAt"),
-  direction: z.enum(["asc", "desc"]).catch("desc"),
-});
+import { parseResponseSearchInput } from "@/schemas/search";
 
 export const Route = createFileRoute("/tests/$testId/responses/")({
-  validateSearch: searchSchema,
+  validateSearch: parseResponseSearchInput,
   loaderDeps: ({ search }) => search,
   loader: async ({ context, params, deps }) => {
     const session = await context.queryClient.ensureQueryData(sessionQueryOptions());
@@ -35,7 +29,7 @@ export const Route = createFileRoute("/tests/$testId/responses/")({
   component: ResponsesPage,
 });
 
-const columnHelper = createColumnHelper<ResponseTableRow>();
+const columnHelper = createColumnHelper<GetResponsesTableDataItem>();
 
 function ResponsesPage() {
   const { testId } = Route.useParams();

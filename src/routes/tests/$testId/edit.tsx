@@ -1,17 +1,20 @@
-import { useCallback, useMemo, useState } from "react";
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
-import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useForm } from "@tanstack/react-form";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { CircleCheckBig, Eye, Send } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
+
 import { FieldLabel } from "@/components/field-label";
+import { SectionHeading, SurfaceMeta } from "@/components/ui";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input as TextInput } from "@/components/ui/input";
-import { SectionHeading, SurfaceMeta } from "@/components/ui";
 import { sessionQueryOptions } from "@/features/auth/queries";
+import { TestDocument } from "@/features/tests/components/test-document";
 import { testEditorQueryOptions, testsKeys } from "@/features/tests/queries";
 import {
   addChoiceAction,
+  addEditorInput,
   addEditorAction,
   addQuestionAction,
   deleteChoiceAction,
@@ -20,12 +23,13 @@ import {
   removeEditorAction,
   reorderChoicesAction,
   reorderQuestionsAction,
+  shareTestInput,
   shareTestAction,
   updateChoiceAction,
+  updateTestMetaInput,
   updateQuestionAction,
   updateTestMetaAction,
 } from "@/features/tests/server";
-import { TestDocument } from "@/features/tests/components/test-document";
 
 export const Route = createFileRoute("/tests/$testId/edit")({
   loader: async ({ context, params }) => {
@@ -90,14 +94,18 @@ function TestEditorPage() {
 
   const metaForm = useForm({
     defaultValues: {
+      testId,
       title: data.test.title,
-      description: data.test.description ?? "",
+      description: data.test.description,
+    },
+    validators: {
+      onSubmit: updateTestMetaInput,
     },
     onSubmit: async ({ value }) => {
       await withSaveState(async () => {
         await metaMutation.mutateAsync({
           data: {
-            testId,
+            testId: value.testId,
             title: value.title,
             description: value.description || null,
           },
@@ -108,13 +116,17 @@ function TestEditorPage() {
 
   const addEditorForm = useForm({
     defaultValues: {
+      testId,
       email: "",
+    },
+    validators: {
+      onSubmit: addEditorInput,
     },
     onSubmit: async ({ value, formApi }) => {
       await withSaveState(async () => {
         await addEditorMutation.mutateAsync({
           data: {
-            testId,
+            testId: value.testId,
             email: value.email,
           },
         });
@@ -125,13 +137,17 @@ function TestEditorPage() {
 
   const shareTestForm = useForm({
     defaultValues: {
+      testId,
       email: "",
+    },
+    validators: {
+      onSubmit: shareTestInput,
     },
     onSubmit: async ({ value, formApi }) => {
       await withSaveState(async () => {
         await shareTestMutation.mutateAsync({
           data: {
-            testId,
+            testId: value.testId,
             email: value.email,
           },
         });
@@ -304,7 +320,7 @@ function TestEditorPage() {
                 <div className="space-y-2">
                   <FieldLabel label="Description" />
                   <textarea
-                    value={field.state.value}
+                    value={field.state.value ?? ""}
                     onChange={(event) => field.handleChange(event.target.value)}
                     onBlur={field.handleBlur}
                     rows={4}

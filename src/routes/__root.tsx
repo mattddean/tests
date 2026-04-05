@@ -1,12 +1,15 @@
-import { Outlet, createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { TanStackDevtools } from "@tanstack/react-devtools";
 import type { QueryClient } from "@tanstack/react-query";
+
+import { TanStackDevtools } from "@tanstack/react-devtools";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { Outlet, createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/react-router";
+import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+
 import { SiteShell } from "@/components/site-shell";
-import { Provider } from "@/integrations/tanstack-query/root-provider";
-import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
 import { sessionQueryOptions } from "@/features/auth/queries";
+import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
+import { Provider } from "@/integrations/tanstack-query/root-provider";
+
 import appCss from "../styles.css?url";
 
 interface MyRouterContext {
