@@ -11,7 +11,7 @@ import {
 import { vStr } from "@/schemas/primitives";
 import { runServerEffect } from "@/server/runtime/run-server-effect";
 
-import { withCurrentUser } from "./shared";
+import { currentUserIdEffect } from "./shared";
 
 export const createTestInput = TestTableInputSchema.pipe(
   Schema.pick("title"),
@@ -22,9 +22,11 @@ export const createTest = createServerFn({ method: "POST" })
   .inputValidator(createTestInput)
   .handler(({ data }) =>
     runServerEffect(
-      withCurrentUser((userId) =>
-        Effect.flatMap(TestAdminService, (service) => service.createTestRecord(userId, data.title)),
-      ),
+      Effect.gen(function* () {
+        const userId = yield* currentUserIdEffect;
+        const testAdminService = yield* TestAdminService;
+        return yield* testAdminService.createTestRecord(userId, data.title);
+      }),
       { name: "tests.createTest" },
     ),
   );
@@ -41,14 +43,15 @@ export const updateTestMetaAction = createServerFn({ method: "POST" })
   .inputValidator(updateTestMetaInput)
   .handler(({ data }) =>
     runServerEffect(
-      withCurrentUser((userId) =>
-        Effect.flatMap(TestAdminService, (service) =>
-          service.updateTestMeta(data.testId, userId, {
-            title: data.title,
-            description: data.description,
-          }),
-        ).pipe(Effect.as({ ok: true })),
-      ),
+      Effect.gen(function* () {
+        const userId = yield* currentUserIdEffect;
+        const testAdminService = yield* TestAdminService;
+        yield* testAdminService.updateTestMeta(data.testId, userId, {
+          title: data.title,
+          description: data.description,
+        });
+        return { ok: true } as const;
+      }),
       { name: "tests.updateTestMeta" },
     ),
   );
@@ -63,11 +66,12 @@ export const publishTestAction = createServerFn({ method: "POST" })
   .inputValidator(publishTestInput)
   .handler(({ data }) =>
     runServerEffect(
-      withCurrentUser((userId) =>
-        Effect.flatMap(TestAdminService, (service) =>
-          service.publishTest(data.testId, userId),
-        ).pipe(Effect.as({ ok: true })),
-      ),
+      Effect.gen(function* () {
+        const userId = yield* currentUserIdEffect;
+        const testAdminService = yield* TestAdminService;
+        yield* testAdminService.publishTest(data.testId, userId);
+        return { ok: true } as const;
+      }),
       { name: "tests.publishTest" },
     ),
   );
@@ -82,11 +86,12 @@ export const addEditorAction = createServerFn({ method: "POST" })
   .inputValidator(addEditorInput)
   .handler(({ data }) =>
     runServerEffect(
-      withCurrentUser((userId) =>
-        Effect.flatMap(TestAdminService, (service) =>
-          service.addEditor(data.testId, userId, data.email),
-        ).pipe(Effect.as({ ok: true })),
-      ),
+      Effect.gen(function* () {
+        const userId = yield* currentUserIdEffect;
+        const testAdminService = yield* TestAdminService;
+        yield* testAdminService.addEditor(data.testId, userId, data.email);
+        return { ok: true } as const;
+      }),
       { name: "tests.addEditor" },
     ),
   );
@@ -101,11 +106,12 @@ export const removeEditorAction = createServerFn({ method: "POST" })
   .inputValidator(removeEditorInput)
   .handler(({ data }) =>
     runServerEffect(
-      withCurrentUser((userId) =>
-        Effect.flatMap(TestAdminService, (service) =>
-          service.removeEditor(data.testId, userId, data.userId),
-        ).pipe(Effect.as({ ok: true })),
-      ),
+      Effect.gen(function* () {
+        const userId = yield* currentUserIdEffect;
+        const testAdminService = yield* TestAdminService;
+        yield* testAdminService.removeEditor(data.testId, userId, data.userId);
+        return { ok: true } as const;
+      }),
       { name: "tests.removeEditor" },
     ),
   );
@@ -120,11 +126,12 @@ export const shareTestAction = createServerFn({ method: "POST" })
   .inputValidator(shareTestInput)
   .handler(({ data }) =>
     runServerEffect(
-      withCurrentUser((userId) =>
-        Effect.flatMap(TestAdminService, (service) =>
-          service.shareTest(data.testId, userId, data.email),
-        ).pipe(Effect.as({ ok: true })),
-      ),
+      Effect.gen(function* () {
+        const userId = yield* currentUserIdEffect;
+        const testAdminService = yield* TestAdminService;
+        yield* testAdminService.shareTest(data.testId, userId, data.email);
+        return { ok: true } as const;
+      }),
       { name: "tests.shareTest" },
     ),
   );

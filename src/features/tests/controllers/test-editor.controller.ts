@@ -13,7 +13,7 @@ import {
 import { vStr, vStrNullOpt } from "@/schemas/primitives";
 import { runServerEffect } from "@/server/runtime/run-server-effect";
 
-import { withCurrentUser } from "./shared";
+import { currentUserIdEffect } from "./shared";
 
 export const addQuestionInput = Schema.extend(
   TestQuestionTableInputSchema.pipe(Schema.pick("testId")),
@@ -26,11 +26,12 @@ export const addQuestionAction = createServerFn({ method: "POST" })
   .inputValidator(addQuestionInput)
   .handler(({ data }) =>
     runServerEffect(
-      withCurrentUser((userId) =>
-        Effect.flatMap(TestEditorService, (service) =>
-          service.addQuestion(data.testId, userId, data.afterQuestionId),
-        ).pipe(Effect.as({ ok: true })),
-      ),
+      Effect.gen(function* () {
+        const userId = yield* currentUserIdEffect;
+        const testEditorService = yield* TestEditorService;
+        yield* testEditorService.addQuestion(data.testId, userId, data.afterQuestionId);
+        return { ok: true } as const;
+      }),
       { name: "tests.addQuestion" },
     ),
   );
@@ -49,15 +50,16 @@ export const updateQuestionAction = createServerFn({ method: "POST" })
   .inputValidator(updateQuestionInput)
   .handler(({ data }) =>
     runServerEffect(
-      withCurrentUser((userId) =>
-        Effect.flatMap(TestEditorService, (service) =>
-          service.updateQuestion(data.questionId, userId, {
-            prompt: data.prompt,
-            description: data.description,
-            required: data.required,
-          }),
-        ).pipe(Effect.as({ ok: true })),
-      ),
+      Effect.gen(function* () {
+        const userId = yield* currentUserIdEffect;
+        const testEditorService = yield* TestEditorService;
+        yield* testEditorService.updateQuestion(data.questionId, userId, {
+          prompt: data.prompt,
+          description: data.description,
+          required: data.required,
+        });
+        return { ok: true } as const;
+      }),
       {
         name: "tests.updateQuestion",
       },
@@ -69,11 +71,12 @@ export const reorderQuestionsAction = createServerFn({ method: "POST" })
   .inputValidator(reorderQuestionsInputValidator)
   .handler(({ data }) =>
     runServerEffect(
-      withCurrentUser((userId) =>
-        Effect.flatMap(TestEditorService, (service) =>
-          service.reorderQuestions(data.testId, userId, [...data.questionIds]),
-        ).pipe(Effect.as({ ok: true })),
-      ),
+      Effect.gen(function* () {
+        const userId = yield* currentUserIdEffect;
+        const testEditorService = yield* TestEditorService;
+        yield* testEditorService.reorderQuestions(data.testId, userId, [...data.questionIds]);
+        return { ok: true } as const;
+      }),
       {
         name: "tests.reorderQuestions",
       },
@@ -92,11 +95,12 @@ export const addChoiceAction = createServerFn({ method: "POST" })
   .inputValidator(addChoiceInput)
   .handler(({ data }) =>
     runServerEffect(
-      withCurrentUser((userId) =>
-        Effect.flatMap(TestEditorService, (service) =>
-          service.addChoice(data.questionId, userId, data.afterChoiceId),
-        ).pipe(Effect.as({ ok: true })),
-      ),
+      Effect.gen(function* () {
+        const userId = yield* currentUserIdEffect;
+        const testEditorService = yield* TestEditorService;
+        yield* testEditorService.addChoice(data.questionId, userId, data.afterChoiceId);
+        return { ok: true } as const;
+      }),
       {
         name: "tests.addChoice",
       },
@@ -115,11 +119,12 @@ export const updateChoiceAction = createServerFn({ method: "POST" })
   .inputValidator(updateChoiceInput)
   .handler(({ data }) =>
     runServerEffect(
-      withCurrentUser((userId) =>
-        Effect.flatMap(TestEditorService, (service) =>
-          service.updateChoice(data.choiceId, userId, data.label),
-        ).pipe(Effect.as({ ok: true })),
-      ),
+      Effect.gen(function* () {
+        const userId = yield* currentUserIdEffect;
+        const testEditorService = yield* TestEditorService;
+        yield* testEditorService.updateChoice(data.choiceId, userId, data.label);
+        return { ok: true } as const;
+      }),
       {
         name: "tests.updateChoice",
       },
@@ -131,11 +136,12 @@ export const reorderChoicesAction = createServerFn({ method: "POST" })
   .inputValidator(reorderChoicesInputValidator)
   .handler(({ data }) =>
     runServerEffect(
-      withCurrentUser((userId) =>
-        Effect.flatMap(TestEditorService, (service) =>
-          service.reorderChoices(data.questionId, userId, [...data.choiceIds]),
-        ).pipe(Effect.as({ ok: true })),
-      ),
+      Effect.gen(function* () {
+        const userId = yield* currentUserIdEffect;
+        const testEditorService = yield* TestEditorService;
+        yield* testEditorService.reorderChoices(data.questionId, userId, [...data.choiceIds]);
+        return { ok: true } as const;
+      }),
       {
         name: "tests.reorderChoices",
       },
@@ -147,11 +153,12 @@ export const deleteQuestionAction = createServerFn({ method: "POST" })
   .inputValidator(deleteQuestionInputValidator)
   .handler(({ data }) =>
     runServerEffect(
-      withCurrentUser((userId) =>
-        Effect.flatMap(TestEditorService, (service) =>
-          service.deleteQuestion(data.questionId, userId),
-        ).pipe(Effect.as({ ok: true })),
-      ),
+      Effect.gen(function* () {
+        const userId = yield* currentUserIdEffect;
+        const testEditorService = yield* TestEditorService;
+        yield* testEditorService.deleteQuestion(data.questionId, userId);
+        return { ok: true } as const;
+      }),
       {
         name: "tests.deleteQuestion",
       },
@@ -163,11 +170,12 @@ export const deleteChoiceAction = createServerFn({ method: "POST" })
   .inputValidator(deleteChoiceInputValidator)
   .handler(({ data }) =>
     runServerEffect(
-      withCurrentUser((userId) =>
-        Effect.flatMap(TestEditorService, (service) =>
-          service.deleteChoice(data.choiceId, userId),
-        ).pipe(Effect.as({ ok: true })),
-      ),
+      Effect.gen(function* () {
+        const userId = yield* currentUserIdEffect;
+        const testEditorService = yield* TestEditorService;
+        yield* testEditorService.deleteChoice(data.choiceId, userId);
+        return { ok: true } as const;
+      }),
       {
         name: "tests.deleteChoice",
       },

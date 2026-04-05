@@ -5,7 +5,7 @@ import { TestTakingService } from "@/domains/tests/services/test-taking.service"
 import { ResponseAnswerTableInputSchema, TestResponseTableInputSchema } from "@/schemas/entities";
 import { runServerEffect } from "@/server/runtime/run-server-effect";
 
-import { withCurrentUser } from "./shared";
+import { currentUserIdEffect } from "./shared";
 
 export const saveAnswerInput = Schema.extend(
   TestResponseTableInputSchema.pipe(Schema.pick("testId")),
@@ -16,11 +16,12 @@ export const saveAnswerAction = createServerFn({ method: "POST" })
   .inputValidator(saveAnswerInput)
   .handler(({ data }) =>
     runServerEffect(
-      withCurrentUser((userId) =>
-        Effect.flatMap(TestTakingService, (service) =>
-          service.saveAnswer(data.testId, userId, data.questionId, data.choiceId),
-        ).pipe(Effect.as({ ok: true })),
-      ),
+      Effect.gen(function* () {
+        const userId = yield* currentUserIdEffect;
+        const testTakingService = yield* TestTakingService;
+        yield* testTakingService.saveAnswer(data.testId, userId, data.questionId, data.choiceId);
+        return { ok: true } as const;
+      }),
       { name: "tests.saveAnswer" },
     ),
   );
@@ -35,11 +36,12 @@ export const submitResponseAction = createServerFn({ method: "POST" })
   .inputValidator(submitResponseInput)
   .handler(({ data }) =>
     runServerEffect(
-      withCurrentUser((userId) =>
-        Effect.flatMap(TestTakingService, (service) =>
-          service.submitResponse(data.testId, userId),
-        ).pipe(Effect.as({ ok: true })),
-      ),
+      Effect.gen(function* () {
+        const userId = yield* currentUserIdEffect;
+        const testTakingService = yield* TestTakingService;
+        yield* testTakingService.submitResponse(data.testId, userId);
+        return { ok: true } as const;
+      }),
       { name: "tests.submitResponse" },
     ),
   );

@@ -7,13 +7,15 @@ import { TestScopeSchema, vStr } from "@/schemas/primitives";
 import { parseResponseSearchInput, ResponseSearchSchema } from "@/schemas/search";
 import { runServerEffect } from "@/server/runtime/run-server-effect";
 
-import { withCurrentUser } from "./shared";
+import { currentUserIdEffect } from "./shared";
 
 export const getDashboardData = createServerFn({ method: "GET" }).handler(() =>
   runServerEffect(
-    withCurrentUser((userId) =>
-      Effect.flatMap(TestReadService, (service) => service.getDashboard(userId)),
-    ),
+    Effect.gen(function* () {
+      const userId = yield* currentUserIdEffect;
+      const testReadService = yield* TestReadService;
+      return yield* testReadService.getDashboard(userId);
+    }),
     { name: "tests.getDashboardData" },
   ),
 );
@@ -25,9 +27,11 @@ export const getTests = createServerFn({ method: "GET" })
   .inputValidator(getTestsInput)
   .handler(({ data }) =>
     runServerEffect(
-      withCurrentUser((userId) =>
-        Effect.flatMap(TestReadService, (service) => service.getTestsList(userId, data)),
-      ),
+      Effect.gen(function* () {
+        const userId = yield* currentUserIdEffect;
+        const testReadService = yield* TestReadService;
+        return yield* testReadService.getTestsList(userId, data);
+      }),
       { name: "tests.getTests" },
     ),
   );
@@ -42,9 +46,11 @@ export const getTestEditor = createServerFn({ method: "GET" })
   .inputValidator(getTestEditorInput)
   .handler(({ data }) =>
     runServerEffect(
-      withCurrentUser((userId) =>
-        Effect.flatMap(TestReadService, (service) => service.getEditorView(data.testId, userId)),
-      ),
+      Effect.gen(function* () {
+        const userId = yield* currentUserIdEffect;
+        const testReadService = yield* TestReadService;
+        return yield* testReadService.getEditorView(data.testId, userId);
+      }),
       { name: "tests.getTestEditor" },
     ),
   );
@@ -59,9 +65,11 @@ export const getTestTake = createServerFn({ method: "GET" })
   .inputValidator(getTestTakeInput)
   .handler(({ data }) =>
     runServerEffect(
-      withCurrentUser((userId) =>
-        Effect.flatMap(TestReadService, (service) => service.getTakeView(data.testId, userId)),
-      ),
+      Effect.gen(function* () {
+        const userId = yield* currentUserIdEffect;
+        const testReadService = yield* TestReadService;
+        return yield* testReadService.getTakeView(data.testId, userId);
+      }),
       { name: "tests.getTestTake" },
     ),
   );
@@ -84,12 +92,12 @@ export const getResponsesTableData = createServerFn({ method: "GET" })
   })
   .handler(({ data }) =>
     runServerEffect(
-      withCurrentUser((userId) =>
-        Effect.flatMap(TestReadService, (service) => {
-          const { testId, ...search } = data;
-          return service.getResponsesTable(testId, userId, search);
-        }),
-      ),
+      Effect.gen(function* () {
+        const userId = yield* currentUserIdEffect;
+        const testReadService = yield* TestReadService;
+        const { testId, ...search } = data;
+        return yield* testReadService.getResponsesTable(testId, userId, search);
+      }),
       { name: "tests.getResponsesTableData" },
     ),
   );
@@ -106,11 +114,11 @@ export const getResponseDetail = createServerFn({ method: "GET" })
   .inputValidator(getResponseDetailInput)
   .handler(({ data }) =>
     runServerEffect(
-      withCurrentUser((userId) =>
-        Effect.flatMap(TestReadService, (service) =>
-          service.getResponseReview(data.testId, data.responseId, userId),
-        ),
-      ),
+      Effect.gen(function* () {
+        const userId = yield* currentUserIdEffect;
+        const testReadService = yield* TestReadService;
+        return yield* testReadService.getResponseReview(data.testId, data.responseId, userId);
+      }),
       { name: "tests.getResponseDetail" },
     ),
   );
@@ -118,9 +126,11 @@ export type GetResponseDetailResponse = Awaited<ReturnType<typeof getResponseDet
 
 export const getMyResponsesData = createServerFn({ method: "GET" }).handler(() =>
   runServerEffect(
-    withCurrentUser((userId) =>
-      Effect.flatMap(TestReadService, (service) => service.getMyResponses(userId)),
-    ),
+    Effect.gen(function* () {
+      const userId = yield* currentUserIdEffect;
+      const testReadService = yield* TestReadService;
+      return yield* testReadService.getMyResponses(userId);
+    }),
     { name: "tests.getMyResponsesData" },
   ),
 );
