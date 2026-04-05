@@ -13,7 +13,7 @@
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "lint": "oxlint",
-    "lint:fix": "oxlint --fix && pnpm format",
+    "lint:fix": "oxlint --fix && bun format",
     "prepare": "effect-tsgo patch",
     "preview": "vite preview",
     "start": "node .output/server/index.mjs",
