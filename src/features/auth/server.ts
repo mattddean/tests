@@ -14,11 +14,15 @@ export const getServerSessionEffect = Effect.gen(function* () {
 export const requireUserEffect = currentUserEffect;
 
 export async function getServerSession() {
-  return await runServerEffect(getServerSessionEffect);
+  return await runServerEffect(getServerSessionEffect, {
+    name: "auth.getServerSession",
+  });
 }
 
 export async function requireUser() {
-  return await runServerEffect(requireUserEffect);
+  return await runServerEffect(requireUserEffect, {
+    name: "auth.requireUser",
+  });
 }
 
 export async function requireRouteUser() {

@@ -31,6 +31,7 @@ export const addQuestionAction = createServerFn({ method: "POST" })
           service.addQuestion(data.testId, userId, data.afterQuestionId),
         ).pipe(Effect.as({ ok: true })),
       ),
+      { name: "tests.addQuestion" },
     ),
   );
 export type AddQuestionActionResponse = Awaited<ReturnType<typeof addQuestionAction>>;
@@ -57,6 +58,9 @@ export const updateQuestionAction = createServerFn({ method: "POST" })
           }),
         ).pipe(Effect.as({ ok: true })),
       ),
+      {
+        name: "tests.updateQuestion",
+      },
     ),
   );
 export type UpdateQuestionActionResponse = Awaited<ReturnType<typeof updateQuestionAction>>;
@@ -70,6 +74,9 @@ export const reorderQuestionsAction = createServerFn({ method: "POST" })
           service.reorderQuestions(data.testId, userId, [...data.questionIds]),
         ).pipe(Effect.as({ ok: true })),
       ),
+      {
+        name: "tests.reorderQuestions",
+      },
     ),
   );
 export type ReorderQuestionsActionResponse = Awaited<ReturnType<typeof reorderQuestionsAction>>;
@@ -90,6 +97,9 @@ export const addChoiceAction = createServerFn({ method: "POST" })
           service.addChoice(data.questionId, userId, data.afterChoiceId),
         ).pipe(Effect.as({ ok: true })),
       ),
+      {
+        name: "tests.addChoice",
+      },
     ),
   );
 export type AddChoiceActionResponse = Awaited<ReturnType<typeof addChoiceAction>>;
@@ -110,6 +120,9 @@ export const updateChoiceAction = createServerFn({ method: "POST" })
           service.updateChoice(data.choiceId, userId, data.label),
         ).pipe(Effect.as({ ok: true })),
       ),
+      {
+        name: "tests.updateChoice",
+      },
     ),
   );
 export type UpdateChoiceActionResponse = Awaited<ReturnType<typeof updateChoiceAction>>;
@@ -123,6 +136,9 @@ export const reorderChoicesAction = createServerFn({ method: "POST" })
           service.reorderChoices(data.questionId, userId, [...data.choiceIds]),
         ).pipe(Effect.as({ ok: true })),
       ),
+      {
+        name: "tests.reorderChoices",
+      },
     ),
   );
 export type ReorderChoicesActionResponse = Awaited<ReturnType<typeof reorderChoicesAction>>;
@@ -136,6 +152,9 @@ export const deleteQuestionAction = createServerFn({ method: "POST" })
           service.deleteQuestion(data.questionId, userId),
         ).pipe(Effect.as({ ok: true })),
       ),
+      {
+        name: "tests.deleteQuestion",
+      },
     ),
   );
 export type DeleteQuestionActionResponse = Awaited<ReturnType<typeof deleteQuestionAction>>;
@@ -149,6 +168,9 @@ export const deleteChoiceAction = createServerFn({ method: "POST" })
           service.deleteChoice(data.choiceId, userId),
         ).pipe(Effect.as({ ok: true })),
       ),
+      {
+        name: "tests.deleteChoice",
+      },
     ),
   );
 export type DeleteChoiceActionResponse = Awaited<ReturnType<typeof deleteChoiceAction>>;

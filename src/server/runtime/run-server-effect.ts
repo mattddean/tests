@@ -1,7 +1,19 @@
-import { getRequestHeaders } from "@tanstack/react-start/server";
-import { Effect } from "effect";
+import { getRequest, getRequestHeaders } from "@tanstack/react-start/server";
+import { Cause, Effect } from "effect";
 
 import { mapToTransportError } from "@/server/errors/error-mapper";
+import {
+  capturePostHogServerException,
+  extractPostHogCorrelationFromHeaders,
+} from "@/server/observability/posthog-server";
+import {
+  annotateCurrentEffectSpan,
+  getErrorType,
+  getRequestTraceDetails,
+  markCurrentEffectSpanAsError,
+  toError,
+  withActiveSpanContext,
+} from "@/server/observability/tracing";
 
 import { makeRequestLayer } from "./request-context";
 import { rootRuntime } from "./root-runtime";
@@ -22,19 +34,79 @@ export async function runServerEffect<A, E, R>(
   program: Effect.Effect<A, E, R>,
   options?: {
     readonly headers?: Headers;
+    readonly name?: string;
   },
 ) {
   const headers = options?.headers ?? getRequestHeaders();
+  const request = getCurrentRequest(headers);
+  const requestDetails = getRequestTraceDetails(request);
+  const operationName = options?.name ?? "server.effect";
   // Request-scoped values are created fresh on each call and provided on top of
   // the shared rootRuntime. That keeps headers/session/user isolated per request
   // while still reusing long-lived services from RootLayer.
   const requestLayer = makeRequestLayer(headers);
+  const correlation = extractPostHogCorrelationFromHeaders(headers);
 
+  const instrumentedProgram = withActiveSpanContext(
+    Effect.gen(function* () {
+      yield* annotateCurrentEffectSpan({
+        "app.request_id": requestDetails.requestId,
+        "http.method": requestDetails.method,
+        "url.path": requestDetails.pathname,
+        "app.operation": operationName,
+      });
+
+      return yield* program;
+    }).pipe(
+      Effect.withSpan(operationName, {
+        kind: "server",
+      }),
+      Effect.catchAllCause((cause) => {
+        const error = unwrapEffectCause(Cause.squash(cause));
+        const transportError = mapToTransportError(error);
+
+        return Effect.gen(function* () {
+          yield* annotateCurrentEffectSpan({
+            "error.type": getErrorType(error),
+            "error.message": transportError.message,
+            "app.transport_error_code": transportError.code,
+            "http.response.status_code": transportError.status,
+          });
+          yield* markCurrentEffectSpanAsError(error, {
+            "app.transport_error_code": transportError.code,
+            "http.response.status_code": transportError.status,
+          });
+          yield* Effect.sync(() =>
+            capturePostHogServerException(
+              toError(error),
+              {
+                request_id: requestDetails.requestId,
+                http_method: requestDetails.method,
+                url_path: requestDetails.pathname,
+                operation: operationName,
+                transport_error_code: transportError.code,
+                response_status_code: transportError.status,
+              },
+              correlation,
+            ),
+          );
+          return yield* Effect.fail(transportError);
+        });
+      }),
+    ),
+  );
+
+  return await rootRuntime.runPromise(
+    instrumentedProgram.pipe(Effect.provide(requestLayer)) as Effect.Effect<A, E, never>,
+  );
+}
+
+function getCurrentRequest(headers: Headers): Request {
   try {
-    return await rootRuntime.runPromise(
-      program.pipe(Effect.provide(requestLayer)) as Effect.Effect<A, E, never>,
-    );
-  } catch (error) {
-    throw mapToTransportError(unwrapEffectCause(error));
+    return getRequest();
+  } catch {
+    return new Request("http://localhost/", {
+      headers,
+    });
   }
 }

@@ -21,6 +21,7 @@ export const saveAnswerAction = createServerFn({ method: "POST" })
           service.saveAnswer(data.testId, userId, data.questionId, data.choiceId),
         ).pipe(Effect.as({ ok: true })),
       ),
+      { name: "tests.saveAnswer" },
     ),
   );
 export type SaveAnswerActionResponse = Awaited<ReturnType<typeof saveAnswerAction>>;
@@ -39,6 +40,7 @@ export const submitResponseAction = createServerFn({ method: "POST" })
           service.submitResponse(data.testId, userId),
         ).pipe(Effect.as({ ok: true })),
       ),
+      { name: "tests.submitResponse" },
     ),
   );
 export type SubmitResponseActionResponse = Awaited<ReturnType<typeof submitResponseAction>>;

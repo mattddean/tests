@@ -1,15 +1,17 @@
+import { getRequest } from "@tanstack/react-start/server";
 import { Context, Effect, Layer } from "effect";
 
 import type { SessionData, SessionUser } from "@/domains/auth/model";
 
 import { UnauthorizedError } from "@/domains/auth/errors";
 import { AuthService } from "@/server/auth/auth-service";
+import { getRequestTraceDetails } from "@/server/observability/tracing";
 
 export type RequestContextShape = {
   readonly headers: Headers;
   readonly requestId: string;
-  readonly method?: string;
-  readonly pathname?: string;
+  readonly method: string;
+  readonly pathname: string;
 };
 
 export class RequestContext extends Context.Tag("RequestContext")<
@@ -40,10 +42,25 @@ export const currentUserEffect: Effect.Effect<SessionUser, UnauthorizedError, Cu
   });
 
 export function makeRequestContextLayer(headers: Headers) {
+  const request = getCurrentRequest(headers);
+  const requestDetails = getRequestTraceDetails(request);
+
   return Layer.succeed(RequestContext, {
-    headers,
-    requestId: crypto.randomUUID(),
+    headers: request.headers,
+    requestId: requestDetails.requestId,
+    method: requestDetails.method,
+    pathname: requestDetails.pathname,
   } satisfies RequestContextShape);
+}
+
+function getCurrentRequest(headers: Headers): Request {
+  try {
+    return getRequest();
+  } catch {
+    return new Request("http://localhost/", {
+      headers,
+    });
+  }
 }
 
 export const CurrentSessionLive = Layer.effect(

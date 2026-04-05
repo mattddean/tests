@@ -14,6 +14,7 @@ export const getDashboardData = createServerFn({ method: "GET" }).handler(() =>
     withCurrentUser((userId) =>
       Effect.flatMap(TestReadService, (service) => service.getDashboard(userId)),
     ),
+    { name: "tests.getDashboardData" },
   ),
 );
 export type GetDashboardDataResponse = Awaited<ReturnType<typeof getDashboardData>>;
@@ -27,6 +28,7 @@ export const getTests = createServerFn({ method: "GET" })
       withCurrentUser((userId) =>
         Effect.flatMap(TestReadService, (service) => service.getTestsList(userId, data)),
       ),
+      { name: "tests.getTests" },
     ),
   );
 export type GetTestsResponse = Awaited<ReturnType<typeof getTests>>;
@@ -43,6 +45,7 @@ export const getTestEditor = createServerFn({ method: "GET" })
       withCurrentUser((userId) =>
         Effect.flatMap(TestReadService, (service) => service.getEditorView(data.testId, userId)),
       ),
+      { name: "tests.getTestEditor" },
     ),
   );
 export type GetTestEditorResponse = Awaited<ReturnType<typeof getTestEditor>>;
@@ -59,6 +62,7 @@ export const getTestTake = createServerFn({ method: "GET" })
       withCurrentUser((userId) =>
         Effect.flatMap(TestReadService, (service) => service.getTakeView(data.testId, userId)),
       ),
+      { name: "tests.getTestTake" },
     ),
   );
 export type GetTestTakeResponse = Awaited<ReturnType<typeof getTestTake>>;
@@ -86,6 +90,7 @@ export const getResponsesTableData = createServerFn({ method: "GET" })
           return service.getResponsesTable(testId, userId, search);
         }),
       ),
+      { name: "tests.getResponsesTableData" },
     ),
   );
 export type GetResponsesTableDataResponse = Awaited<ReturnType<typeof getResponsesTableData>>;
@@ -106,6 +111,7 @@ export const getResponseDetail = createServerFn({ method: "GET" })
           service.getResponseReview(data.testId, data.responseId, userId),
         ),
       ),
+      { name: "tests.getResponseDetail" },
     ),
   );
 export type GetResponseDetailResponse = Awaited<ReturnType<typeof getResponseDetail>>;
@@ -115,6 +121,7 @@ export const getMyResponsesData = createServerFn({ method: "GET" }).handler(() =
     withCurrentUser((userId) =>
       Effect.flatMap(TestReadService, (service) => service.getMyResponses(userId)),
     ),
+    { name: "tests.getMyResponsesData" },
   ),
 );
 export type GetMyResponsesDataResponse = Awaited<ReturnType<typeof getMyResponsesData>>;

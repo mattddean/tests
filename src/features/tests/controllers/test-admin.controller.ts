@@ -25,6 +25,7 @@ export const createTest = createServerFn({ method: "POST" })
       withCurrentUser((userId) =>
         Effect.flatMap(TestAdminService, (service) => service.createTestRecord(userId, data.title)),
       ),
+      { name: "tests.createTest" },
     ),
   );
 export type CreateTestResponse = Awaited<ReturnType<typeof createTest>>;
@@ -48,6 +49,7 @@ export const updateTestMetaAction = createServerFn({ method: "POST" })
           }),
         ).pipe(Effect.as({ ok: true })),
       ),
+      { name: "tests.updateTestMeta" },
     ),
   );
 export type UpdateTestMetaActionResponse = Awaited<ReturnType<typeof updateTestMetaAction>>;
@@ -66,6 +68,7 @@ export const publishTestAction = createServerFn({ method: "POST" })
           service.publishTest(data.testId, userId),
         ).pipe(Effect.as({ ok: true })),
       ),
+      { name: "tests.publishTest" },
     ),
   );
 export type PublishTestActionResponse = Awaited<ReturnType<typeof publishTestAction>>;
@@ -84,6 +87,7 @@ export const addEditorAction = createServerFn({ method: "POST" })
           service.addEditor(data.testId, userId, data.email),
         ).pipe(Effect.as({ ok: true })),
       ),
+      { name: "tests.addEditor" },
     ),
   );
 export type AddEditorActionResponse = Awaited<ReturnType<typeof addEditorAction>>;
@@ -102,6 +106,7 @@ export const removeEditorAction = createServerFn({ method: "POST" })
           service.removeEditor(data.testId, userId, data.userId),
         ).pipe(Effect.as({ ok: true })),
       ),
+      { name: "tests.removeEditor" },
     ),
   );
 export type RemoveEditorActionResponse = Awaited<ReturnType<typeof removeEditorAction>>;
@@ -120,6 +125,7 @@ export const shareTestAction = createServerFn({ method: "POST" })
           service.shareTest(data.testId, userId, data.email),
         ).pipe(Effect.as({ ok: true })),
       ),
+      { name: "tests.shareTest" },
     ),
   );
 export type ShareTestActionResponse = Awaited<ReturnType<typeof shareTestAction>>;
