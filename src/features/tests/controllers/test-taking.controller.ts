@@ -18,6 +18,7 @@ export const saveAnswerAction = createServerFn({ method: "POST" })
       ),
     ),
   );
+export type SaveAnswerActionResponse = Awaited<ReturnType<typeof saveAnswerAction>>;
 
 export const submitResponseAction = createServerFn({ method: "POST" })
   .inputValidator(submitResponseInputValidator)
@@ -30,3 +31,4 @@ export const submitResponseAction = createServerFn({ method: "POST" })
       ),
     ),
   );
+export type SubmitResponseActionResponse = Awaited<ReturnType<typeof submitResponseAction>>;

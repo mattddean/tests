@@ -7,7 +7,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
-import type { ResponseTableRow } from "@/features/tests/types";
+import type { GetResponsesTableDataItem } from "@/features/tests/types";
 
 import { EmptyState, SectionHeading } from "@/components/ui";
 import { Card } from "@/components/ui/card";
@@ -29,7 +29,7 @@ export const Route = createFileRoute("/tests/$testId/responses/")({
   component: ResponsesPage,
 });
 
-const columnHelper = createColumnHelper<ResponseTableRow>();
+const columnHelper = createColumnHelper<GetResponsesTableDataItem>();
 
 function ResponsesPage() {
   const { testId } = Route.useParams();

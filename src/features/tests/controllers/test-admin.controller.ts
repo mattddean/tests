@@ -23,6 +23,7 @@ export const createTest = createServerFn({ method: "POST" })
       ),
     ),
   );
+export type CreateTestResponse = Awaited<ReturnType<typeof createTest>>;
 
 export const updateTestMetaAction = createServerFn({ method: "POST" })
   .inputValidator(updateTestMetaInputValidator)
@@ -38,6 +39,7 @@ export const updateTestMetaAction = createServerFn({ method: "POST" })
       ),
     ),
   );
+export type UpdateTestMetaActionResponse = Awaited<ReturnType<typeof updateTestMetaAction>>;
 
 export const publishTestAction = createServerFn({ method: "POST" })
   .inputValidator(testIdInputValidator)
@@ -50,6 +52,7 @@ export const publishTestAction = createServerFn({ method: "POST" })
       ),
     ),
   );
+export type PublishTestActionResponse = Awaited<ReturnType<typeof publishTestAction>>;
 
 export const addEditorAction = createServerFn({ method: "POST" })
   .inputValidator(addEditorInputValidator)
@@ -62,6 +65,7 @@ export const addEditorAction = createServerFn({ method: "POST" })
       ),
     ),
   );
+export type AddEditorActionResponse = Awaited<ReturnType<typeof addEditorAction>>;
 
 export const removeEditorAction = createServerFn({ method: "POST" })
   .inputValidator(removeEditorInputValidator)
@@ -74,6 +78,7 @@ export const removeEditorAction = createServerFn({ method: "POST" })
       ),
     ),
   );
+export type RemoveEditorActionResponse = Awaited<ReturnType<typeof removeEditorAction>>;
 
 export const shareTestAction = createServerFn({ method: "POST" })
   .inputValidator(shareTestInputValidator)
@@ -86,3 +91,4 @@ export const shareTestAction = createServerFn({ method: "POST" })
       ),
     ),
   );
+export type ShareTestActionResponse = Awaited<ReturnType<typeof shareTestAction>>;

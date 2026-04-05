@@ -19,6 +19,7 @@ export const getDashboardData = createServerFn({ method: "GET" }).handler(() =>
     ),
   ),
 );
+export type GetDashboardDataResponse = Awaited<ReturnType<typeof getDashboardData>>;
 
 export const getTests = createServerFn({ method: "GET" })
   .inputValidator(testScopeValidator)
@@ -29,6 +30,7 @@ export const getTests = createServerFn({ method: "GET" })
       ),
     ),
   );
+export type GetTestsResponse = Awaited<ReturnType<typeof getTests>>;
 
 export const getTestEditor = createServerFn({ method: "GET" })
   .inputValidator(testIdInputValidator)
@@ -39,6 +41,7 @@ export const getTestEditor = createServerFn({ method: "GET" })
       ),
     ),
   );
+export type GetTestEditorResponse = Awaited<ReturnType<typeof getTestEditor>>;
 
 export const getTestTake = createServerFn({ method: "GET" })
   .inputValidator(testIdInputValidator)
@@ -49,6 +52,7 @@ export const getTestTake = createServerFn({ method: "GET" })
       ),
     ),
   );
+export type GetTestTakeResponse = Awaited<ReturnType<typeof getTestTake>>;
 
 export const getResponsesTableData = createServerFn({ method: "GET" })
   .inputValidator((value) => {
@@ -69,6 +73,7 @@ export const getResponsesTableData = createServerFn({ method: "GET" })
       ),
     ),
   );
+export type GetResponsesTableDataResponse = Awaited<ReturnType<typeof getResponsesTableData>>;
 
 export const getResponseDetail = createServerFn({ method: "GET" })
   .inputValidator(responseDetailInputValidator)
@@ -81,6 +86,7 @@ export const getResponseDetail = createServerFn({ method: "GET" })
       ),
     ),
   );
+export type GetResponseDetailResponse = Awaited<ReturnType<typeof getResponseDetail>>;
 
 export const getMyResponsesData = createServerFn({ method: "GET" }).handler(() =>
   runServerEffect(
@@ -89,3 +95,4 @@ export const getMyResponsesData = createServerFn({ method: "GET" }).handler(() =
     ),
   ),
 );
+export type GetMyResponsesDataResponse = Awaited<ReturnType<typeof getMyResponsesData>>;

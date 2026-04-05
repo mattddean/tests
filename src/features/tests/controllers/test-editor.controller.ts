@@ -27,6 +27,7 @@ export const addQuestionAction = createServerFn({ method: "POST" })
       ),
     ),
   );
+export type AddQuestionActionResponse = Awaited<ReturnType<typeof addQuestionAction>>;
 
 export const updateQuestionAction = createServerFn({ method: "POST" })
   .inputValidator(updateQuestionInputValidator)
@@ -43,6 +44,7 @@ export const updateQuestionAction = createServerFn({ method: "POST" })
       ),
     ),
   );
+export type UpdateQuestionActionResponse = Awaited<ReturnType<typeof updateQuestionAction>>;
 
 export const reorderQuestionsAction = createServerFn({ method: "POST" })
   .inputValidator(reorderQuestionsInputValidator)
@@ -55,6 +57,7 @@ export const reorderQuestionsAction = createServerFn({ method: "POST" })
       ),
     ),
   );
+export type ReorderQuestionsActionResponse = Awaited<ReturnType<typeof reorderQuestionsAction>>;
 
 export const addChoiceAction = createServerFn({ method: "POST" })
   .inputValidator(addChoiceInputValidator)
@@ -67,6 +70,7 @@ export const addChoiceAction = createServerFn({ method: "POST" })
       ),
     ),
   );
+export type AddChoiceActionResponse = Awaited<ReturnType<typeof addChoiceAction>>;
 
 export const updateChoiceAction = createServerFn({ method: "POST" })
   .inputValidator(updateChoiceInputValidator)
@@ -79,6 +83,7 @@ export const updateChoiceAction = createServerFn({ method: "POST" })
       ),
     ),
   );
+export type UpdateChoiceActionResponse = Awaited<ReturnType<typeof updateChoiceAction>>;
 
 export const reorderChoicesAction = createServerFn({ method: "POST" })
   .inputValidator(reorderChoicesInputValidator)
@@ -91,6 +96,7 @@ export const reorderChoicesAction = createServerFn({ method: "POST" })
       ),
     ),
   );
+export type ReorderChoicesActionResponse = Awaited<ReturnType<typeof reorderChoicesAction>>;
 
 export const deleteQuestionAction = createServerFn({ method: "POST" })
   .inputValidator(deleteQuestionInputValidator)
@@ -103,6 +109,7 @@ export const deleteQuestionAction = createServerFn({ method: "POST" })
       ),
     ),
   );
+export type DeleteQuestionActionResponse = Awaited<ReturnType<typeof deleteQuestionAction>>;
 
 export const deleteChoiceAction = createServerFn({ method: "POST" })
   .inputValidator(deleteChoiceInputValidator)
@@ -115,3 +122,4 @@ export const deleteChoiceAction = createServerFn({ method: "POST" })
       ),
     ),
   );
+export type DeleteChoiceActionResponse = Awaited<ReturnType<typeof deleteChoiceAction>>;

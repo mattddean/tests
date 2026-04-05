@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-import type { QuestionView, TestResponseView } from "../types";
+import type { GetTestEditorQuestion, GetTestTakeResponseData } from "../types";
 
 type EditHandlers = {
   onTitleSave?: (value: string) => Promise<void> | void;
@@ -57,8 +57,8 @@ export function TestDocument({
   title: string;
   description: string | null;
   status: string;
-  questions: Array<QuestionView>;
-  response?: TestResponseView;
+  questions: Array<GetTestEditorQuestion>;
+  response?: GetTestTakeResponseData;
   saveState?: SaveState;
   editable?: boolean;
   handlers?: EditHandlers & TakeHandlers;
@@ -211,7 +211,7 @@ function QuestionBlock({
   onChoiceReorder,
 }: {
   mode: "edit" | "take" | "reviewResponse";
-  question: QuestionView;
+  question: GetTestEditorQuestion;
   selectedChoiceId: string | null;
   editable: boolean;
   onPromptSave?: (value: string) => void | Promise<void>;
@@ -337,7 +337,7 @@ function ChoiceList({
   questionId: string;
   mode: "edit" | "take" | "reviewResponse";
   editable: boolean;
-  choices: Array<QuestionView["choices"][number]>;
+  choices: Array<GetTestEditorQuestion["choices"][number]>;
   selectedChoiceId: string | null;
   onChoiceSelect?: (choiceId: string) => void;
   onChoiceSave?: (choiceId: string, value: string) => void | Promise<void>;
@@ -392,7 +392,7 @@ function ChoiceRow({
   questionId: string;
   mode: "edit" | "take" | "reviewResponse";
   editable: boolean;
-  choice: QuestionView["choices"][number];
+  choice: GetTestEditorQuestion["choices"][number];
   selected: boolean;
   onSelect: () => void;
   onSave?: (value: string) => void | Promise<void>;
