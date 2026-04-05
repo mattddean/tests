@@ -1,7 +1,5 @@
-import type {
-  GetMyResponsesDataResponse as GetMyResponsesDataControllerResponse,
-} from "@/features/tests/controllers/test-read.controller";
 import type { ResponseTableRow } from "@/domains/tests/dto";
+import type { GetMyResponsesDataResponse as GetMyResponsesDataControllerResponse } from "@/features/tests/controllers/test-read.controller";
 
 export type {
   ChoiceView as GetTestEditorChoice,
