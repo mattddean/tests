@@ -14,8 +14,7 @@ import {
   testUser,
 } from "@/server/db/schema";
 
-import type { QuestionView } from "../dto";
-import type { TestPermission } from "../model";
+import type { QuestionType, TestPermission } from "../model";
 
 import {
   ChoiceNotFound,
@@ -82,7 +81,7 @@ function getQuestions(db: TestsDb, testId: string) {
       prompt: item.prompt,
       description: item.description,
       required: item.required,
-      type: item.type as "multiple_choice",
+      type: item.type as QuestionType,
       choices: choices
         .filter((choice) => choice.questionId === item.id)
         .map((choice) => ({
@@ -90,7 +89,7 @@ function getQuestions(db: TestsDb, testId: string) {
           position: choice.position,
           label: choice.label,
         })),
-    })) satisfies Array<QuestionView>;
+    }));
   });
 }
 

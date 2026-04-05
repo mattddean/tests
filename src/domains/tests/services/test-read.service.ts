@@ -15,18 +15,7 @@ import {
   user,
 } from "@/server/db/schema";
 
-import type {
-  Collaborator,
-  DashboardView,
-  QuestionView,
-  ResponseTableRow,
-  ResponseReviewView,
-  TakerInvite,
-  TestEditorView,
-  TestSummary,
-  TestTakeView,
-} from "../dto";
-import type { TestPermission } from "../model";
+import type { QuestionType, ResponseStatus, TestPermission, TestStatus } from "../model";
 
 import { ForbiddenTestAccess, ResponseNotFound, TestNotFound, UserNotFound } from "../errors";
 
@@ -115,7 +104,7 @@ function getQuestions(db: TestsDb, testId: string) {
       prompt: item.prompt,
       description: item.description,
       required: item.required,
-      type: item.type as "multiple_choice",
+      type: item.type as QuestionType,
       choices: choices
         .filter((choice) => choice.questionId === item.id)
         .map((choice) => ({
@@ -123,7 +112,7 @@ function getQuestions(db: TestsDb, testId: string) {
           position: choice.position,
           label: choice.label,
         })),
-    })) satisfies Array<QuestionView>;
+    }));
   });
 }
 
@@ -144,16 +133,15 @@ function getCollaborators(db: TestsDb, testId: string) {
     )
     .orderBy(asc(testUser.role), asc(user.name))
     .pipe(
-      Effect.map(
-        (membershipRows) =>
-          membershipRows.map((member) => ({
-            id: member.id,
-            email: member.email,
-            name: member.name,
-            image: member.image ?? null,
-            role: member.role as "owner" | "editor",
-            invitedAt: member.role === "editor" ? member.createdAt.toISOString() : undefined,
-          })) satisfies Array<Collaborator>,
+      Effect.map((membershipRows) =>
+        membershipRows.map((member) => ({
+          id: member.id,
+          email: member.email,
+          name: member.name,
+          image: member.image ?? null,
+          role: member.role as "owner" | "editor",
+          invitedAt: member.role === "editor" ? member.createdAt.toISOString() : undefined,
+        })),
       ),
     );
 }
@@ -171,7 +159,7 @@ function getTakerInvites(db: TestsDb, testId: string) {
     .orderBy(desc(testEmailAccess.lastSentAt), asc(testEmailAccess.email))
     .pipe(
       Effect.map((inviteRows) =>
-        inviteRows.map<TakerInvite>((invite) => ({
+        inviteRows.map((invite) => ({
           id: invite.id,
           email: invite.email,
           invitedAt: invite.createdAt.toISOString(),
@@ -207,26 +195,26 @@ function toTestSummary(currentTest: {
     slug: currentTest.slug,
     title: currentTest.title,
     description: currentTest.description,
-    status: currentTest.status as TestSummary["status"],
+    status: currentTest.status as TestStatus,
     ownerName: currentTest.ownerName,
     viewerPermission: currentTest.viewerPermission,
     updatedAt: currentTest.updatedAt.toISOString(),
     publishedAt: toIso(currentTest.publishedAt),
     editorCount: currentTest.editorCount,
     responseCount: currentTest.responseCount,
-  } satisfies TestSummary;
+  };
 }
 
 function toTestMetaView(
   currentTest: typeof test.$inferSelect,
   owner: { id: string; name: string | null } | null,
-): TestEditorView["test"] {
+) {
   return {
     id: currentTest.id,
     slug: currentTest.slug,
     title: currentTest.title,
     description: currentTest.description,
-    status: currentTest.status as TestEditorView["test"]["status"],
+    status: currentTest.status as TestStatus,
     ownerUserId: owner?.id ?? "",
     ownerName: owner?.name ?? "Unknown owner",
     publishedAt: toIso(currentTest.publishedAt),
@@ -277,11 +265,11 @@ function getResponsesTableRows(
       id: row.id,
       responderName: row.responderName,
       responderEmail: row.responderEmail,
-      status: row.status as "draft" | "submitted",
+      status: row.status as ResponseStatus,
       startedAt: row.startedAt.toISOString(),
       submittedAt: toIso(row.submittedAt),
       lastAutosavedAt: toIso(row.lastAutosavedAt),
-    })) satisfies Array<ResponseTableRow>;
+    }));
   });
 }
 
@@ -384,7 +372,7 @@ export class TestReadService extends Effect.Service<TestReadService>()("TestRead
               updatedAt: row.updatedAt.toISOString(),
               submittedAt: toIso(row.submittedAt),
             })),
-          } satisfies DashboardView;
+          };
         }),
       getTestsList: (userId: string, scope: "drafts" | "published" | "shared") =>
         Effect.gen(function* () {
@@ -477,7 +465,7 @@ export class TestReadService extends Effect.Service<TestReadService>()("TestRead
             questions: yield* getQuestions(db, resolvedTest.id),
             responseCount: yield* getResponseCount(db, resolvedTest.id),
             viewerPermission: permission,
-          } satisfies TestEditorView;
+          };
         }),
       getTakeView: (testId: string, userId: string) =>
         Effect.gen(function* () {
@@ -537,7 +525,7 @@ export class TestReadService extends Effect.Service<TestReadService>()("TestRead
             questions: yield* getQuestions(db, resolvedTest.id),
             response: {
               id: response?.id ?? null,
-              status: (response?.status as "draft" | "submitted" | undefined) ?? null,
+              status: (response?.status as ResponseStatus | undefined) ?? null,
               startedAt: toIso(response?.startedAt ?? null),
               submittedAt: toIso(response?.submittedAt ?? null),
               lastAutosavedAt: toIso(response?.lastAutosavedAt ?? null),
@@ -545,7 +533,7 @@ export class TestReadService extends Effect.Service<TestReadService>()("TestRead
             },
             viewerPermission: permission,
             canEdit: permission === "owner" || permission === "editor",
-          } satisfies TestTakeView;
+          };
         }),
       getMyResponses: (userId: string) =>
         Effect.gen(function* () {
@@ -567,7 +555,7 @@ export class TestReadService extends Effect.Service<TestReadService>()("TestRead
             id: row.id,
             testId: row.testId,
             testTitle: row.testTitle,
-            status: row.status as "draft" | "submitted",
+            status: row.status as ResponseStatus,
             updatedAt: row.updatedAt.toISOString(),
             submittedAt: toIso(row.submittedAt),
           }));
@@ -616,7 +604,7 @@ export class TestReadService extends Effect.Service<TestReadService>()("TestRead
             questions: yield* getQuestions(db, testId),
             response: {
               id: resolvedResponse.id,
-              status: resolvedResponse.status as "draft" | "submitted",
+              status: resolvedResponse.status as ResponseStatus,
               startedAt: resolvedResponse.startedAt.toISOString(),
               submittedAt: toIso(resolvedResponse.submittedAt),
               lastAutosavedAt: toIso(resolvedResponse.lastAutosavedAt),
@@ -629,7 +617,7 @@ export class TestReadService extends Effect.Service<TestReadService>()("TestRead
               image: responder?.image ?? null,
             },
             viewerPermission: permission,
-          } satisfies ResponseReviewView;
+          };
         }),
     };
   }),
