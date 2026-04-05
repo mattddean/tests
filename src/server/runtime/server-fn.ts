@@ -23,7 +23,7 @@ export function makeServerQuery<
 >(options: {
   readonly run: (input: Input) => Effect.Effect<Output, ErrorType, Requirements>;
   readonly outputSchema?: OutputSchema;
-  readonly name?: string;
+  readonly name: string;
 }) {
   return async ({ data }: { readonly data: Input }) => {
     const result = await runServerEffect(options.run(data), {

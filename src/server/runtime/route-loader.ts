@@ -8,7 +8,9 @@ import { runServerEffect } from "./run-server-effect";
 
 export async function runRouteLoaderEffect<A, E, R>(program: Effect.Effect<A, E, R>) {
   try {
-    return await runServerEffect(program);
+    return await runServerEffect(program, {
+      name: "route.loader",
+    });
   } catch (error) {
     if (
       error instanceof UnauthorizedError ||

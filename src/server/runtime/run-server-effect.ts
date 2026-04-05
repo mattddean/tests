@@ -1,4 +1,4 @@
-import { getRequest, getRequestHeaders } from "@tanstack/react-start/server";
+import { getRequest } from "@tanstack/react-start/server";
 import { Cause, Effect } from "effect";
 
 import { mapToTransportError } from "@/server/errors/error-mapper";
@@ -32,20 +32,18 @@ function unwrapEffectCause(error: unknown): unknown {
 
 export async function runServerEffect<A, E, R>(
   program: Effect.Effect<A, E, R>,
-  options?: {
-    readonly headers?: Headers;
-    readonly name?: string;
+  options: {
+    readonly name: string;
   },
 ) {
-  const headers = options?.headers ?? getRequestHeaders();
-  const request = getCurrentRequest(headers);
+  const request = getRequest();
   const requestDetails = getRequestTraceDetails(request);
-  const operationName = options?.name ?? "server.effect";
+  const operationName = options.name;
   // Request-scoped values are created fresh on each call and provided on top of
   // the shared rootRuntime. That keeps headers/session/user isolated per request
   // while still reusing long-lived services from RootLayer.
-  const requestLayer = makeRequestLayer(headers);
-  const correlation = extractPostHogCorrelationFromHeaders(headers);
+  const requestLayer = makeRequestLayer(requestDetails);
+  const correlation = extractPostHogCorrelationFromHeaders(request.headers);
 
   const instrumentedProgram = withActiveSpanContext(
     Effect.gen(function* () {
@@ -99,14 +97,4 @@ export async function runServerEffect<A, E, R>(
   return await rootRuntime.runPromise(
     instrumentedProgram.pipe(Effect.provide(requestLayer)) as Effect.Effect<A, E, never>,
   );
-}
-
-function getCurrentRequest(headers: Headers): Request {
-  try {
-    return getRequest();
-  } catch {
-    return new Request("http://localhost/", {
-      headers,
-    });
-  }
 }

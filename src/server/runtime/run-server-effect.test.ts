@@ -3,10 +3,20 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { UnauthorizedError } from "@/domains/auth/errors";
 
 const capturePostHogServerException = vi.fn();
+const getRequest = vi.fn(
+  () =>
+    new Request("https://example.com/", {
+      method: "GET",
+    }),
+);
 const startedSpans: Array<{
   name: string;
   attributes: Map<string, unknown>;
 }> = [];
+
+vi.mock("@tanstack/react-start/server", () => ({
+  getRequest,
+}));
 
 vi.mock("@/server/runtime/root-runtime", async () => {
   const effectModule = await import("effect");
@@ -96,7 +106,6 @@ describe("runServerEffect", () => {
 
     await expect(
       runServerEffect(effectModule.Effect.succeed("ok"), {
-        headers: new Headers(),
         name: "tests.getTests",
       }),
     ).resolves.toBe("ok");
@@ -121,7 +130,6 @@ describe("runServerEffect", () => {
           }),
         ),
         {
-          headers: new Headers(),
           name: "auth.requireUser",
         },
       ),
