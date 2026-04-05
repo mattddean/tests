@@ -1,15 +1,12 @@
 import { redirect } from "@tanstack/react-router";
-import { Effect } from "effect";
 
-import { CurrentSession, currentUserEffect } from "@/server/runtime/request-context";
+import { currentSessionEffect, currentUserEffect } from "@/server/runtime/request-context";
 import { runRouteLoaderEffect } from "@/server/runtime/route-loader";
 import { runServerEffect } from "@/server/runtime/run-server-effect";
 
 export type { SessionData, SessionUser } from "@/domains/auth/model";
 
-export const getServerSessionEffect = Effect.gen(function* () {
-  return yield* CurrentSession;
-});
+export const getServerSessionEffect = currentSessionEffect;
 
 export const requireUserEffect = currentUserEffect;
 

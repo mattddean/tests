@@ -1,10 +1,13 @@
+import { getRequest } from "@tanstack/react-start/server";
 import { Context, Effect, Layer } from "effect";
 
 import type { SessionData, SessionUser } from "@/domains/auth/model";
-import type { RequestTraceDetails } from "@/server/observability/tracing";
 
 import { UnauthorizedError } from "@/domains/auth/errors";
 import { AuthService } from "@/server/auth/auth-service";
+import { getRequestTraceDetails } from "@/server/observability/tracing";
+
+export class CurrentRequest extends Context.Tag("CurrentRequest")<CurrentRequest, Request>() {}
 
 export type RequestContextShape = {
   readonly headers: Headers;
@@ -23,55 +26,52 @@ export class CurrentSession extends Context.Tag("CurrentSession")<
   SessionData | null
 >() {}
 
-export type CurrentUserShape = {
-  readonly user: SessionUser | null;
-};
+export const CurrentRequestLive = Layer.sync(CurrentRequest, () => getRequest());
 
-export class CurrentUser extends Context.Tag("CurrentUser")<CurrentUser, CurrentUserShape>() {}
+export const currentSessionEffect: Effect.Effect<SessionData | null, never, CurrentSession> =
+  CurrentSession;
 
-export const currentUserEffect: Effect.Effect<SessionUser, UnauthorizedError, CurrentUser> =
+export const currentUserEffect: Effect.Effect<SessionUser, UnauthorizedError, CurrentSession> =
   Effect.gen(function* () {
-    const currentUser = yield* CurrentUser;
+    const session = yield* currentSessionEffect;
 
-    if (!currentUser.user) {
+    if (!session?.user) {
       return yield* Effect.fail(new UnauthorizedError({ message: "Unauthorized" }));
     }
 
-    return currentUser.user;
+    return session.user;
   });
 
-export function makeRequestContextLayer(requestDetails: RequestTraceDetails) {
-  return Layer.succeed(RequestContext, {
-    headers: requestDetails.headers,
-    requestId: requestDetails.requestId,
-    method: requestDetails.method,
-    pathname: requestDetails.pathname,
-  } satisfies RequestContextShape);
-}
+export const RequestContextLive = Layer.effect(
+  RequestContext,
+  Effect.gen(function* () {
+    const request = yield* CurrentRequest;
+    const requestDetails = getRequestTraceDetails(request);
+
+    return {
+      headers: requestDetails.headers,
+      requestId: requestDetails.requestId,
+      method: requestDetails.method,
+      pathname: requestDetails.pathname,
+    } satisfies RequestContextShape;
+  }),
+);
 
 export const CurrentSessionLive = Layer.effect(
   CurrentSession,
   Effect.gen(function* () {
-    const requestContext = yield* RequestContext;
+    const request = yield* CurrentRequest;
     const authService = yield* AuthService;
-    return yield* authService.getSession(requestContext.headers);
+    return yield* authService.getSession(request.headers);
   }),
 );
 
-export const CurrentUserLive = Layer.effect(
-  CurrentUser,
-  Effect.gen(function* () {
-    const session = yield* CurrentSession;
-    return {
-      user: session?.user ?? null,
-    } satisfies CurrentUserShape;
-  }),
-);
-
-export function makeRequestLayer(requestDetails: RequestTraceDetails) {
-  const requestContextLayer = makeRequestContextLayer(requestDetails);
-  const currentSessionLayer = CurrentSessionLive.pipe(Layer.provide(requestContextLayer));
-  const currentUserLayer = CurrentUserLive.pipe(Layer.provide(currentSessionLayer));
-
-  return Layer.mergeAll(requestContextLayer, currentSessionLayer, currentUserLayer);
+export function makeRequestLayer() {
+  // mergeAll combines peer request-scoped services; it does not wire
+  // dependencies between them automatically.
+  return Layer.mergeAll(RequestContextLive, CurrentSessionLive).pipe(
+    // provideMerge supplies the shared CurrentRequest base layer to both peers
+    // while keeping the resulting layer outputs merged together.
+    Layer.provideMerge(CurrentRequestLive),
+  );
 }

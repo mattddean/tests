@@ -74,18 +74,40 @@ vi.mock("@/server/runtime/root-runtime", async () => {
 
 vi.mock("@/server/runtime/request-context", async () => {
   const effectModule = await import("effect");
+  const request = getRequest();
+  const CurrentRequest = effectModule.Context.Tag("CurrentRequest")<never, Request>();
+  const RequestContext = effectModule.Context.Tag("RequestContext")<
+    never,
+    {
+      readonly headers: Headers;
+      readonly requestId: string;
+      readonly method: string;
+      readonly pathname: string;
+    }
+  >();
 
   return {
-    makeRequestLayer: () => effectModule.Layer.empty,
+    CurrentRequest,
+    RequestContext,
+    makeRequestLayer: () =>
+      effectModule.Layer.mergeAll(
+        effectModule.Layer.succeed(CurrentRequest, request),
+        effectModule.Layer.succeed(RequestContext, {
+          headers: request.headers,
+          requestId: "request-1",
+          method: "GET",
+          pathname: "/",
+        }),
+      ),
   };
 });
 
 vi.mock("@/server/observability/posthog-server", async () => {
   return {
     capturePostHogServerException,
-    extractPostHogCorrelationFromHeaders: (headers: Headers) => ({
-      distinctId: headers.get("X-PostHog-Distinct-Id") ?? undefined,
-      sessionId: headers.get("X-PostHog-Session-Id") ?? undefined,
+    extractPostHogCorrelationFromRequest: (request: Request) => ({
+      distinctId: request.headers.get("X-PostHog-Distinct-Id") ?? undefined,
+      sessionId: request.headers.get("X-PostHog-Session-Id") ?? undefined,
     }),
   };
 });

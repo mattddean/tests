@@ -1,21 +1,19 @@
-import { getRequest } from "@tanstack/react-start/server";
 import { Cause, Effect } from "effect";
 
 import { mapToTransportError } from "@/server/errors/error-mapper";
 import {
   capturePostHogServerException,
-  extractPostHogCorrelationFromHeaders,
+  extractPostHogCorrelationFromRequest,
 } from "@/server/observability/posthog-server";
 import {
   annotateCurrentEffectSpan,
   getErrorType,
-  getRequestTraceDetails,
   markCurrentEffectSpanAsError,
   toError,
   withActiveSpanContext,
 } from "@/server/observability/tracing";
 
-import { makeRequestLayer } from "./request-context";
+import { CurrentRequest, RequestContext, makeRequestLayer } from "./request-context";
 import { rootRuntime } from "./root-runtime";
 
 function unwrapEffectCause(error: unknown): unknown {
@@ -36,21 +34,20 @@ export async function runServerEffect<A, E, R>(
     readonly name: string;
   },
 ) {
-  const request = getRequest();
-  const requestDetails = getRequestTraceDetails(request);
   const operationName = options.name;
-  // Request-scoped values are created fresh on each call and provided on top of
-  // the shared rootRuntime. That keeps headers/session/user isolated per request
-  // while still reusing long-lived services from RootLayer.
-  const requestLayer = makeRequestLayer(requestDetails);
-  const correlation = extractPostHogCorrelationFromHeaders(request.headers);
+  // Request-scoped values are created fresh for each execution and layered on
+  // top of the shared rootRuntime. That keeps request/session/user isolated per
+  // request while still reusing long-lived services from RootLayer.
+  const requestLayer = makeRequestLayer();
 
   const instrumentedProgram = withActiveSpanContext(
     Effect.gen(function* () {
+      const requestContext = yield* RequestContext;
+
       yield* annotateCurrentEffectSpan({
-        "app.request_id": requestDetails.requestId,
-        "http.method": requestDetails.method,
-        "url.path": requestDetails.pathname,
+        "app.request_id": requestContext.requestId,
+        "http.method": requestContext.method,
+        "url.path": requestContext.pathname,
         "app.operation": operationName,
       });
 
@@ -64,6 +61,10 @@ export async function runServerEffect<A, E, R>(
         const transportError = mapToTransportError(error);
 
         return Effect.gen(function* () {
+          const request = yield* CurrentRequest;
+          const requestContext = yield* RequestContext;
+          const correlation = extractPostHogCorrelationFromRequest(request);
+
           yield* annotateCurrentEffectSpan({
             "error.type": getErrorType(error),
             "error.message": transportError.message,
@@ -78,9 +79,9 @@ export async function runServerEffect<A, E, R>(
             capturePostHogServerException(
               toError(error),
               {
-                request_id: requestDetails.requestId,
-                http_method: requestDetails.method,
-                url_path: requestDetails.pathname,
+                request_id: requestContext.requestId,
+                http_method: requestContext.method,
+                url_path: requestContext.pathname,
                 operation: operationName,
                 transport_error_code: transportError.code,
                 response_status_code: transportError.status,
