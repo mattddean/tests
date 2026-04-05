@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { Effect, Schema } from "effect";
 
+import { TestEditorService } from "@/domains/tests/services/test-editor.service";
 import {
   QuestionChoiceTableInputSchema,
   TestQuestionTableInputSchema,
@@ -8,10 +9,8 @@ import {
   deleteQuestionInputValidator,
   reorderChoicesInputValidator,
   reorderQuestionsInputValidator,
-  vStr,
-  vStrNullOpt,
-} from "@/domains/tests/schema";
-import { TestEditorService } from "@/domains/tests/services/test-editor.service";
+} from "@/schemas/entities";
+import { vStr, vStrNullOpt } from "@/schemas/primitives";
 import { runServerEffect } from "@/server/runtime/run-server-effect";
 
 import { withCurrentUser } from "./shared";

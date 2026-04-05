@@ -5,12 +5,12 @@ import { useMemo, useState } from "react";
 
 import { SectionHeading } from "@/components/ui";
 import { Card } from "@/components/ui/card";
-import { parseTakeTestSearch } from "@/domains/tests/schema";
 import { sessionQueryOptions } from "@/features/auth/queries";
 import { TestDocument } from "@/features/tests/components/test-document";
 import { testTakeQueryOptions, testsKeys } from "@/features/tests/queries";
 import { saveAnswerAction, submitResponseAction } from "@/features/tests/server";
 import { authClient } from "@/lib/auth-client";
+import { parseTakeTestSearch } from "@/schemas/search";
 
 export const Route = createFileRoute("/tests/$testId/")({
   validateSearch: parseTakeTestSearch,

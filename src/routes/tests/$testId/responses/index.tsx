@@ -12,9 +12,9 @@ import type { GetResponsesTableDataItem } from "@/features/tests/types";
 import { EmptyState, SectionHeading } from "@/components/ui";
 import { Card } from "@/components/ui/card";
 import { Input as TextInput } from "@/components/ui/input";
-import { parseResponseSearchInput } from "@/domains/tests/schema";
 import { sessionQueryOptions } from "@/features/auth/queries";
 import { responsesTableQueryOptions } from "@/features/tests/queries";
+import { parseResponseSearchInput } from "@/schemas/search";
 
 export const Route = createFileRoute("/tests/$testId/responses/")({
   validateSearch: parseResponseSearchInput,

@@ -1,14 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { Effect, Schema } from "effect";
 
-import {
-  parseResponseSearchInput,
-  ResponseSearchSchema,
-  TestResponseTableInputSchema,
-  TestScopeSchema,
-  vStr,
-} from "@/domains/tests/schema";
 import { TestReadService } from "@/domains/tests/services/test-read.service";
+import { TestResponseTableInputSchema } from "@/schemas/entities";
+import { TestScopeSchema, vStr } from "@/schemas/primitives";
+import { parseResponseSearchInput, ResponseSearchSchema } from "@/schemas/search";
 import { runServerEffect } from "@/server/runtime/run-server-effect";
 
 import { withCurrentUser } from "./shared";

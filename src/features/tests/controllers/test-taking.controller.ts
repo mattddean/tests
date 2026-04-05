@@ -1,11 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { Effect, Schema } from "effect";
 
-import {
-  ResponseAnswerTableInputSchema,
-  TestResponseTableInputSchema,
-} from "@/domains/tests/schema";
 import { TestTakingService } from "@/domains/tests/services/test-taking.service";
+import { ResponseAnswerTableInputSchema, TestResponseTableInputSchema } from "@/schemas/entities";
 import { runServerEffect } from "@/server/runtime/run-server-effect";
 
 import { withCurrentUser } from "./shared";

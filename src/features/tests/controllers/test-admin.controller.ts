@@ -1,14 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
 import { Effect, Schema } from "effect";
 
+import { TestAdminService } from "@/domains/tests/services/test-admin.service";
 import {
   TestEmailAccessTableInputSchema,
   TestResponseTableInputSchema,
   TestTableInputSchema,
   TestUserTableInputSchema,
-  vStr,
-} from "@/domains/tests/schema";
-import { TestAdminService } from "@/domains/tests/services/test-admin.service";
+} from "@/schemas/entities";
+import { vStr } from "@/schemas/primitives";
 import { runServerEffect } from "@/server/runtime/run-server-effect";
 
 import { withCurrentUser } from "./shared";
