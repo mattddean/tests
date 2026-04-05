@@ -1,6 +1,16 @@
+import { createInsertSchema, createUpdateSchema } from "drizzle-orm/effect-schema";
 import { Schema } from "effect";
 
 import { decodeUnknownSync } from "@/lib/effect-schema";
+import {
+  questionChoice,
+  responseAnswer,
+  test,
+  testEmailAccess,
+  testQuestion,
+  testResponse,
+  testUser,
+} from "@/server/db/schema";
 
 type Infer<S extends Schema.Schema.AnyNoContext> = Schema.Schema.Type<S>;
 
@@ -35,11 +45,6 @@ function opt<S extends Schema.Schema.AnyNoContext>(schema: S) {
 
 function nullOpt<S extends Schema.Schema.AnyNoContext>(schema: S) {
   return Schema.optional(Schema.NullOr(schema));
-}
-
-function makeTypedDecoder<S extends Schema.Schema.AnyNoContext>(schema: S) {
-  const decode = decodeUnknownSync(schema);
-  return (input: Infer<S>): Infer<S> => decode(input);
 }
 
 function makeUnknownParser<S extends Schema.Schema.AnyNoContext>(
@@ -93,42 +98,90 @@ export const vChoiceLabel = Schema.String.pipe(
 );
 export const vBooleanOpt = opt(Schema.Boolean);
 
-export const CreateTestInputSchema = Schema.Struct({
-  title: vTitle,
-});
+export const CreateTestInputSchema = createInsertSchema(test, {
+  id: () => vStr,
+  slug: () => vStr,
+  title: () => vTitle,
+  description: () => vDescription,
+  status: () => TestStatusSchema,
+}).pipe(
+  Schema.omit("id", "slug", "description", "status", "publishedAt", "createdAt", "updatedAt"),
+);
 
-export const UpdateTestMetaInputSchema = Schema.Struct({
-  testId: vStr,
-  title: vTitle,
-  description: vDescriptionNull,
-});
+export const UpdateTestMetaInputSchema = Schema.extend(
+  Schema.Struct({
+    testId: vStr,
+  }),
+  createInsertSchema(test, {
+    id: () => vStr,
+    slug: () => vStr,
+    title: () => vTitle,
+    description: () => vDescriptionNull,
+    status: () => TestStatusSchema,
+  }).pipe(Schema.omit("id", "slug", "status", "publishedAt", "createdAt", "updatedAt")),
+);
 
-export const AddQuestionInputSchema = Schema.Struct({
-  testId: vStr,
-  afterQuestionId: vStrNullOpt,
-});
+export const AddQuestionInputSchema = Schema.extend(
+  createInsertSchema(testQuestion, {
+    id: () => vStr,
+    testId: () => vStr,
+    prompt: () => vPrompt,
+    description: () => vDescription,
+    type: () => Schema.Literal("multiple_choice"),
+  }).pipe(
+    Schema.omit(
+      "id",
+      "position",
+      "prompt",
+      "description",
+      "required",
+      "type",
+      "createdAt",
+      "updatedAt",
+    ),
+  ),
+  Schema.Struct({
+    afterQuestionId: vStrNullOpt,
+  }),
+);
 
-export const UpdateQuestionInputSchema = Schema.Struct({
-  questionId: vStr,
-  prompt: vPromptOpt,
-  description: vDescriptionNullOpt,
-  required: vBooleanOpt,
-});
+export const UpdateQuestionInputSchema = Schema.extend(
+  Schema.Struct({
+    questionId: vStr,
+  }),
+  createUpdateSchema(testQuestion, {
+    prompt: () => vPrompt,
+    description: () => vDescription,
+    type: () => Schema.Literal("multiple_choice"),
+  }).pipe(Schema.omit("id", "testId", "position", "type", "createdAt", "updatedAt")),
+);
 
 export const ReorderQuestionsInputSchema = Schema.Struct({
   testId: vStr,
   questionIds: Schema.Array(vStr),
 });
 
-export const AddChoiceInputSchema = Schema.Struct({
-  questionId: vStr,
-  afterChoiceId: vStrNullOpt,
-});
+export const AddChoiceInputSchema = Schema.extend(
+  createInsertSchema(questionChoice, {
+    id: () => vStr,
+    questionId: () => vStr,
+    label: () => vChoiceLabel,
+  }).pipe(Schema.omit("id", "position", "label", "createdAt", "updatedAt")),
+  Schema.Struct({
+    afterChoiceId: vStrNullOpt,
+  }),
+);
 
-export const UpdateChoiceInputSchema = Schema.Struct({
-  choiceId: vStr,
-  label: vChoiceLabel,
-});
+export const UpdateChoiceInputSchema = Schema.extend(
+  Schema.Struct({
+    choiceId: vStr,
+  }),
+  createInsertSchema(questionChoice, {
+    id: () => vStr,
+    questionId: () => vStr,
+    label: () => vChoiceLabel,
+  }).pipe(Schema.omit("id", "questionId", "position", "createdAt", "updatedAt")),
+);
 
 export const ReorderChoicesInputSchema = Schema.Struct({
   questionId: vStr,
@@ -143,24 +196,46 @@ export const DeleteChoiceInputSchema = Schema.Struct({
   choiceId: vStr,
 });
 
-export const AddEditorInputSchema = Schema.Struct({
-  testId: vStr,
-  email: vEmailLower,
-});
+export const AddEditorInputSchema = createInsertSchema(testEmailAccess, {
+  id: () => vStr,
+  testId: () => vStr,
+  email: () => vEmailLower,
+  role: () => Schema.String,
+  grantedByUserId: () => vStr,
+}).pipe(Schema.omit("id", "role", "grantedByUserId", "createdAt", "updatedAt", "lastSentAt"));
 
-export const ShareTestInputSchema = Schema.Struct({
-  testId: vStr,
-  email: vEmailLower,
-});
+export const ShareTestInputSchema = createInsertSchema(testEmailAccess, {
+  id: () => vStr,
+  testId: () => vStr,
+  email: () => vEmailLower,
+  role: () => Schema.String,
+  grantedByUserId: () => vStr,
+}).pipe(Schema.omit("id", "role", "grantedByUserId", "createdAt", "updatedAt", "lastSentAt"));
 
-export const RemoveEditorInputSchema = Schema.Struct({
-  testId: vStr,
-  userId: vStr,
-});
+export const RemoveEditorInputSchema = createInsertSchema(testUser, {
+  testId: () => vStr,
+  userId: () => vStr,
+  role: () => Schema.String,
+  grantedByUserId: () => vStr,
+}).pipe(Schema.omit("role", "grantedByUserId", "createdAt"));
 
-export const TestIdInputSchema = Schema.Struct({
-  testId: vStr,
-});
+export const TestIdInputSchema = createInsertSchema(testResponse, {
+  id: () => vStr,
+  testId: () => vStr,
+  userId: () => vStr,
+  status: () => ResponseStatusSchema,
+}).pipe(
+  Schema.omit(
+    "id",
+    "userId",
+    "status",
+    "startedAt",
+    "submittedAt",
+    "lastAutosavedAt",
+    "createdAt",
+    "updatedAt",
+  ),
+);
 
 export const ResponseSearchSchema = Schema.Struct({
   page: Schema.Number,
@@ -170,20 +245,42 @@ export const ResponseSearchSchema = Schema.Struct({
   direction: SortDirectionSchema,
 });
 
-export const ResponseDetailInputSchema = Schema.Struct({
-  testId: vStr,
-  responseId: vStr,
-});
+export const ResponseDetailInputSchema = Schema.extend(
+  TestIdInputSchema,
+  Schema.Struct({
+    responseId: vStr,
+  }),
+);
 
-export const SaveAnswerInputSchema = Schema.Struct({
-  testId: vStr,
-  questionId: vStr,
-  choiceId: vStr,
-});
+export const SaveAnswerInputSchema = Schema.extend(
+  Schema.Struct({
+    testId: vStr,
+  }),
+  createInsertSchema(responseAnswer, {
+    id: () => vStr,
+    responseId: () => vStr,
+    questionId: () => vStr,
+    choiceId: () => vStr,
+  }).pipe(Schema.omit("id", "responseId", "createdAt", "updatedAt")),
+);
 
-export const SubmitResponseInputSchema = Schema.Struct({
-  testId: vStr,
-});
+export const SubmitResponseInputSchema = createInsertSchema(testResponse, {
+  id: () => vStr,
+  testId: () => vStr,
+  userId: () => vStr,
+  status: () => ResponseStatusSchema,
+}).pipe(
+  Schema.omit(
+    "id",
+    "userId",
+    "status",
+    "startedAt",
+    "submittedAt",
+    "lastAutosavedAt",
+    "createdAt",
+    "updatedAt",
+  ),
+);
 
 export const LibrarySearchSchema = Schema.Struct({
   scope: TestScopeSchema,
@@ -213,24 +310,6 @@ export type SaveAnswerInput = Infer<typeof SaveAnswerInputSchema>;
 export type SubmitResponseInput = Infer<typeof SubmitResponseInputSchema>;
 export type LibrarySearch = Infer<typeof LibrarySearchSchema>;
 export type TakeTestSearch = Infer<typeof TakeTestSearchSchema>;
-
-export const parseCreateTestInput = makeTypedDecoder(CreateTestInputSchema);
-export const parseUpdateTestMetaInput = makeTypedDecoder(UpdateTestMetaInputSchema);
-export const parseAddQuestionInput = makeTypedDecoder(AddQuestionInputSchema);
-export const parseUpdateQuestionInput = makeTypedDecoder(UpdateQuestionInputSchema);
-export const parseReorderQuestionsInput = makeTypedDecoder(ReorderQuestionsInputSchema);
-export const parseAddChoiceInput = makeTypedDecoder(AddChoiceInputSchema);
-export const parseUpdateChoiceInput = makeTypedDecoder(UpdateChoiceInputSchema);
-export const parseReorderChoicesInput = makeTypedDecoder(ReorderChoicesInputSchema);
-export const parseDeleteQuestionInput = makeTypedDecoder(DeleteQuestionInputSchema);
-export const parseDeleteChoiceInput = makeTypedDecoder(DeleteChoiceInputSchema);
-export const parseAddEditorInput = makeTypedDecoder(AddEditorInputSchema);
-export const parseShareTestInput = makeTypedDecoder(ShareTestInputSchema);
-export const parseRemoveEditorInput = makeTypedDecoder(RemoveEditorInputSchema);
-export const parseTestIdInput = makeTypedDecoder(TestIdInputSchema);
-export const parseResponseDetailInput = makeTypedDecoder(ResponseDetailInputSchema);
-export const parseSaveAnswerInput = makeTypedDecoder(SaveAnswerInputSchema);
-export const parseSubmitResponseInput = makeTypedDecoder(SubmitResponseInputSchema);
 
 export const parseResponseSearchInput = makeUnknownParser(
   ResponseSearchSchema,

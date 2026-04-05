@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "bun --bun vite build",
+    "check": "bun run lint:fix && bun run format && bun typecheck",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:pull": "drizzle-kit pull",
@@ -13,7 +14,7 @@
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "lint": "oxlint",
-    "lint:fix": "oxlint --fix && bun format",
+    "lint:fix": "oxlint --fix",
     "prepare": "effect-tsgo patch",
     "preview": "bun --bun vite preview",
     "start": "node .output/server/index.mjs",
