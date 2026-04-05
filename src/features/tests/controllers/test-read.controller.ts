@@ -89,3 +89,20 @@ export const getMyResponsesData = createServerFn({ method: "GET" }).handler(() =
     ),
   ),
 );
+
+export type DashboardDto = Awaited<ReturnType<typeof getDashboardData>>;
+export type TestsListDto = Awaited<ReturnType<typeof getTests>>;
+export type TestSummaryDto = TestsListDto[number];
+export type TestEditorDto = Awaited<ReturnType<typeof getTestEditor>>;
+export type TestMetaView = TestEditorDto["test"];
+export type Collaborator = TestEditorDto["collaborators"][number];
+export type TakerInvite = TestEditorDto["takerInvites"][number];
+export type QuestionView = TestEditorDto["questions"][number];
+export type ChoiceView = QuestionView["choices"][number];
+export type TestTakeDto = Awaited<ReturnType<typeof getTestTake>>;
+export type TestResponseView = TestTakeDto["response"];
+export type ResponsesTableDto = Awaited<ReturnType<typeof getResponsesTableData>>;
+export type ResponseTableRow = ResponsesTableDto[number];
+export type ResponseDetailDto = Awaited<ReturnType<typeof getResponseDetail>>;
+export type MyResponsesDto = Awaited<ReturnType<typeof getMyResponsesData>>;
+export type MyResponseDto = MyResponsesDto[number];

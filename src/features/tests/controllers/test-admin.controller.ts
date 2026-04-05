@@ -86,3 +86,6 @@ export const shareTestAction = createServerFn({ method: "POST" })
       ),
     ),
   );
+
+export type CreateTestResultDto = Awaited<ReturnType<typeof createTest>>;
+export type TestAdminActionDto = Awaited<ReturnType<typeof updateTestMetaAction>>;

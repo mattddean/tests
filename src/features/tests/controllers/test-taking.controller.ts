@@ -30,3 +30,5 @@ export const submitResponseAction = createServerFn({ method: "POST" })
       ),
     ),
   );
+
+export type TestTakingActionDto = Awaited<ReturnType<typeof saveAnswerAction>>;

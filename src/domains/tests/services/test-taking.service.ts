@@ -1,3 +1,5 @@
+import type { Schema } from "effect";
+
 import { and, asc, eq, inArray } from "drizzle-orm";
 import { Effect } from "effect";
 
@@ -14,7 +16,7 @@ import {
   testUser,
 } from "@/server/db/schema";
 
-import type { QuestionView } from "../dto";
+import type { QuestionViewSchema } from "../dto-schema";
 import type { TestPermission } from "../model";
 
 import {
@@ -29,6 +31,7 @@ import {
 } from "../errors";
 
 type TestsDb = Omit<Database, "$client">;
+type QuestionView = Schema.Schema.Type<typeof QuestionViewSchema>;
 
 function requirePresent<T>(value: T | undefined | null, error: Error) {
   return value == null ? Effect.fail(error) : Effect.succeed(value);

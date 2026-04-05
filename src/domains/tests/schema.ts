@@ -1,6 +1,8 @@
+import { createInsertSchema, createUpdateSchema } from "drizzle-orm/effect-schema";
 import { Schema } from "effect";
 
 import { decodeUnknownSync } from "@/lib/effect-schema";
+import { questionChoice, responseAnswer, test, testQuestion } from "@/server/db/schema";
 
 type Infer<S extends Schema.Schema.AnyNoContext> = Schema.Schema.Type<S>;
 
@@ -93,13 +95,37 @@ export const vChoiceLabel = Schema.String.pipe(
 );
 export const vBooleanOpt = opt(Schema.Boolean);
 
+const testInsertSchema = createInsertSchema(test, {
+  id: () => vStr,
+  slug: () => vStr,
+  title: () => vTitle,
+  description: () => vDescription,
+  status: () => TestStatusSchema,
+});
+const testQuestionUpdateSchema = createUpdateSchema(testQuestion, {
+  prompt: () => vPrompt,
+  description: () => vDescription,
+  type: () => Schema.Literal("multiple_choice"),
+});
+const questionChoiceInsertSchema = createInsertSchema(questionChoice, {
+  id: () => vStr,
+  questionId: () => vStr,
+  label: () => vChoiceLabel,
+});
+const responseAnswerInsertSchema = createInsertSchema(responseAnswer, {
+  id: () => vStr,
+  responseId: () => vStr,
+  questionId: () => vStr,
+  choiceId: () => vStr,
+});
+
 export const CreateTestInputSchema = Schema.Struct({
-  title: vTitle,
+  title: testInsertSchema.fields.title,
 });
 
 export const UpdateTestMetaInputSchema = Schema.Struct({
   testId: vStr,
-  title: vTitle,
+  title: testInsertSchema.fields.title,
   description: vDescriptionNull,
 });
 
@@ -110,9 +136,9 @@ export const AddQuestionInputSchema = Schema.Struct({
 
 export const UpdateQuestionInputSchema = Schema.Struct({
   questionId: vStr,
-  prompt: vPromptOpt,
-  description: vDescriptionNullOpt,
-  required: vBooleanOpt,
+  prompt: testQuestionUpdateSchema.fields.prompt,
+  description: testQuestionUpdateSchema.fields.description,
+  required: testQuestionUpdateSchema.fields.required,
 });
 
 export const ReorderQuestionsInputSchema = Schema.Struct({
@@ -121,13 +147,13 @@ export const ReorderQuestionsInputSchema = Schema.Struct({
 });
 
 export const AddChoiceInputSchema = Schema.Struct({
-  questionId: vStr,
+  questionId: questionChoiceInsertSchema.fields.questionId,
   afterChoiceId: vStrNullOpt,
 });
 
 export const UpdateChoiceInputSchema = Schema.Struct({
   choiceId: vStr,
-  label: vChoiceLabel,
+  label: questionChoiceInsertSchema.fields.label,
 });
 
 export const ReorderChoicesInputSchema = Schema.Struct({
@@ -177,8 +203,8 @@ export const ResponseDetailInputSchema = Schema.Struct({
 
 export const SaveAnswerInputSchema = Schema.Struct({
   testId: vStr,
-  questionId: vStr,
-  choiceId: vStr,
+  questionId: responseAnswerInsertSchema.fields.questionId,
+  choiceId: responseAnswerInsertSchema.fields.choiceId,
 });
 
 export const SubmitResponseInputSchema = Schema.Struct({

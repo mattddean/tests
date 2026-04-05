@@ -1,3 +1,5 @@
+import type { Schema } from "effect";
+
 import { and, asc, count, desc, eq, ilike, inArray, or } from "drizzle-orm";
 import { Effect } from "effect";
 
@@ -16,21 +18,32 @@ import {
 } from "@/server/db/schema";
 
 import type {
-  Collaborator,
-  DashboardView,
-  QuestionView,
-  ResponseTableRow,
-  ResponseReviewView,
-  TakerInvite,
-  TestEditorView,
-  TestSummary,
-  TestTakeView,
-} from "../dto";
+  CollaboratorSchema,
+  DashboardViewSchema,
+  QuestionViewSchema,
+  ResponseReviewViewSchema,
+  ResponseTableRowSchema,
+  TakerInviteSchema,
+  TestEditorViewSchema,
+  TestMetaViewSchema,
+  TestSummarySchema,
+  TestTakeViewSchema,
+} from "../dto-schema";
 import type { TestPermission } from "../model";
 
 import { ForbiddenTestAccess, ResponseNotFound, TestNotFound, UserNotFound } from "../errors";
 
 type TestsDb = Omit<Database, "$client">;
+type Collaborator = Schema.Schema.Type<typeof CollaboratorSchema>;
+type DashboardView = Schema.Schema.Type<typeof DashboardViewSchema>;
+type QuestionView = Schema.Schema.Type<typeof QuestionViewSchema>;
+type ResponseReviewView = Schema.Schema.Type<typeof ResponseReviewViewSchema>;
+type ResponseTableRow = Schema.Schema.Type<typeof ResponseTableRowSchema>;
+type TakerInvite = Schema.Schema.Type<typeof TakerInviteSchema>;
+type TestEditorView = Schema.Schema.Type<typeof TestEditorViewSchema>;
+type TestMetaView = Schema.Schema.Type<typeof TestMetaViewSchema>;
+type TestSummary = Schema.Schema.Type<typeof TestSummarySchema>;
+type TestTakeView = Schema.Schema.Type<typeof TestTakeViewSchema>;
 
 function toIso(value: Date | null) {
   return value ? value.toISOString() : null;
@@ -220,7 +233,7 @@ function toTestSummary(currentTest: {
 function toTestMetaView(
   currentTest: typeof test.$inferSelect,
   owner: { id: string; name: string | null } | null,
-): TestEditorView["test"] {
+): TestMetaView {
   return {
     id: currentTest.id,
     slug: currentTest.slug,

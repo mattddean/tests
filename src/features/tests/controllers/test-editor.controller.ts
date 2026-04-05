@@ -115,3 +115,5 @@ export const deleteChoiceAction = createServerFn({ method: "POST" })
       ),
     ),
   );
+
+export type TestEditorActionDto = Awaited<ReturnType<typeof addQuestionAction>>;
