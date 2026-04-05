@@ -14,6 +14,7 @@ import { TestDocument } from "@/features/tests/components/test-document";
 import { testEditorQueryOptions, testsKeys } from "@/features/tests/queries";
 import {
   addChoiceAction,
+  addEditorInput,
   addEditorAction,
   addQuestionAction,
   deleteChoiceAction,
@@ -22,8 +23,10 @@ import {
   removeEditorAction,
   reorderChoicesAction,
   reorderQuestionsAction,
+  shareTestInput,
   shareTestAction,
   updateChoiceAction,
+  updateTestMetaInput,
   updateQuestionAction,
   updateTestMetaAction,
 } from "@/features/tests/server";
@@ -91,14 +94,18 @@ function TestEditorPage() {
 
   const metaForm = useForm({
     defaultValues: {
+      testId,
       title: data.test.title,
-      description: data.test.description ?? "",
+      description: data.test.description,
+    },
+    validators: {
+      onSubmit: updateTestMetaInput,
     },
     onSubmit: async ({ value }) => {
       await withSaveState(async () => {
         await metaMutation.mutateAsync({
           data: {
-            testId,
+            testId: value.testId,
             title: value.title,
             description: value.description || null,
           },
@@ -109,13 +116,17 @@ function TestEditorPage() {
 
   const addEditorForm = useForm({
     defaultValues: {
+      testId,
       email: "",
+    },
+    validators: {
+      onSubmit: addEditorInput,
     },
     onSubmit: async ({ value, formApi }) => {
       await withSaveState(async () => {
         await addEditorMutation.mutateAsync({
           data: {
-            testId,
+            testId: value.testId,
             email: value.email,
           },
         });
@@ -126,13 +137,17 @@ function TestEditorPage() {
 
   const shareTestForm = useForm({
     defaultValues: {
+      testId,
       email: "",
+    },
+    validators: {
+      onSubmit: shareTestInput,
     },
     onSubmit: async ({ value, formApi }) => {
       await withSaveState(async () => {
         await shareTestMutation.mutateAsync({
           data: {
-            testId,
+            testId: value.testId,
             email: value.email,
           },
         });
@@ -305,7 +320,7 @@ function TestEditorPage() {
                 <div className="space-y-2">
                   <FieldLabel label="Description" />
                   <textarea
-                    value={field.state.value}
+                    value={field.state.value ?? ""}
                     onChange={(event) => field.handleChange(event.target.value)}
                     onBlur={field.handleBlur}
                     rows={4}

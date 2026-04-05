@@ -1,23 +1,30 @@
 import { createServerFn } from "@tanstack/react-start";
-import { Effect } from "effect";
+import { Effect, Schema } from "effect";
 
 import {
-  addChoiceInputValidator,
-  addQuestionInputValidator,
+  QuestionChoiceTableInputSchema,
+  TestQuestionTableInputSchema,
   deleteChoiceInputValidator,
   deleteQuestionInputValidator,
   reorderChoicesInputValidator,
   reorderQuestionsInputValidator,
-  updateChoiceInputValidator,
-  updateQuestionInputValidator,
+  vStr,
+  vStrNullOpt,
 } from "@/domains/tests/schema";
 import { TestEditorService } from "@/domains/tests/services/test-editor.service";
 import { runServerEffect } from "@/server/runtime/run-server-effect";
 
 import { withCurrentUser } from "./shared";
 
+export const addQuestionInput = Schema.extend(
+  TestQuestionTableInputSchema.pipe(Schema.pick("testId")),
+  Schema.Struct({
+    afterQuestionId: vStrNullOpt,
+  }),
+).pipe(Schema.standardSchemaV1);
+export type AddQuestionInput = Schema.Schema.Type<typeof addQuestionInput>;
 export const addQuestionAction = createServerFn({ method: "POST" })
-  .inputValidator(addQuestionInputValidator)
+  .inputValidator(addQuestionInput)
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>
@@ -29,8 +36,17 @@ export const addQuestionAction = createServerFn({ method: "POST" })
   );
 export type AddQuestionActionResponse = Awaited<ReturnType<typeof addQuestionAction>>;
 
+export const updateQuestionInput = Schema.extend(
+  Schema.Struct({
+    questionId: vStr,
+  }),
+  Schema.partial(
+    TestQuestionTableInputSchema.pipe(Schema.pick("prompt", "description", "required")),
+  ),
+).pipe(Schema.standardSchemaV1);
+export type UpdateQuestionInput = Schema.Schema.Type<typeof updateQuestionInput>;
 export const updateQuestionAction = createServerFn({ method: "POST" })
-  .inputValidator(updateQuestionInputValidator)
+  .inputValidator(updateQuestionInput)
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>
@@ -59,8 +75,15 @@ export const reorderQuestionsAction = createServerFn({ method: "POST" })
   );
 export type ReorderQuestionsActionResponse = Awaited<ReturnType<typeof reorderQuestionsAction>>;
 
+export const addChoiceInput = Schema.extend(
+  QuestionChoiceTableInputSchema.pipe(Schema.pick("questionId")),
+  Schema.Struct({
+    afterChoiceId: vStrNullOpt,
+  }),
+).pipe(Schema.standardSchemaV1);
+export type AddChoiceInput = Schema.Schema.Type<typeof addChoiceInput>;
 export const addChoiceAction = createServerFn({ method: "POST" })
-  .inputValidator(addChoiceInputValidator)
+  .inputValidator(addChoiceInput)
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>
@@ -72,8 +95,15 @@ export const addChoiceAction = createServerFn({ method: "POST" })
   );
 export type AddChoiceActionResponse = Awaited<ReturnType<typeof addChoiceAction>>;
 
+export const updateChoiceInput = Schema.extend(
+  Schema.Struct({
+    choiceId: vStr,
+  }),
+  QuestionChoiceTableInputSchema.pipe(Schema.pick("label")),
+).pipe(Schema.standardSchemaV1);
+export type UpdateChoiceInput = Schema.Schema.Type<typeof updateChoiceInput>;
 export const updateChoiceAction = createServerFn({ method: "POST" })
-  .inputValidator(updateChoiceInputValidator)
+  .inputValidator(updateChoiceInput)
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>

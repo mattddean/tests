@@ -1,14 +1,22 @@
 import { createServerFn } from "@tanstack/react-start";
-import { Effect } from "effect";
+import { Effect, Schema } from "effect";
 
-import { saveAnswerInputValidator, submitResponseInputValidator } from "@/domains/tests/schema";
+import {
+  ResponseAnswerTableInputSchema,
+  TestResponseTableInputSchema,
+} from "@/domains/tests/schema";
 import { TestTakingService } from "@/domains/tests/services/test-taking.service";
 import { runServerEffect } from "@/server/runtime/run-server-effect";
 
 import { withCurrentUser } from "./shared";
 
+export const saveAnswerInput = Schema.extend(
+  TestResponseTableInputSchema.pipe(Schema.pick("testId")),
+  ResponseAnswerTableInputSchema.pipe(Schema.pick("questionId", "choiceId")),
+).pipe(Schema.standardSchemaV1);
+export type SaveAnswerInput = Schema.Schema.Type<typeof saveAnswerInput>;
 export const saveAnswerAction = createServerFn({ method: "POST" })
-  .inputValidator(saveAnswerInputValidator)
+  .inputValidator(saveAnswerInput)
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>
@@ -20,8 +28,13 @@ export const saveAnswerAction = createServerFn({ method: "POST" })
   );
 export type SaveAnswerActionResponse = Awaited<ReturnType<typeof saveAnswerAction>>;
 
+export const submitResponseInput = TestResponseTableInputSchema.pipe(
+  Schema.pick("testId"),
+  Schema.standardSchemaV1,
+);
+export type SubmitResponseInput = Schema.Schema.Type<typeof submitResponseInput>;
 export const submitResponseAction = createServerFn({ method: "POST" })
-  .inputValidator(submitResponseInputValidator)
+  .inputValidator(submitResponseInput)
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>

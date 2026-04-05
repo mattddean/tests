@@ -1,11 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
-import { Effect } from "effect";
+import { Effect, Schema } from "effect";
 
 import {
   parseResponseSearchInput,
-  responseDetailInputValidator,
-  testIdInputValidator,
-  testScopeValidator,
+  ResponseSearchSchema,
+  TestResponseTableInputSchema,
+  TestScopeSchema,
+  vStr,
 } from "@/domains/tests/schema";
 import { TestReadService } from "@/domains/tests/services/test-read.service";
 import { runServerEffect } from "@/server/runtime/run-server-effect";
@@ -21,8 +22,10 @@ export const getDashboardData = createServerFn({ method: "GET" }).handler(() =>
 );
 export type GetDashboardDataResponse = Awaited<ReturnType<typeof getDashboardData>>;
 
+export const getTestsInput = Schema.standardSchemaV1(TestScopeSchema);
+export type GetTestsInput = Schema.Schema.Type<typeof getTestsInput>;
 export const getTests = createServerFn({ method: "GET" })
-  .inputValidator(testScopeValidator)
+  .inputValidator(getTestsInput)
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>
@@ -32,8 +35,13 @@ export const getTests = createServerFn({ method: "GET" })
   );
 export type GetTestsResponse = Awaited<ReturnType<typeof getTests>>;
 
+export const getTestEditorInput = TestResponseTableInputSchema.pipe(
+  Schema.pick("testId"),
+  Schema.standardSchemaV1,
+);
+export type GetTestEditorInput = Schema.Schema.Type<typeof getTestEditorInput>;
 export const getTestEditor = createServerFn({ method: "GET" })
-  .inputValidator(testIdInputValidator)
+  .inputValidator(getTestEditorInput)
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>
@@ -43,8 +51,13 @@ export const getTestEditor = createServerFn({ method: "GET" })
   );
 export type GetTestEditorResponse = Awaited<ReturnType<typeof getTestEditor>>;
 
+export const getTestTakeInput = TestResponseTableInputSchema.pipe(
+  Schema.pick("testId"),
+  Schema.standardSchemaV1,
+);
+export type GetTestTakeInput = Schema.Schema.Type<typeof getTestTakeInput>;
 export const getTestTake = createServerFn({ method: "GET" })
-  .inputValidator(testIdInputValidator)
+  .inputValidator(getTestTakeInput)
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>
@@ -54,13 +67,19 @@ export const getTestTake = createServerFn({ method: "GET" })
   );
 export type GetTestTakeResponse = Awaited<ReturnType<typeof getTestTake>>;
 
+export const getResponsesTableDataInput = Schema.extend(
+  Schema.Struct({
+    testId: vStr,
+  }),
+  ResponseSearchSchema,
+);
+export type GetResponsesTableDataInput = Schema.Schema.Type<typeof getResponsesTableDataInput>;
 export const getResponsesTableData = createServerFn({ method: "GET" })
-  .inputValidator((value) => {
-    const parsed = parseResponseSearchInput(value);
-    const record = value as { testId?: string };
+  .inputValidator((value): GetResponsesTableDataInput => {
+    const record = value as { testId?: unknown };
     return {
-      ...parsed,
-      testId: typeof record?.testId === "string" ? record.testId : "",
+      ...parseResponseSearchInput(value),
+      testId: typeof record.testId === "string" ? record.testId : "",
     };
   })
   .handler(({ data }) =>
@@ -75,8 +94,15 @@ export const getResponsesTableData = createServerFn({ method: "GET" })
   );
 export type GetResponsesTableDataResponse = Awaited<ReturnType<typeof getResponsesTableData>>;
 
+export const getResponseDetailInput = Schema.extend(
+  TestResponseTableInputSchema.pipe(Schema.pick("testId")),
+  Schema.Struct({
+    responseId: vStr,
+  }),
+).pipe(Schema.standardSchemaV1);
+export type GetResponseDetailInput = Schema.Schema.Type<typeof getResponseDetailInput>;
 export const getResponseDetail = createServerFn({ method: "GET" })
-  .inputValidator(responseDetailInputValidator)
+  .inputValidator(getResponseDetailInput)
   .handler(({ data }) =>
     runServerEffect(
       withCurrentUser((userId) =>
