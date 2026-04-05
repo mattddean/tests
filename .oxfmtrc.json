@@ -19,5 +19,6 @@
     "functions": ["clsx", "cn", "cx"],
     "preserveWhitespace": true
   },
+  "jsdoc": {},
   "ignorePatterns": ["src/db/migrations/meta", "src/routeTree.gen.ts"]
 }
