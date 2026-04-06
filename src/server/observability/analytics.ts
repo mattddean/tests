@@ -1,17 +1,15 @@
+import { serverConfig } from "@/server/config/server-config";
+
 export function getAnalyticsConfig() {
-  const host = String(
-    process.env.VITE_POSTHOG_HOST ?? import.meta.env.VITE_POSTHOG_HOST ?? "",
-  ).trim();
-  const projectToken = String(
-    process.env.VITE_POSTHOG_PROJECT_TOKEN ?? import.meta.env.VITE_POSTHOG_PROJECT_TOKEN ?? "",
-  ).trim();
-
-  if (!host || !projectToken) {
-    return undefined;
+  if (serverConfig.VITE_POSTHOG_PROJECT_TOKEN && serverConfig.VITE_POSTHOG_HOST) {
+    return {
+      VITE_POSTHOG_PROJECT_TOKEN: serverConfig.VITE_POSTHOG_PROJECT_TOKEN,
+      VITE_POSTHOG_HOST: serverConfig.VITE_POSTHOG_HOST,
+    };
   }
+}
 
-  return {
-    PUBLIC_POSTHOG_HOST: host,
-    PUBLIC_POSTHOG_PROJECT_TOKEN: projectToken,
-  };
+export function enableAds(): boolean {
+  // For now, ads follow the same rules as analytics
+  return !!getAnalyticsConfig();
 }

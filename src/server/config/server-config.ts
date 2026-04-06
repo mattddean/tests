@@ -3,6 +3,7 @@ import { Context, Layer, Schema } from "effect";
 import { decodeUnknownSync } from "@/lib/effect-schema";
 
 export const ServerConfigSchema = Schema.Struct({
+  PUBLIC_ENV: Schema.String,
   DATABASE_URL: Schema.String,
   BETTER_AUTH_URL: Schema.String,
   BETTER_AUTH_SECRET: Schema.String,
