@@ -1,10 +1,7 @@
 import { Cause, Effect } from "effect";
 
 import { classifyServerError, mapToTransportError } from "@/server/errors/error-mapper";
-import {
-  capturePostHogServerException,
-  extractPostHogCorrelationFromRequest,
-} from "@/server/observability/posthog-server";
+import { logger } from "@/server/observability/logger";
 import {
   annotateCurrentEffectSpan,
   getErrorType,
@@ -64,7 +61,6 @@ export async function runServerEffect<A, E, R>(
         return Effect.gen(function* () {
           const request = yield* CurrentRequest;
           const requestContext = yield* RequestContext;
-          const correlation = extractPostHogCorrelationFromRequest(request);
 
           yield* annotateCurrentEffectSpan({
             "error.type": getErrorType(error),
@@ -79,7 +75,7 @@ export async function runServerEffect<A, E, R>(
 
           if (shouldReport) {
             yield* Effect.sync(() =>
-              capturePostHogServerException(
+              logger.error(
                 toError(error),
                 {
                   request_id: requestContext.requestId,
@@ -89,7 +85,7 @@ export async function runServerEffect<A, E, R>(
                   transport_error_code: transportError.code,
                   response_status_code: transportError.status,
                 },
-                correlation,
+                { request },
               ),
             );
           }

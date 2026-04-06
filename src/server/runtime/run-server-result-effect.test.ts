@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { UnauthorizedError } from "@/domains/auth/errors";
 
-const capturePostHogServerException = vi.fn();
+const loggerError = vi.fn();
 const getRequest = vi.fn(
   () =>
     new Request("https://example.com/", {
@@ -103,13 +103,11 @@ vi.mock("@/server/runtime/request-context", async () => {
   };
 });
 
-vi.mock("@/server/observability/posthog-server", async () => {
+vi.mock("@/server/observability/logger", async () => {
   return {
-    capturePostHogServerException,
-    extractPostHogCorrelationFromRequest: (request: Request) => ({
-      distinctId: request.headers.get("X-PostHog-Distinct-Id") ?? undefined,
-      sessionId: request.headers.get("X-PostHog-Session-Id") ?? undefined,
-    }),
+    logger: {
+      error: loggerError,
+    },
   };
 });
 
@@ -161,7 +159,7 @@ describe("runServerResultEffect", () => {
       },
     });
 
-    expect(capturePostHogServerException).not.toHaveBeenCalled();
+    expect(loggerError).not.toHaveBeenCalled();
   });
 
   it("reports unexpected failures and returns a generic public error", async () => {
@@ -181,6 +179,6 @@ describe("runServerResultEffect", () => {
       },
     });
 
-    expect(capturePostHogServerException).toHaveBeenCalledTimes(1);
+    expect(loggerError).toHaveBeenCalledTimes(1);
   });
 });

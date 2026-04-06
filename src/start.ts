@@ -1,7 +1,12 @@
 import { SpanKind, trace } from "@opentelemetry/api";
 import { createMiddleware, createStart } from "@tanstack/react-start";
 
-import { getPostHogHeaders } from "@/lib/posthog";
+import {
+  getPostHogHeaders,
+  POSTHOG_DISTINCT_ID_HEADER,
+  POSTHOG_SESSION_ID_HEADER,
+} from "@/lib/posthog";
+import { logger } from "@/server/observability/logger";
 import {
   OBSERVABILITY_SERVICE_NAME,
   getRequestTraceDetails,
@@ -12,18 +17,17 @@ import {
 
 const tracer = trace.getTracer(OBSERVABILITY_SERVICE_NAME);
 
+function getPostHogCorrelationFromRequest(request: Request) {
+  return {
+    distinctId: request.headers.get(POSTHOG_DISTINCT_ID_HEADER) ?? undefined,
+    sessionId: request.headers.get(POSTHOG_SESSION_ID_HEADER) ?? undefined,
+  };
+}
+
 export const postHogRequestMiddleware = createMiddleware().server(
   async ({ next, pathname, request }) => {
-    const {
-      capturePostHogServerException,
-      ensurePostHogServerStarted,
-      extractPostHogCorrelationFromRequest,
-    } = await import("@/server/observability/posthog-server");
-
-    await ensurePostHogServerStarted();
-
     const requestDetails = getRequestTraceDetails(request);
-    const correlation = extractPostHogCorrelationFromRequest(request);
+    const correlation = getPostHogCorrelationFromRequest(request);
 
     return await tracer.startActiveSpan(
       `HTTP ${requestDetails.method} ${pathname}`,
@@ -50,14 +54,14 @@ export const postHogRequestMiddleware = createMiddleware().server(
           return result;
         } catch (error) {
           markSpanAsError(span, error);
-          capturePostHogServerException(
+          logger.error(
             toError(error),
             {
               request_id: requestDetails.requestId,
               http_method: requestDetails.method,
               url_path: pathname,
             },
-            correlation,
+            { request },
           );
           throw error;
         } finally {

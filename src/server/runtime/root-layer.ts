@@ -10,10 +10,9 @@ import { AuthServiceLive } from "@/server/auth/auth-service";
 import { ServerConfigLive } from "@/server/config/server-config";
 import { DbLive } from "@/server/db/live";
 import { MailerLive } from "@/server/mail/agentmail-mailer";
-import { LoggerLive } from "@/server/observability/logger";
 import { OBSERVABILITY_SERVICE_NAME } from "@/server/observability/tracing";
 
-const BaseLayer = Layer.mergeAll(ServerConfigLive, LoggerLive, DbLive, AuthServiceLive, MailerLive);
+const BaseLayer = Layer.mergeAll(ServerConfigLive, DbLive, AuthServiceLive, MailerLive);
 const ObservabilityLayer = OtelTracer.layerGlobal.pipe(
   Layer.provideMerge(
     OtelResource.layer({

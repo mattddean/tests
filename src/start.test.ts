@@ -1,12 +1,7 @@
 import { trace } from "@opentelemetry/api";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const capturePostHogServerException = vi.fn();
-const ensurePostHogServerStarted = vi.fn(() => Promise.resolve());
-const extractPostHogCorrelationFromRequest = vi.fn(() => ({
-  distinctId: "distinct-123",
-  sessionId: "session-123",
-}));
+const loggerError = vi.fn();
 
 const startActiveSpan = vi.fn(
   async (
@@ -27,10 +22,10 @@ const startActiveSpan = vi.fn(
     }),
 );
 
-vi.mock("@/server/observability/posthog-server", () => ({
-  capturePostHogServerException,
-  ensurePostHogServerStarted,
-  extractPostHogCorrelationFromRequest,
+vi.mock("@/server/observability/logger", () => ({
+  logger: {
+    error: loggerError,
+  },
 }));
 
 describe("start middleware", () => {
@@ -102,7 +97,6 @@ describe("start middleware", () => {
       } as never),
     ).rejects.toBe(error);
 
-    expect(ensurePostHogServerStarted).toHaveBeenCalledTimes(1);
     expect(startActiveSpan).toHaveBeenCalledWith(
       "HTTP GET /tests",
       expect.objectContaining({
@@ -110,6 +104,6 @@ describe("start middleware", () => {
       }),
       expect.any(Function),
     );
-    expect(capturePostHogServerException).toHaveBeenCalledTimes(1);
+    expect(loggerError).toHaveBeenCalledTimes(1);
   });
 });
