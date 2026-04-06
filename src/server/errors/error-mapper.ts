@@ -1,7 +1,6 @@
-import type { TestsError } from "@/domains/tests/errors";
 import type { ServerErrorPayload } from "@/lib/server-result";
 
-import { UnauthorizedError } from "@/domains/auth/errors";
+import { ReportableError, UnexpectedServerError } from "@/backend/errors";
 
 import { TransportError } from "./transport-error";
 
@@ -9,11 +8,11 @@ function getMessage(error: unknown) {
   return error instanceof Error ? error.message : "Unexpected server error";
 }
 
-function getUnexpectedServerError(): ServerErrorPayload {
+function toPayload(error: ReportableError): ServerErrorPayload {
   return {
-    _tag: "UnexpectedServerError",
-    message: "Unexpected server error",
-    status: 500,
+    _tag: error._tag,
+    message: error.userMessage ?? "Unexpected server error",
+    status: error.status,
   };
 }
 
@@ -32,69 +31,32 @@ export function classifyServerError(error: unknown): {
     };
   }
 
-  if (error instanceof UnauthorizedError) {
+  if (error instanceof ReportableError) {
+    if (error.userMessage) {
+      return {
+        error: toPayload(error),
+        shouldReport: error.severity !== "debug",
+      };
+    }
+
+    const genericError = new UnexpectedServerError({
+      message: error.message,
+      cause: error,
+    });
+
     return {
-      error: {
-        _tag: error._tag,
-        message: error.message,
-        status: 401,
-      },
-      shouldReport: false,
+      error: toPayload(genericError),
+      shouldReport: error.severity !== "debug",
     };
   }
 
-  if (error && typeof error === "object" && "_tag" in error) {
-    const tagged = error as TestsError;
-
-    switch (tagged._tag) {
-      case "TestNotFound":
-      case "QuestionNotFound":
-      case "ChoiceNotFound":
-      case "ResponseNotFound":
-      case "UserNotFound":
-        return {
-          error: {
-            _tag: tagged._tag,
-            message: getMessage(error),
-            status: 404,
-          },
-          shouldReport: false,
-        };
-      case "ForbiddenTestAccess":
-      case "OnlyOwnerCanPublish":
-      case "OnlyOwnerCanShareWithTakers":
-      case "OnlyOwnerCanManageEditors":
-      case "InviteEmailMismatch":
-        return {
-          error: {
-            _tag: tagged._tag,
-            message: getMessage(error),
-            status: 403,
-          },
-          shouldReport: false,
-        };
-      case "CannotPublishEmptyTest":
-      case "AtLeastTwoChoicesRequired":
-      case "ResponseAlreadySubmitted":
-      case "TestMustBePublished":
-      case "RequiredQuestionsIncomplete":
-      case "OwnerAlreadyHasAccess":
-        return {
-          error: {
-            _tag: tagged._tag,
-            message: getMessage(error),
-            status: 409,
-          },
-          shouldReport: false,
-        };
-      default:
-        tagged satisfies never;
-        break;
-    }
-  }
+  const genericError = new UnexpectedServerError({
+    message: getMessage(error),
+    cause: error,
+  });
 
   return {
-    error: getUnexpectedServerError(),
+    error: toPayload(genericError),
     shouldReport: true,
   };
 }

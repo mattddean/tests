@@ -18,12 +18,29 @@ const LOG_NAMESPACE = "tz.mtdn.dev";
 type AnalyticsConfig = NonNullable<ReturnType<typeof getAnalyticsConfig>>;
 type LogLevel = "debug" | "info" | "log" | "warn" | "error";
 export type PostHogNode = InstanceType<typeof PostHog>;
+type ServerCorrelation = {
+  readonly distinctId?: string;
+  readonly sessionId?: string;
+};
+type PostHogConfigOverride = {
+  readonly PUBLIC_POSTHOG_HOST?: string;
+  readonly PUBLIC_POSTHOG_PROJECT_TOKEN?: string;
+  readonly host?: string;
+  readonly projectToken?: string;
+  readonly tracesUrl?: string;
+} | null;
+type PostHogFactories = {
+  readonly createClient?: (config: AnalyticsConfig) => PostHogNode;
+  readonly createSdk?: (config: AnalyticsConfig) => OtelState["sdk"];
+  readonly getTracerProvider?: () => unknown;
+};
 
 interface OtelState {
   SeverityNumber: typeof SeverityNumber;
   logger: ReturnType<typeof logs.getLogger>;
   sdk: {
     shutdown: () => Promise<void>;
+    start?: () => void;
   };
 }
 
@@ -31,6 +48,30 @@ let posthogClient: PostHogNode | null = null;
 let otelState: OtelState | null = null;
 let posthogShutdownPromise: Promise<void> | null = null;
 let shutdownHandlersRegistered = false;
+let analyticsConfigOverride: PostHogConfigOverride = null;
+let posthogFactories: PostHogFactories = {};
+
+function getResolvedAnalyticsConfig(): AnalyticsConfig | undefined {
+  if (analyticsConfigOverride) {
+    const host =
+      analyticsConfigOverride.PUBLIC_POSTHOG_HOST ?? analyticsConfigOverride.host ?? undefined;
+    const projectToken =
+      analyticsConfigOverride.PUBLIC_POSTHOG_PROJECT_TOKEN ??
+      analyticsConfigOverride.projectToken ??
+      undefined;
+
+    if (!host || !projectToken) {
+      return undefined;
+    }
+
+    return {
+      PUBLIC_POSTHOG_HOST: host,
+      PUBLIC_POSTHOG_PROJECT_TOKEN: projectToken,
+    };
+  }
+
+  return getAnalyticsConfig();
+}
 
 /** Get the PostHog server-side client. Uses a singleton pattern to avoid creating multiple clients. */
 export function getPostHogServer(): PostHogNode | undefined {
@@ -38,17 +79,19 @@ export function getPostHogServer(): PostHogNode | undefined {
     return posthogClient;
   }
 
-  const analyticsConfig = getAnalyticsConfig();
+  const analyticsConfig = getResolvedAnalyticsConfig();
   if (!analyticsConfig) return;
 
   registerShutdownHandlers();
 
-  posthogClient = new PostHog(analyticsConfig.PUBLIC_POSTHOG_PROJECT_TOKEN, {
-    host: analyticsConfig.PUBLIC_POSTHOG_HOST,
-    flushAt: 1,
-    flushInterval: 0,
-    enableExceptionAutocapture: true,
-  });
+  posthogClient =
+    posthogFactories.createClient?.(analyticsConfig) ??
+    new PostHog(analyticsConfig.PUBLIC_POSTHOG_PROJECT_TOKEN, {
+      host: analyticsConfig.PUBLIC_POSTHOG_HOST,
+      flushAt: 1,
+      flushInterval: 0,
+      enableExceptionAutocapture: true,
+    });
 
   return posthogClient;
 }
@@ -193,27 +236,29 @@ function registerShutdownHandlers(): void {
 function getOtelState(): OtelState | null {
   if (otelState) return otelState;
 
-  const analyticsConfig = getAnalyticsConfig();
+  const analyticsConfig = getResolvedAnalyticsConfig();
   if (!analyticsConfig) return null;
 
-  const sdk = new NodeSDK({
-    resource: resourceFromAttributes({
-      "service.name": LOG_NAMESPACE,
-      "deployment.environment": env.PUBLIC_ENV,
-    }),
-    logRecordProcessors: [
-      new BatchLogRecordProcessor(
-        new OTLPLogExporter({
-          url: getOtlpLogsEndpoint(analyticsConfig),
-          headers: {
-            Authorization: `Bearer ${analyticsConfig.PUBLIC_POSTHOG_PROJECT_TOKEN}`,
-          },
-        }),
-      ),
-    ],
-  });
+  const sdk =
+    posthogFactories.createSdk?.(analyticsConfig) ??
+    new NodeSDK({
+      resource: resourceFromAttributes({
+        "service.name": LOG_NAMESPACE,
+        "deployment.environment": env.PUBLIC_ENV,
+      }),
+      logRecordProcessors: [
+        new BatchLogRecordProcessor(
+          new OTLPLogExporter({
+            url: getOtlpLogsEndpoint(analyticsConfig),
+            headers: {
+              Authorization: `Bearer ${analyticsConfig.PUBLIC_POSTHOG_PROJECT_TOKEN}`,
+            },
+          }),
+        ),
+      ],
+    });
 
-  sdk.start();
+  sdk.start?.();
 
   otelState = {
     SeverityNumber,
@@ -222,6 +267,82 @@ function getOtelState(): OtelState | null {
   };
 
   return otelState;
+}
+
+export function extractPostHogCorrelationFromHeaders(headers: Headers): ServerCorrelation {
+  return {
+    distinctId: headers.get(POSTHOG_DISTINCT_ID_HEADER) ?? undefined,
+    sessionId: headers.get(POSTHOG_SESSION_ID_HEADER) ?? undefined,
+  };
+}
+
+export function extractPostHogCorrelationFromRequest(request: Request): ServerCorrelation {
+  return extractPostHogCorrelationFromHeaders(request.headers);
+}
+
+export function capturePostHogServerException(
+  error: Error,
+  metadata?: LogMetadata,
+  correlation?: ServerCorrelation,
+): void {
+  captureException(error, metadata, correlation);
+}
+
+export async function ensurePostHogServerStarted(): Promise<void> {
+  getPostHogServer();
+  getOtelState();
+}
+
+export async function shutdownPostHogServer(): Promise<void> {
+  await shutdownPostHog();
+}
+
+export function emitPostHogServerLog(
+  level: LogLevel,
+  message: string,
+  metadata?: LogMetadata,
+  serverLogContext?: ServerLogContext,
+): Promise<void> {
+  return emitLog(level, message, metadata, serverLogContext);
+}
+
+export function trackPostHogServerEvent(
+  event: string,
+  metadata: LogMetadata,
+  serverLogContext: ServerLogContext,
+): void {
+  trackEvent(event, metadata, serverLogContext);
+}
+
+export function setOtelSdkForTesting(
+  sdk: OtelState["sdk"] | null,
+  logger: ReturnType<typeof logs.getLogger> | null,
+): void {
+  otelState = sdk
+    ? {
+        SeverityNumber,
+        logger: logger ?? logs.getLogger(LOG_NAMESPACE),
+        sdk,
+      }
+    : null;
+  posthogShutdownPromise = null;
+}
+
+export function setPostHogConfigForTesting(config: PostHogConfigOverride): void {
+  analyticsConfigOverride = config;
+}
+
+export function setPostHogFactoriesForTesting(factories: PostHogFactories): void {
+  posthogFactories = factories;
+}
+
+export function resetPostHogServerForTesting(): void {
+  posthogClient = null;
+  otelState = null;
+  posthogShutdownPromise = null;
+  shutdownHandlersRegistered = false;
+  analyticsConfigOverride = null;
+  posthogFactories = {};
 }
 
 function getLogSeverity(level: LogLevel, severityNumber: typeof SeverityNumber): number {

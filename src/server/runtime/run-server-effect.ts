@@ -1,6 +1,6 @@
 import { Cause, Effect } from "effect";
 
-import { mapToTransportError } from "@/server/errors/error-mapper";
+import { classifyServerError, mapToTransportError } from "@/server/errors/error-mapper";
 import {
   capturePostHogServerException,
   extractPostHogCorrelationFromRequest,
@@ -59,7 +59,7 @@ export async function runServerEffect<A, E, R>(
       Effect.catchAllCause((cause) => {
         const error = unwrapEffectCause(Cause.squash(cause));
         const transportError = mapToTransportError(error);
-        const shouldReport = transportError.code === "UnexpectedServerError";
+        const shouldReport = classifyServerError(error).shouldReport;
 
         return Effect.gen(function* () {
           const request = yield* CurrentRequest;

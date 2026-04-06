@@ -1,68 +1,123 @@
-import { Data } from "effect";
+import { type ErrorSeverity, ReportableError } from "@/backend/errors";
 
-export class TestNotFound extends Data.TaggedError("TestNotFound")<{
-  readonly message: string;
-}> {}
+function makeTestsErrorClass<Tag extends string>(
+  tag: Tag,
+  defaults: {
+    readonly status: number;
+    readonly severity: ErrorSeverity;
+    readonly userMessage?: string;
+  },
+) {
+  return class extends ReportableError {
+    readonly _tag = tag;
 
-export class QuestionNotFound extends Data.TaggedError("QuestionNotFound")<{
-  readonly message: string;
-}> {}
+    constructor(args: {
+      readonly message: string;
+      readonly userMessage?: string;
+      readonly severity?: ErrorSeverity;
+      readonly cause?: unknown;
+    }) {
+      super(tag, {
+        message: args.message,
+        userMessage: args.userMessage ?? defaults.userMessage ?? args.message,
+        severity: args.severity ?? defaults.severity,
+        status: defaults.status,
+        cause: args.cause,
+      });
+    }
+  } as new (args: {
+    readonly message: string;
+    readonly userMessage?: string;
+    readonly severity?: ErrorSeverity;
+    readonly cause?: unknown;
+  }) => ReportableError & { readonly _tag: Tag };
+}
 
-export class ChoiceNotFound extends Data.TaggedError("ChoiceNotFound")<{
-  readonly message: string;
-}> {}
+export class TestNotFound extends makeTestsErrorClass("TestNotFound", {
+  status: 404,
+  severity: "debug",
+}) {}
 
-export class ResponseNotFound extends Data.TaggedError("ResponseNotFound")<{
-  readonly message: string;
-}> {}
+export class QuestionNotFound extends makeTestsErrorClass("QuestionNotFound", {
+  status: 404,
+  severity: "debug",
+}) {}
 
-export class UserNotFound extends Data.TaggedError("UserNotFound")<{
-  readonly message: string;
-}> {}
+export class ChoiceNotFound extends makeTestsErrorClass("ChoiceNotFound", {
+  status: 404,
+  severity: "debug",
+}) {}
 
-export class ForbiddenTestAccess extends Data.TaggedError("ForbiddenTestAccess")<{
-  readonly message: string;
-}> {}
+export class ResponseNotFound extends makeTestsErrorClass("ResponseNotFound", {
+  status: 404,
+  severity: "debug",
+}) {}
 
-export class OnlyOwnerCanPublish extends Data.TaggedError("OnlyOwnerCanPublish")<{
-  readonly message: string;
-}> {}
+export class UserNotFound extends makeTestsErrorClass("UserNotFound", {
+  status: 404,
+  severity: "debug",
+}) {}
 
-export class OnlyOwnerCanShareWithTakers extends Data.TaggedError("OnlyOwnerCanShareWithTakers")<{
-  readonly message: string;
-}> {}
+export class ForbiddenTestAccess extends makeTestsErrorClass("ForbiddenTestAccess", {
+  status: 403,
+  severity: "debug",
+}) {}
 
-export class OnlyOwnerCanManageEditors extends Data.TaggedError("OnlyOwnerCanManageEditors")<{
-  readonly message: string;
-}> {}
+export class OnlyOwnerCanPublish extends makeTestsErrorClass("OnlyOwnerCanPublish", {
+  status: 403,
+  severity: "debug",
+}) {}
 
-export class CannotPublishEmptyTest extends Data.TaggedError("CannotPublishEmptyTest")<{
-  readonly message: string;
-}> {}
+export class OnlyOwnerCanShareWithTakers extends makeTestsErrorClass(
+  "OnlyOwnerCanShareWithTakers",
+  {
+    status: 403,
+    severity: "debug",
+  },
+) {}
 
-export class AtLeastTwoChoicesRequired extends Data.TaggedError("AtLeastTwoChoicesRequired")<{
-  readonly message: string;
-}> {}
+export class OnlyOwnerCanManageEditors extends makeTestsErrorClass("OnlyOwnerCanManageEditors", {
+  status: 403,
+  severity: "debug",
+}) {}
 
-export class ResponseAlreadySubmitted extends Data.TaggedError("ResponseAlreadySubmitted")<{
-  readonly message: string;
-}> {}
+export class CannotPublishEmptyTest extends makeTestsErrorClass("CannotPublishEmptyTest", {
+  status: 409,
+  severity: "debug",
+}) {}
 
-export class InviteEmailMismatch extends Data.TaggedError("InviteEmailMismatch")<{
-  readonly message: string;
-}> {}
+export class AtLeastTwoChoicesRequired extends makeTestsErrorClass("AtLeastTwoChoicesRequired", {
+  status: 409,
+  severity: "debug",
+}) {}
 
-export class TestMustBePublished extends Data.TaggedError("TestMustBePublished")<{
-  readonly message: string;
-}> {}
+export class ResponseAlreadySubmitted extends makeTestsErrorClass("ResponseAlreadySubmitted", {
+  status: 409,
+  severity: "debug",
+}) {}
 
-export class RequiredQuestionsIncomplete extends Data.TaggedError("RequiredQuestionsIncomplete")<{
-  readonly message: string;
-}> {}
+export class InviteEmailMismatch extends makeTestsErrorClass("InviteEmailMismatch", {
+  status: 403,
+  severity: "debug",
+}) {}
 
-export class OwnerAlreadyHasAccess extends Data.TaggedError("OwnerAlreadyHasAccess")<{
-  readonly message: string;
-}> {}
+export class TestMustBePublished extends makeTestsErrorClass("TestMustBePublished", {
+  status: 409,
+  severity: "debug",
+}) {}
+
+export class RequiredQuestionsIncomplete extends makeTestsErrorClass(
+  "RequiredQuestionsIncomplete",
+  {
+    status: 409,
+    severity: "debug",
+  },
+) {}
+
+export class OwnerAlreadyHasAccess extends makeTestsErrorClass("OwnerAlreadyHasAccess", {
+  status: 409,
+  severity: "debug",
+}) {}
 
 export type TestsError =
   | AtLeastTwoChoicesRequired

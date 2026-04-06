@@ -1,0 +1,5 @@
+export {
+  POSTHOG_ANONYMOUS_ID,
+  POSTHOG_DISTINCT_ID_HEADER,
+  POSTHOG_SESSION_ID_HEADER,
+} from "@/lib/posthog";
