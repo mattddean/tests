@@ -3,7 +3,7 @@ import { Effect, Schema } from "effect";
 
 import { TestTakingService } from "@/domains/tests/services/test-taking.service";
 import { ResponseAnswerTableInputSchema, TestResponseTableInputSchema } from "@/schemas/entities";
-import { runServerEffect } from "@/server/runtime/run-server-effect";
+import { runServerResultEffect } from "@/server/runtime/run-server-result-effect";
 
 import { currentUserIdEffect } from "./shared";
 
@@ -15,7 +15,7 @@ export type SaveAnswerInput = Schema.Schema.Type<typeof saveAnswerInput>;
 export const saveAnswerAction = createServerFn({ method: "POST" })
   .inputValidator(saveAnswerInput)
   .handler(({ data }) =>
-    runServerEffect(
+    runServerResultEffect(
       Effect.gen(function* () {
         const userId = yield* currentUserIdEffect;
         const testTakingService = yield* TestTakingService;
@@ -35,7 +35,7 @@ export type SubmitResponseInput = Schema.Schema.Type<typeof submitResponseInput>
 export const submitResponseAction = createServerFn({ method: "POST" })
   .inputValidator(submitResponseInput)
   .handler(({ data }) =>
-    runServerEffect(
+    runServerResultEffect(
       Effect.gen(function* () {
         const userId = yield* currentUserIdEffect;
         const testTakingService = yield* TestTakingService;

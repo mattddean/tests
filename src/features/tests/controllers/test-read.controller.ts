@@ -5,12 +5,12 @@ import { TestReadService } from "@/domains/tests/services/test-read.service";
 import { TestResponseTableInputSchema } from "@/schemas/entities";
 import { TestScopeSchema, vStr } from "@/schemas/primitives";
 import { parseResponseSearchInput, ResponseSearchSchema } from "@/schemas/search";
-import { runServerEffect } from "@/server/runtime/run-server-effect";
+import { runServerResultEffect } from "@/server/runtime/run-server-result-effect";
 
 import { currentUserIdEffect } from "./shared";
 
 export const getDashboardData = createServerFn({ method: "GET" }).handler(() =>
-  runServerEffect(
+  runServerResultEffect(
     Effect.gen(function* () {
       const userId = yield* currentUserIdEffect;
       const testReadService = yield* TestReadService;
@@ -26,7 +26,7 @@ export type GetTestsInput = Schema.Schema.Type<typeof getTestsInput>;
 export const getTests = createServerFn({ method: "GET" })
   .inputValidator(getTestsInput)
   .handler(({ data }) =>
-    runServerEffect(
+    runServerResultEffect(
       Effect.gen(function* () {
         const userId = yield* currentUserIdEffect;
         const testReadService = yield* TestReadService;
@@ -45,7 +45,7 @@ export type GetTestEditorInput = Schema.Schema.Type<typeof getTestEditorInput>;
 export const getTestEditor = createServerFn({ method: "GET" })
   .inputValidator(getTestEditorInput)
   .handler(({ data }) =>
-    runServerEffect(
+    runServerResultEffect(
       Effect.gen(function* () {
         const userId = yield* currentUserIdEffect;
         const testReadService = yield* TestReadService;
@@ -64,7 +64,7 @@ export type GetTestTakeInput = Schema.Schema.Type<typeof getTestTakeInput>;
 export const getTestTake = createServerFn({ method: "GET" })
   .inputValidator(getTestTakeInput)
   .handler(({ data }) =>
-    runServerEffect(
+    runServerResultEffect(
       Effect.gen(function* () {
         const userId = yield* currentUserIdEffect;
         const testReadService = yield* TestReadService;
@@ -91,7 +91,7 @@ export const getResponsesTableData = createServerFn({ method: "GET" })
     };
   })
   .handler(({ data }) =>
-    runServerEffect(
+    runServerResultEffect(
       Effect.gen(function* () {
         const userId = yield* currentUserIdEffect;
         const testReadService = yield* TestReadService;
@@ -113,7 +113,7 @@ export type GetResponseDetailInput = Schema.Schema.Type<typeof getResponseDetail
 export const getResponseDetail = createServerFn({ method: "GET" })
   .inputValidator(getResponseDetailInput)
   .handler(({ data }) =>
-    runServerEffect(
+    runServerResultEffect(
       Effect.gen(function* () {
         const userId = yield* currentUserIdEffect;
         const testReadService = yield* TestReadService;
@@ -125,7 +125,7 @@ export const getResponseDetail = createServerFn({ method: "GET" })
 export type GetResponseDetailResponse = Awaited<ReturnType<typeof getResponseDetail>>;
 
 export const getMyResponsesData = createServerFn({ method: "GET" }).handler(() =>
-  runServerEffect(
+  runServerResultEffect(
     Effect.gen(function* () {
       const userId = yield* currentUserIdEffect;
       const testReadService = yield* TestReadService;

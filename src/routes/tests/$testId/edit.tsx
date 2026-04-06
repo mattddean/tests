@@ -30,6 +30,21 @@ import {
   updateQuestionAction,
   updateTestMetaAction,
 } from "@/features/tests/server";
+import { throwOnError } from "@/lib/server-result";
+
+const updateTestMeta = throwOnError(updateTestMetaAction);
+const addEditor = throwOnError(addEditorAction);
+const shareTest = throwOnError(shareTestAction);
+const removeEditor = throwOnError(removeEditorAction);
+const publishTest = throwOnError(publishTestAction);
+const addQuestion = throwOnError(addQuestionAction);
+const updateQuestion = throwOnError(updateQuestionAction);
+const reorderQuestions = throwOnError(reorderQuestionsAction);
+const addChoice = throwOnError(addChoiceAction);
+const updateChoice = throwOnError(updateChoiceAction);
+const reorderChoices = throwOnError(reorderChoicesAction);
+const deleteQuestion = throwOnError(deleteQuestionAction);
+const deleteChoice = throwOnError(deleteChoiceAction);
 
 export const Route = createFileRoute("/tests/$testId/edit")({
   loader: async ({ context, params }) => {
@@ -72,23 +87,23 @@ function TestEditorPage() {
   };
 
   const metaMutation = useMutation({
-    mutationFn: updateTestMetaAction,
+    mutationFn: updateTestMeta,
     onSuccess: async () => invalidate(),
   });
   const addEditorMutation = useMutation({
-    mutationFn: addEditorAction,
+    mutationFn: addEditor,
     onSuccess: async () => invalidate(),
   });
   const shareTestMutation = useMutation({
-    mutationFn: shareTestAction,
+    mutationFn: shareTest,
     onSuccess: async () => invalidate(),
   });
   const removeEditorMutation = useMutation({
-    mutationFn: removeEditorAction,
+    mutationFn: removeEditor,
     onSuccess: async () => invalidate(),
   });
   const publishMutation = useMutation({
-    mutationFn: publishTestAction,
+    mutationFn: publishTest,
     onSuccess: async () => invalidate(),
   });
 
@@ -180,54 +195,54 @@ function TestEditorPage() {
         }),
       onQuestionPromptSave: async (questionId: string, value: string) =>
         withSaveState(async () => {
-          await updateQuestionAction({
+          await updateQuestion({
             data: { questionId, prompt: value || "Untitled question" },
           });
           await invalidate();
         }),
       onQuestionDescriptionSave: async (questionId: string, value: string) =>
         withSaveState(async () => {
-          await updateQuestionAction({ data: { questionId, description: value || null } });
+          await updateQuestion({ data: { questionId, description: value || null } });
           await invalidate();
         }),
       onQuestionRequiredToggle: async (questionId: string, value: boolean) =>
         withSaveState(async () => {
-          await updateQuestionAction({ data: { questionId, required: value } });
+          await updateQuestion({ data: { questionId, required: value } });
           await invalidate();
         }),
       onQuestionAdd: async (afterQuestionId?: string | null) =>
         withSaveState(async () => {
-          await addQuestionAction({ data: { testId, afterQuestionId } });
+          await addQuestion({ data: { testId, afterQuestionId } });
           await invalidate();
         }),
       onQuestionDelete: async (questionId: string) =>
         withSaveState(async () => {
-          await deleteQuestionAction({ data: { questionId } });
+          await deleteQuestion({ data: { questionId } });
           await invalidate();
         }),
       onQuestionReorder: async (questionIds: Array<string>) =>
         withSaveState(async () => {
-          await reorderQuestionsAction({ data: { testId, questionIds } });
+          await reorderQuestions({ data: { testId, questionIds } });
           await invalidate();
         }),
       onChoiceSave: async (choiceId: string, value: string) =>
         withSaveState(async () => {
-          await updateChoiceAction({ data: { choiceId, label: value || "Untitled choice" } });
+          await updateChoice({ data: { choiceId, label: value || "Untitled choice" } });
           await invalidate();
         }),
       onChoiceAdd: async (questionId: string, afterChoiceId?: string | null) =>
         withSaveState(async () => {
-          await addChoiceAction({ data: { questionId, afterChoiceId } });
+          await addChoice({ data: { questionId, afterChoiceId } });
           await invalidate();
         }),
       onChoiceDelete: async (choiceId: string) =>
         withSaveState(async () => {
-          await deleteChoiceAction({ data: { choiceId } });
+          await deleteChoice({ data: { choiceId } });
           await invalidate();
         }),
       onChoiceReorder: async (questionId: string, choiceIds: Array<string>) =>
         withSaveState(async () => {
-          await reorderChoicesAction({ data: { questionId, choiceIds } });
+          await reorderChoices({ data: { questionId, choiceIds } });
           await invalidate();
         }),
     }),

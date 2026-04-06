@@ -1,4 +1,5 @@
 import type { TestsError } from "@/domains/tests/errors";
+import type { ServerErrorPayload } from "@/lib/server-result";
 
 import { UnauthorizedError } from "@/domains/auth/errors";
 
@@ -8,13 +9,38 @@ function getMessage(error: unknown) {
   return error instanceof Error ? error.message : "Unexpected server error";
 }
 
-export function mapToTransportError(error: unknown) {
+function getUnexpectedServerError(): ServerErrorPayload {
+  return {
+    _tag: "UnexpectedServerError",
+    message: "Unexpected server error",
+    status: 500,
+  };
+}
+
+export function classifyServerError(error: unknown): {
+  readonly error: ServerErrorPayload;
+  readonly shouldReport: boolean;
+} {
   if (error instanceof TransportError) {
-    return error;
+    return {
+      error: {
+        _tag: error.code,
+        message: error.message,
+        status: error.status,
+      },
+      shouldReport: false,
+    };
   }
 
   if (error instanceof UnauthorizedError) {
-    return new TransportError(error.message, 401, error._tag);
+    return {
+      error: {
+        _tag: error._tag,
+        message: error.message,
+        status: 401,
+      },
+      shouldReport: false,
+    };
   }
 
   if (error && typeof error === "object" && "_tag" in error) {
@@ -26,24 +52,62 @@ export function mapToTransportError(error: unknown) {
       case "ChoiceNotFound":
       case "ResponseNotFound":
       case "UserNotFound":
-        return new TransportError(getMessage(error), 404, tagged._tag);
+        return {
+          error: {
+            _tag: tagged._tag,
+            message: getMessage(error),
+            status: 404,
+          },
+          shouldReport: false,
+        };
       case "ForbiddenTestAccess":
       case "OnlyOwnerCanPublish":
       case "OnlyOwnerCanShareWithTakers":
       case "OnlyOwnerCanManageEditors":
       case "InviteEmailMismatch":
-        return new TransportError(getMessage(error), 403, tagged._tag);
+        return {
+          error: {
+            _tag: tagged._tag,
+            message: getMessage(error),
+            status: 403,
+          },
+          shouldReport: false,
+        };
       case "CannotPublishEmptyTest":
       case "AtLeastTwoChoicesRequired":
       case "ResponseAlreadySubmitted":
       case "TestMustBePublished":
       case "RequiredQuestionsIncomplete":
       case "OwnerAlreadyHasAccess":
-        return new TransportError(getMessage(error), 409, tagged._tag);
+        return {
+          error: {
+            _tag: tagged._tag,
+            message: getMessage(error),
+            status: 409,
+          },
+          shouldReport: false,
+        };
       default:
+        tagged satisfies never;
         break;
     }
   }
 
-  return new TransportError(getMessage(error), 500, "UnexpectedServerError");
+  return {
+    error: getUnexpectedServerError(),
+    shouldReport: true,
+  };
+}
+
+export function mapToTransportError(error: unknown) {
+  if (error instanceof TransportError) {
+    return error;
+  }
+
+  const classifiedError = classifyServerError(error);
+  return new TransportError(
+    classifiedError.error.message,
+    classifiedError.error.status,
+    classifiedError.error._tag,
+  );
 }

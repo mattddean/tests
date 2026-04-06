@@ -1,6 +1,7 @@
 import { Cause, Effect } from "effect";
 
-import { mapToTransportError } from "@/server/errors/error-mapper";
+import { serverError, serverOk, type ServerResult } from "@/lib/server-result";
+import { classifyServerError } from "@/server/errors/error-mapper";
 import {
   capturePostHogServerException,
   extractPostHogCorrelationFromRequest,
@@ -28,16 +29,13 @@ function unwrapEffectCause(error: unknown): unknown {
   return error;
 }
 
-export async function runServerEffect<A, E, R>(
+export async function runServerResultEffect<A, E, R>(
   program: Effect.Effect<A, E, R>,
   options: {
     readonly name: string;
   },
-) {
+): Promise<ServerResult<A>> {
   const operationName = options.name;
-  // Request-scoped values are created fresh for each execution and layered on
-  // top of the shared rootRuntime. That keeps request/session/user isolated per
-  // request while still reusing long-lived services from RootLayer.
   const requestLayer = makeRequestLayer();
 
   const instrumentedProgram = withActiveSpanContext(
@@ -51,15 +49,14 @@ export async function runServerEffect<A, E, R>(
         "app.operation": operationName,
       });
 
-      return yield* program;
+      return serverOk(yield* program);
     }).pipe(
       Effect.withSpan(operationName, {
         kind: "server",
       }),
       Effect.catchAllCause((cause) => {
         const error = unwrapEffectCause(Cause.squash(cause));
-        const transportError = mapToTransportError(error);
-        const shouldReport = transportError.code === "UnexpectedServerError";
+        const classifiedError = classifyServerError(error);
 
         return Effect.gen(function* () {
           const request = yield* CurrentRequest;
@@ -68,16 +65,16 @@ export async function runServerEffect<A, E, R>(
 
           yield* annotateCurrentEffectSpan({
             "error.type": getErrorType(error),
-            "error.message": transportError.message,
-            "app.transport_error_code": transportError.code,
-            "http.response.status_code": transportError.status,
+            "error.message": classifiedError.error.message,
+            "app.transport_error_code": classifiedError.error._tag,
+            "http.response.status_code": classifiedError.error.status,
           });
           yield* markCurrentEffectSpanAsError(error, {
-            "app.transport_error_code": transportError.code,
-            "http.response.status_code": transportError.status,
+            "app.transport_error_code": classifiedError.error._tag,
+            "http.response.status_code": classifiedError.error.status,
           });
 
-          if (shouldReport) {
+          if (classifiedError.shouldReport) {
             yield* Effect.sync(() =>
               capturePostHogServerException(
                 toError(error),
@@ -86,21 +83,25 @@ export async function runServerEffect<A, E, R>(
                   http_method: requestContext.method,
                   url_path: requestContext.pathname,
                   operation: operationName,
-                  transport_error_code: transportError.code,
-                  response_status_code: transportError.status,
+                  transport_error_code: classifiedError.error._tag,
+                  response_status_code: classifiedError.error.status,
                 },
                 correlation,
               ),
             );
           }
 
-          return yield* Effect.fail(transportError);
+          return serverError(classifiedError.error);
         });
       }),
     ),
   );
 
   return await rootRuntime.runPromise(
-    instrumentedProgram.pipe(Effect.provide(requestLayer)) as Effect.Effect<A, E, never>,
+    instrumentedProgram.pipe(Effect.provide(requestLayer)) as Effect.Effect<
+      ServerResult<A>,
+      never,
+      never
+    >,
   );
 }

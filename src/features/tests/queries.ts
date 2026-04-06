@@ -1,5 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 
+import { throwOnError } from "@/lib/server-result";
+
 import {
   getDashboardData,
   getMyResponsesData,
@@ -34,28 +36,28 @@ export const testsKeys = {
 export function dashboardQueryOptions() {
   return queryOptions({
     queryKey: testsKeys.dashboard(),
-    queryFn: () => getDashboardData(),
+    queryFn: throwOnError(getDashboardData),
   });
 }
 
 export function testsListQueryOptions(scope: "drafts" | "published" | "shared") {
   return queryOptions({
     queryKey: testsKeys.list(scope),
-    queryFn: () => getTests({ data: scope }),
+    queryFn: throwOnError(() => getTests({ data: scope })),
   });
 }
 
 export function testEditorQueryOptions(testId: string) {
   return queryOptions({
     queryKey: testsKeys.editor(testId),
-    queryFn: () => getTestEditor({ data: { testId } }),
+    queryFn: throwOnError(() => getTestEditor({ data: { testId } })),
   });
 }
 
 export function testTakeQueryOptions(testId: string) {
   return queryOptions({
     queryKey: testsKeys.take(testId),
-    queryFn: () => getTestTake({ data: { testId } }),
+    queryFn: throwOnError(() => getTestTake({ data: { testId } })),
   });
 }
 
@@ -71,20 +73,20 @@ export function responsesTableQueryOptions(
 ) {
   return queryOptions({
     queryKey: testsKeys.responses(testId, search),
-    queryFn: () => getResponsesTableData({ data: { testId, ...search } }),
+    queryFn: throwOnError(() => getResponsesTableData({ data: { testId, ...search } })),
   });
 }
 
 export function responseDetailQueryOptions(testId: string, responseId: string) {
   return queryOptions({
     queryKey: testsKeys.responseDetail(testId, responseId),
-    queryFn: () => getResponseDetail({ data: { testId, responseId } }),
+    queryFn: throwOnError(() => getResponseDetail({ data: { testId, responseId } })),
   });
 }
 
 export function myResponsesQueryOptions() {
   return queryOptions({
     queryKey: testsKeys.myResponses(),
-    queryFn: () => getMyResponsesData(),
+    queryFn: throwOnError(getMyResponsesData),
   });
 }

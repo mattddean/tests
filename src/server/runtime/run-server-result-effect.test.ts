@@ -23,7 +23,6 @@ vi.mock("@/server/runtime/root-runtime", async () => {
   const tracerModule = await import("effect/Tracer");
   const optionModule = await import("effect/Option");
   const exitModule = await import("effect/Exit");
-  const causeModule = await import("effect/Cause");
 
   const tracer = tracerModule.make({
     span(name, _parent, context, links, startTime, kind, options) {
@@ -59,14 +58,16 @@ vi.mock("@/server/runtime/root-runtime", async () => {
   return {
     rootRuntime: {
       runPromise: (effect: Parameters<typeof effectModule.Effect.runPromise>[0]) =>
+        effectModule.Effect.runPromise(effect.pipe(effectModule.Effect.withTracer(tracer))),
+      runPromiseExit: (effect: Parameters<typeof effectModule.Effect.runPromiseExit>[0]) =>
         effectModule.Effect.runPromiseExit(
           effect.pipe(effectModule.Effect.withTracer(tracer)),
         ).then((exit) => {
           if (exitModule.isSuccess(exit)) {
-            return exit.value;
+            return exit;
           }
 
-          throw causeModule.squash(exit.cause);
+          return exit;
         }),
     },
   };
@@ -112,7 +113,7 @@ vi.mock("@/server/observability/posthog-server", async () => {
   };
 });
 
-describe("runServerEffect", () => {
+describe("runServerResultEffect", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     startedSpans.length = 0;
@@ -122,30 +123,26 @@ describe("runServerEffect", () => {
     vi.restoreAllMocks();
   });
 
-  it("creates a span with the provided operation name and annotates request metadata", async () => {
+  it("returns successful results as ok values", async () => {
     const effectModule = await import("effect");
-    const { runServerEffect } = await import("./run-server-effect");
+    const { runServerResultEffect } = await import("./run-server-result-effect");
 
     await expect(
-      runServerEffect(effectModule.Effect.succeed("ok"), {
+      runServerResultEffect(effectModule.Effect.succeed("ok"), {
         name: "tests.getTests",
       }),
-    ).resolves.toBe("ok");
-
-    const span = startedSpans.find((candidate) => candidate.name === "tests.getTests");
-
-    expect(span).toBeDefined();
-    expect(span?.attributes.get("http.method")).toBe("GET");
-    expect(span?.attributes.get("url.path")).toBe("/");
-    expect(span?.attributes.get("app.operation")).toBe("tests.getTests");
+    ).resolves.toEqual({
+      ok: true,
+      value: "ok",
+    });
   });
 
-  it("maps failures to TransportError without reporting expected failures", async () => {
+  it("returns reportable tagged failures without reporting them", async () => {
     const effectModule = await import("effect");
-    const { runServerEffect } = await import("./run-server-effect");
+    const { runServerResultEffect } = await import("./run-server-result-effect");
 
     await expect(
-      runServerEffect(
+      runServerResultEffect(
         effectModule.Effect.fail(
           new UnauthorizedError({
             message: "Unauthorized",
@@ -155,12 +152,35 @@ describe("runServerEffect", () => {
           name: "auth.requireUser",
         },
       ),
-    ).rejects.toMatchObject({
-      name: "TransportError",
-      status: 401,
-      code: "UnauthorizedError",
+    ).resolves.toEqual({
+      ok: false,
+      error: {
+        _tag: "UnauthorizedError",
+        message: "Unauthorized",
+        status: 401,
+      },
     });
 
     expect(capturePostHogServerException).not.toHaveBeenCalled();
+  });
+
+  it("reports unexpected failures and returns a generic public error", async () => {
+    const effectModule = await import("effect");
+    const { runServerResultEffect } = await import("./run-server-result-effect");
+
+    await expect(
+      runServerResultEffect(effectModule.Effect.fail("Database connection failed"), {
+        name: "tests.getTestEditor",
+      }),
+    ).resolves.toEqual({
+      ok: false,
+      error: {
+        _tag: "UnexpectedServerError",
+        message: "Unexpected server error",
+        status: 500,
+      },
+    });
+
+    expect(capturePostHogServerException).toHaveBeenCalledTimes(1);
   });
 });

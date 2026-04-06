@@ -11,7 +11,7 @@ import {
   reorderQuestionsInputValidator,
 } from "@/schemas/entities";
 import { vStr, vStrNullOpt } from "@/schemas/primitives";
-import { runServerEffect } from "@/server/runtime/run-server-effect";
+import { runServerResultEffect } from "@/server/runtime/run-server-result-effect";
 
 import { currentUserIdEffect } from "./shared";
 
@@ -25,7 +25,7 @@ export type AddQuestionInput = Schema.Schema.Type<typeof addQuestionInput>;
 export const addQuestionAction = createServerFn({ method: "POST" })
   .inputValidator(addQuestionInput)
   .handler(({ data }) =>
-    runServerEffect(
+    runServerResultEffect(
       Effect.gen(function* () {
         const userId = yield* currentUserIdEffect;
         const testEditorService = yield* TestEditorService;
@@ -49,7 +49,7 @@ export type UpdateQuestionInput = Schema.Schema.Type<typeof updateQuestionInput>
 export const updateQuestionAction = createServerFn({ method: "POST" })
   .inputValidator(updateQuestionInput)
   .handler(({ data }) =>
-    runServerEffect(
+    runServerResultEffect(
       Effect.gen(function* () {
         const userId = yield* currentUserIdEffect;
         const testEditorService = yield* TestEditorService;
@@ -70,7 +70,7 @@ export type UpdateQuestionActionResponse = Awaited<ReturnType<typeof updateQuest
 export const reorderQuestionsAction = createServerFn({ method: "POST" })
   .inputValidator(reorderQuestionsInputValidator)
   .handler(({ data }) =>
-    runServerEffect(
+    runServerResultEffect(
       Effect.gen(function* () {
         const userId = yield* currentUserIdEffect;
         const testEditorService = yield* TestEditorService;
@@ -94,7 +94,7 @@ export type AddChoiceInput = Schema.Schema.Type<typeof addChoiceInput>;
 export const addChoiceAction = createServerFn({ method: "POST" })
   .inputValidator(addChoiceInput)
   .handler(({ data }) =>
-    runServerEffect(
+    runServerResultEffect(
       Effect.gen(function* () {
         const userId = yield* currentUserIdEffect;
         const testEditorService = yield* TestEditorService;
@@ -118,7 +118,7 @@ export type UpdateChoiceInput = Schema.Schema.Type<typeof updateChoiceInput>;
 export const updateChoiceAction = createServerFn({ method: "POST" })
   .inputValidator(updateChoiceInput)
   .handler(({ data }) =>
-    runServerEffect(
+    runServerResultEffect(
       Effect.gen(function* () {
         const userId = yield* currentUserIdEffect;
         const testEditorService = yield* TestEditorService;
@@ -135,7 +135,7 @@ export type UpdateChoiceActionResponse = Awaited<ReturnType<typeof updateChoiceA
 export const reorderChoicesAction = createServerFn({ method: "POST" })
   .inputValidator(reorderChoicesInputValidator)
   .handler(({ data }) =>
-    runServerEffect(
+    runServerResultEffect(
       Effect.gen(function* () {
         const userId = yield* currentUserIdEffect;
         const testEditorService = yield* TestEditorService;
@@ -152,7 +152,7 @@ export type ReorderChoicesActionResponse = Awaited<ReturnType<typeof reorderChoi
 export const deleteQuestionAction = createServerFn({ method: "POST" })
   .inputValidator(deleteQuestionInputValidator)
   .handler(({ data }) =>
-    runServerEffect(
+    runServerResultEffect(
       Effect.gen(function* () {
         const userId = yield* currentUserIdEffect;
         const testEditorService = yield* TestEditorService;
@@ -169,7 +169,7 @@ export type DeleteQuestionActionResponse = Awaited<ReturnType<typeof deleteQuest
 export const deleteChoiceAction = createServerFn({ method: "POST" })
   .inputValidator(deleteChoiceInputValidator)
   .handler(({ data }) =>
-    runServerEffect(
+    runServerResultEffect(
       Effect.gen(function* () {
         const userId = yield* currentUserIdEffect;
         const testEditorService = yield* TestEditorService;

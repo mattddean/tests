@@ -9,7 +9,7 @@ import {
   TestUserTableInputSchema,
 } from "@/schemas/entities";
 import { vStr } from "@/schemas/primitives";
-import { runServerEffect } from "@/server/runtime/run-server-effect";
+import { runServerResultEffect } from "@/server/runtime/run-server-result-effect";
 
 import { currentUserIdEffect } from "./shared";
 
@@ -21,7 +21,7 @@ export type CreateTestInput = Schema.Schema.Type<typeof createTestInput>;
 export const createTest = createServerFn({ method: "POST" })
   .inputValidator(createTestInput)
   .handler(({ data }) =>
-    runServerEffect(
+    runServerResultEffect(
       Effect.gen(function* () {
         const userId = yield* currentUserIdEffect;
         const testAdminService = yield* TestAdminService;
@@ -42,7 +42,7 @@ export type UpdateTestMetaInput = Schema.Schema.Type<typeof updateTestMetaInput>
 export const updateTestMetaAction = createServerFn({ method: "POST" })
   .inputValidator(updateTestMetaInput)
   .handler(({ data }) =>
-    runServerEffect(
+    runServerResultEffect(
       Effect.gen(function* () {
         const userId = yield* currentUserIdEffect;
         const testAdminService = yield* TestAdminService;
@@ -65,7 +65,7 @@ export type PublishTestInput = Schema.Schema.Type<typeof publishTestInput>;
 export const publishTestAction = createServerFn({ method: "POST" })
   .inputValidator(publishTestInput)
   .handler(({ data }) =>
-    runServerEffect(
+    runServerResultEffect(
       Effect.gen(function* () {
         const userId = yield* currentUserIdEffect;
         const testAdminService = yield* TestAdminService;
@@ -85,7 +85,7 @@ export type AddEditorInput = Schema.Schema.Type<typeof addEditorInput>;
 export const addEditorAction = createServerFn({ method: "POST" })
   .inputValidator(addEditorInput)
   .handler(({ data }) =>
-    runServerEffect(
+    runServerResultEffect(
       Effect.gen(function* () {
         const userId = yield* currentUserIdEffect;
         const testAdminService = yield* TestAdminService;
@@ -105,7 +105,7 @@ export type RemoveEditorInput = Schema.Schema.Type<typeof removeEditorInput>;
 export const removeEditorAction = createServerFn({ method: "POST" })
   .inputValidator(removeEditorInput)
   .handler(({ data }) =>
-    runServerEffect(
+    runServerResultEffect(
       Effect.gen(function* () {
         const userId = yield* currentUserIdEffect;
         const testAdminService = yield* TestAdminService;
@@ -125,7 +125,7 @@ export type ShareTestInput = Schema.Schema.Type<typeof shareTestInput>;
 export const shareTestAction = createServerFn({ method: "POST" })
   .inputValidator(shareTestInput)
   .handler(({ data }) =>
-    runServerEffect(
+    runServerResultEffect(
       Effect.gen(function* () {
         const userId = yield* currentUserIdEffect;
         const testAdminService = yield* TestAdminService;

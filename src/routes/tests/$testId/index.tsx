@@ -10,7 +10,11 @@ import { TestDocument } from "@/features/tests/components/test-document";
 import { testTakeQueryOptions, testsKeys } from "@/features/tests/queries";
 import { saveAnswerAction, submitResponseAction } from "@/features/tests/server";
 import { authClient } from "@/lib/auth-client";
+import { throwOnError } from "@/lib/server-result";
 import { parseTakeTestSearch } from "@/schemas/search";
+
+const saveAnswer = throwOnError(saveAnswerAction);
+const submitResponse = throwOnError(submitResponseAction);
 
 export const Route = createFileRoute("/tests/$testId/")({
   validateSearch: parseTakeTestSearch,
@@ -43,7 +47,7 @@ function TestTakePage() {
   const redirectUrl = `/tests/${testId}${search.inviteEmail ? `?inviteEmail=${encodeURIComponent(search.inviteEmail)}` : ""}`;
 
   const answerMutation = useMutation({
-    mutationFn: saveAnswerAction,
+    mutationFn: saveAnswer,
     onMutate: () => setSaveState({ label: "Saving", tone: "accent" }),
     onSuccess: async () => {
       setSaveState({ label: "Saved draft", tone: "success" });
@@ -57,7 +61,7 @@ function TestTakePage() {
       }),
   });
   const submitMutation = useMutation({
-    mutationFn: submitResponseAction,
+    mutationFn: submitResponse,
     onMutate: () => setSaveState({ label: "Submitting", tone: "accent" }),
     onSuccess: async () => {
       setSaveState({ label: "Submitted", tone: "success" });

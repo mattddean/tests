@@ -1,10 +1,10 @@
 import type {
-  GetMyResponsesDataResponse,
-  GetResponsesTableDataResponse,
-  GetTestEditorResponse,
-  GetTestsResponse,
-  GetTestTakeResponse,
-} from "@/features/tests/controllers/test-read.controller";
+  myResponsesQueryOptions,
+  responsesTableQueryOptions,
+  testEditorQueryOptions,
+  testTakeQueryOptions,
+  testsListQueryOptions,
+} from "@/features/tests/queries";
 
 export type {
   AddEditorActionResponse,
@@ -41,12 +41,22 @@ export type {
 } from "@/features/tests/controllers/test-taking.controller";
 export type * from "@/domains/tests/model";
 
-export type GetTestsItem = GetTestsResponse[number];
-export type GetTestEditorTest = GetTestEditorResponse["test"];
-export type GetTestEditorCollaborator = GetTestEditorResponse["collaborators"][number];
-export type GetTestEditorTakerInvite = GetTestEditorResponse["takerInvites"][number];
-export type GetTestEditorQuestion = GetTestEditorResponse["questions"][number];
+type QueryFnData<T extends { queryFn?: (...args: Array<any>) => any }> = Awaited<
+  ReturnType<NonNullable<T["queryFn"]>>
+>;
+
+type TestsListData = QueryFnData<ReturnType<typeof testsListQueryOptions>>;
+type TestEditorData = QueryFnData<ReturnType<typeof testEditorQueryOptions>>;
+type TestTakeData = QueryFnData<ReturnType<typeof testTakeQueryOptions>>;
+type ResponsesTableData = QueryFnData<ReturnType<typeof responsesTableQueryOptions>>;
+type MyResponsesData = QueryFnData<ReturnType<typeof myResponsesQueryOptions>>;
+
+export type GetTestsItem = TestsListData[number];
+export type GetTestEditorTest = TestEditorData["test"];
+export type GetTestEditorCollaborator = TestEditorData["collaborators"][number];
+export type GetTestEditorTakerInvite = TestEditorData["takerInvites"][number];
+export type GetTestEditorQuestion = TestEditorData["questions"][number];
 export type GetTestEditorChoice = GetTestEditorQuestion["choices"][number];
-export type GetTestTakeResponseData = GetTestTakeResponse["response"];
-export type GetResponsesTableDataItem = GetResponsesTableDataResponse[number];
-export type GetMyResponsesDataItem = GetMyResponsesDataResponse[number];
+export type GetTestTakeResponseData = TestTakeData["response"];
+export type GetResponsesTableDataItem = ResponsesTableData[number];
+export type GetMyResponsesDataItem = MyResponsesData[number];
