@@ -2,26 +2,23 @@ import type { Effect } from "effect";
 
 import { redirect } from "@tanstack/react-router";
 
+import { toServerResultError } from "@/lib/server-result";
 import { UnauthorizedError } from "@/domains/auth/errors";
 
-import { runServerEffect } from "./run-server-effect";
+import { runServerResultEffect } from "./run-server-result-effect";
 
 export async function runRouteLoaderEffect<A, E, R>(program: Effect.Effect<A, E, R>) {
-  try {
-    return await runServerEffect(program, {
-      name: "route.loader",
-    });
-  } catch (error) {
-    if (
-      error instanceof UnauthorizedError ||
-      (error instanceof Error &&
-        error.name === "TransportError" &&
-        "status" in error &&
-        error.status === 401)
-    ) {
-      throw redirect({ to: "/auth" });
-    }
+  const result = await runServerResultEffect(program, {
+    name: "route.loader",
+  });
 
-    throw error;
+  if (result.ok) {
+    return result.value;
   }
+
+  if (result.error.status === 401 || result.error._tag === UnauthorizedError.name) {
+    throw redirect({ to: "/auth" });
+  }
+
+  throw toServerResultError(result.error);
 }

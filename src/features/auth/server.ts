@@ -1,8 +1,9 @@
 import { redirect } from "@tanstack/react-router";
 
+import { unwrapServerResult } from "@/lib/server-result";
 import { currentSessionEffect, currentUserEffect } from "@/server/runtime/request-context";
 import { runRouteLoaderEffect } from "@/server/runtime/route-loader";
-import { runServerEffect } from "@/server/runtime/run-server-effect";
+import { runServerResultEffect } from "@/server/runtime/run-server-result-effect";
 
 export type { SessionData, SessionUser } from "@/domains/auth/model";
 
@@ -11,15 +12,19 @@ export const getServerSessionEffect = currentSessionEffect;
 export const requireUserEffect = currentUserEffect;
 
 export async function getServerSession() {
-  return await runServerEffect(getServerSessionEffect, {
-    name: "auth.getServerSession",
-  });
+  return unwrapServerResult(
+    await runServerResultEffect(getServerSessionEffect, {
+      name: "auth.getServerSession",
+    }),
+  );
 }
 
 export async function requireUser() {
-  return await runServerEffect(requireUserEffect, {
-    name: "auth.requireUser",
-  });
+  return unwrapServerResult(
+    await runServerResultEffect(requireUserEffect, {
+      name: "auth.requireUser",
+    }),
+  );
 }
 
 export async function requireRouteUser() {

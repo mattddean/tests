@@ -1,8 +1,9 @@
 import type { Effect, Schema } from "effect";
 
 import { encodeUnknownSync } from "@/lib/effect-schema";
+import { serverOk } from "@/lib/server-result";
 
-import { runServerEffect } from "./run-server-effect";
+import { runServerResultEffect } from "./run-server-result-effect";
 
 type SchemaAny = Schema.Schema.AnyNoContext;
 
@@ -26,12 +27,16 @@ export function makeServerQuery<
   readonly name: string;
 }) {
   return async ({ data }: { readonly data: Input }) => {
-    const result = await runServerEffect(options.run(data), {
+    const result = await runServerResultEffect(options.run(data), {
       name: options.name,
     });
-    return encodeOutput(
-      options.outputSchema,
-      result as Schema.Schema.Type<NonNullable<OutputSchema>>,
+
+    if (!result.ok) {
+      return result;
+    }
+
+    return serverOk(
+      encodeOutput(options.outputSchema, result.value as Schema.Schema.Type<NonNullable<OutputSchema>>),
     );
   };
 }
