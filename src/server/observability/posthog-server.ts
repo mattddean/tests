@@ -14,7 +14,7 @@ import {
   POSTHOG_SESSION_ID_HEADER,
 } from "./posthog";
 
-const LOG_NAMESPACE = "tz.mtdn.dev";
+const LOG_NAMESPACE = "tests";
 
 type AnalyticsConfig = NonNullable<ReturnType<typeof getAnalyticsConfig>>;
 type LogLevel = "debug" | "info" | "log" | "warn" | "error";

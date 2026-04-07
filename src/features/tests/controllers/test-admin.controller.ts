@@ -50,7 +50,6 @@ export const updateTestMetaAction = createServerFn({ method: "POST" })
           title: data.title,
           description: data.description,
         });
-        return { ok: true } as const;
       }),
       { name: "tests.updateTestMeta" },
     ),
@@ -70,7 +69,6 @@ export const publishTestAction = createServerFn({ method: "POST" })
         const userId = yield* currentUserIdEffect;
         const testAdminService = yield* TestAdminService;
         yield* testAdminService.publishTest(data.testId, userId);
-        return { ok: true } as const;
       }),
       { name: "tests.publishTest" },
     ),
@@ -90,7 +88,6 @@ export const addEditorAction = createServerFn({ method: "POST" })
         const userId = yield* currentUserIdEffect;
         const testAdminService = yield* TestAdminService;
         yield* testAdminService.addEditor(data.testId, userId, data.email);
-        return { ok: true } as const;
       }),
       { name: "tests.addEditor" },
     ),
@@ -110,7 +107,6 @@ export const removeEditorAction = createServerFn({ method: "POST" })
         const userId = yield* currentUserIdEffect;
         const testAdminService = yield* TestAdminService;
         yield* testAdminService.removeEditor(data.testId, userId, data.userId);
-        return { ok: true } as const;
       }),
       { name: "tests.removeEditor" },
     ),
@@ -130,7 +126,6 @@ export const shareTestAction = createServerFn({ method: "POST" })
         const userId = yield* currentUserIdEffect;
         const testAdminService = yield* TestAdminService;
         yield* testAdminService.shareTest(data.testId, userId, data.email);
-        return { ok: true } as const;
       }),
       { name: "tests.shareTest" },
     ),

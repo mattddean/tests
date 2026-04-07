@@ -20,7 +20,6 @@ export const saveAnswerAction = createServerFn({ method: "POST" })
         const userId = yield* currentUserIdEffect;
         const testTakingService = yield* TestTakingService;
         yield* testTakingService.saveAnswer(data.testId, userId, data.questionId, data.choiceId);
-        return { ok: true } as const;
       }),
       { name: "tests.saveAnswer" },
     ),
@@ -40,7 +39,6 @@ export const submitResponseAction = createServerFn({ method: "POST" })
         const userId = yield* currentUserIdEffect;
         const testTakingService = yield* TestTakingService;
         yield* testTakingService.submitResponse(data.testId, userId);
-        return { ok: true } as const;
       }),
       { name: "tests.submitResponse" },
     ),

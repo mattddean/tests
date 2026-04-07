@@ -30,7 +30,6 @@ export const addQuestionAction = createServerFn({ method: "POST" })
         const userId = yield* currentUserIdEffect;
         const testEditorService = yield* TestEditorService;
         yield* testEditorService.addQuestion(data.testId, userId, data.afterQuestionId);
-        return { ok: true } as const;
       }),
       { name: "tests.addQuestion" },
     ),
@@ -58,7 +57,6 @@ export const updateQuestionAction = createServerFn({ method: "POST" })
           description: data.description,
           required: data.required,
         });
-        return { ok: true } as const;
       }),
       {
         name: "tests.updateQuestion",
@@ -75,7 +73,6 @@ export const reorderQuestionsAction = createServerFn({ method: "POST" })
         const userId = yield* currentUserIdEffect;
         const testEditorService = yield* TestEditorService;
         yield* testEditorService.reorderQuestions(data.testId, userId, [...data.questionIds]);
-        return { ok: true } as const;
       }),
       {
         name: "tests.reorderQuestions",
@@ -99,7 +96,6 @@ export const addChoiceAction = createServerFn({ method: "POST" })
         const userId = yield* currentUserIdEffect;
         const testEditorService = yield* TestEditorService;
         yield* testEditorService.addChoice(data.questionId, userId, data.afterChoiceId);
-        return { ok: true } as const;
       }),
       {
         name: "tests.addChoice",
@@ -123,7 +119,6 @@ export const updateChoiceAction = createServerFn({ method: "POST" })
         const userId = yield* currentUserIdEffect;
         const testEditorService = yield* TestEditorService;
         yield* testEditorService.updateChoice(data.choiceId, userId, data.label);
-        return { ok: true } as const;
       }),
       {
         name: "tests.updateChoice",
@@ -140,7 +135,6 @@ export const reorderChoicesAction = createServerFn({ method: "POST" })
         const userId = yield* currentUserIdEffect;
         const testEditorService = yield* TestEditorService;
         yield* testEditorService.reorderChoices(data.questionId, userId, [...data.choiceIds]);
-        return { ok: true } as const;
       }),
       {
         name: "tests.reorderChoices",
@@ -157,7 +151,6 @@ export const deleteQuestionAction = createServerFn({ method: "POST" })
         const userId = yield* currentUserIdEffect;
         const testEditorService = yield* TestEditorService;
         yield* testEditorService.deleteQuestion(data.questionId, userId);
-        return { ok: true } as const;
       }),
       {
         name: "tests.deleteQuestion",
@@ -174,7 +167,6 @@ export const deleteChoiceAction = createServerFn({ method: "POST" })
         const userId = yield* currentUserIdEffect;
         const testEditorService = yield* TestEditorService;
         yield* testEditorService.deleteChoice(data.choiceId, userId);
-        return { ok: true } as const;
       }),
       {
         name: "tests.deleteChoice",
