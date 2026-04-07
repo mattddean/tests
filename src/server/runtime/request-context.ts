@@ -42,21 +42,6 @@ export const currentUserEffect: Effect.Effect<SessionUser, UnauthorizedError, Cu
     return session.user;
   });
 
-export const RequestContextLive = Layer.effect(
-  RequestContext,
-  Effect.gen(function* () {
-    const request = yield* CurrentRequest;
-    const requestDetails = getRequestTraceDetails(request);
-
-    return {
-      headers: requestDetails.headers,
-      requestId: requestDetails.requestId,
-      method: requestDetails.method,
-      pathname: requestDetails.pathname,
-    } satisfies RequestContextShape;
-  }),
-);
-
 export const CurrentSessionLive = Layer.effect(
   CurrentSession,
   Effect.gen(function* () {
@@ -65,6 +50,30 @@ export const CurrentSessionLive = Layer.effect(
     return yield* authService.getSession(request.headers);
   }),
 );
+
+export function makeRequestContext(request: Request): RequestContextShape {
+  const requestDetails = getRequestTraceDetails(request);
+
+  return {
+    headers: requestDetails.headers,
+    requestId: requestDetails.requestId,
+    method: requestDetails.method,
+    pathname: requestDetails.pathname,
+  } satisfies RequestContextShape;
+}
+
+export const RequestContextLive = Layer.effect(
+  RequestContext,
+  Effect.map(CurrentRequest, makeRequestContext),
+);
+
+export function makeRequestLayerFromRequest(request: Request) {
+  const currentRequestLayer = Layer.succeed(CurrentRequest, request);
+
+  return Layer.mergeAll(RequestContextLive, CurrentSessionLive).pipe(
+    Layer.provideMerge(currentRequestLayer),
+  );
+}
 
 export function makeRequestLayer() {
   // mergeAll combines peer request-scoped services; it does not wire

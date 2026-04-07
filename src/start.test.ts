@@ -1,31 +1,19 @@
-import { trace } from "@opentelemetry/api";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const loggerError = vi.fn();
+const runHttpEffect = vi.fn((effect, _options) =>
+  import("effect").then(({ Cause, Effect, Exit }) =>
+    Effect.runPromiseExit(effect).then((exit) => {
+      if (Exit.isSuccess(exit)) {
+        return exit.value;
+      }
 
-const startActiveSpan = vi.fn(
-  async (
-    _name: string,
-    _options: unknown,
-    callback: (span: {
-      end: ReturnType<typeof vi.fn>;
-      recordException: ReturnType<typeof vi.fn>;
-      setAttribute: ReturnType<typeof vi.fn>;
-      setStatus: ReturnType<typeof vi.fn>;
-    }) => unknown,
-  ) =>
-    callback({
-      end: vi.fn(),
-      recordException: vi.fn(),
-      setAttribute: vi.fn(),
-      setStatus: vi.fn(),
+      throw Cause.squash(exit.cause);
     }),
+  ),
 );
 
-vi.mock("@/server/observability/logger", () => ({
-  logger: {
-    error: loggerError,
-  },
+vi.mock("@/server/runtime/run-http-effect", () => ({
+  runHttpEffect,
 }));
 
 describe("start middleware", () => {
@@ -33,16 +21,9 @@ describe("start middleware", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    trace.setGlobalTracerProvider({
-      getTracer: () =>
-        ({
-          startActiveSpan,
-        }) as never,
-    } as never);
   });
 
   afterEach(() => {
-    trace.disable();
     if (originalWindow === undefined) {
       Reflect.deleteProperty(globalThis, "window");
     } else {
@@ -97,13 +78,37 @@ describe("start middleware", () => {
       } as never),
     ).rejects.toBe(error);
 
-    expect(startActiveSpan).toHaveBeenCalledWith(
-      "HTTP GET /tests",
+    expect(runHttpEffect).toHaveBeenCalledWith(
+      expect.any(Object),
       expect.objectContaining({
-        kind: 1,
+        name: "HTTP GET /tests",
+        request,
+        getStatus: expect.any(Function),
       }),
-      expect.any(Function),
     );
-    expect(loggerError).toHaveBeenCalledTimes(1);
+  });
+
+  it("delegates successful requests to the Effect HTTP boundary", async () => {
+    const { postHogRequestMiddleware } = await import("./start");
+    const request = new Request("https://example.com/tests");
+    const response = new Response(null, { status: 204 });
+
+    await expect(
+      postHogRequestMiddleware.options.server?.({
+        context: {},
+        next: async () => response,
+        pathname: "/tests",
+        request,
+      } as never),
+    ).resolves.toBe(response);
+
+    expect(runHttpEffect).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.objectContaining({
+        name: "HTTP GET /tests",
+        request,
+        getStatus: expect.any(Function),
+      }),
+    );
   });
 });
