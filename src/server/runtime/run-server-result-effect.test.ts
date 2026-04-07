@@ -154,7 +154,7 @@ describe("runServerResultEffect", () => {
       ok: false,
       error: {
         _tag: "UnauthorizedError",
-        message: "Unauthorized",
+        message: "Internal Server Error",
         status: 401,
       },
     });
@@ -174,7 +174,7 @@ describe("runServerResultEffect", () => {
       ok: false,
       error: {
         _tag: "UnexpectedServerError",
-        message: "Unexpected server error",
+        message: "Internal Server Error",
         status: 500,
       },
     });

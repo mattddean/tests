@@ -32,7 +32,7 @@ describe("server-result helpers", () => {
         ? serverOk("value")
         : serverError({
             _tag: "UnexpectedServerError",
-            message: "Unexpected server error",
+            message: "Internal Server Error",
             status: 500,
           });
     });
@@ -40,7 +40,7 @@ describe("server-result helpers", () => {
     await expect(loadValue("ok")).resolves.toBe("value");
     await expect(loadValue("fail")).rejects.toMatchObject({
       name: "UnexpectedServerError",
-      message: "Unexpected server error",
+      message: "Internal Server Error",
       _tag: "UnexpectedServerError",
       status: 500,
     });

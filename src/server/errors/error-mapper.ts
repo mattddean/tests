@@ -5,13 +5,13 @@ import { ReportableError, UnexpectedServerError } from "@/errors";
 import { TransportError } from "./transport-error";
 
 function getMessage(error: unknown) {
-  return error instanceof Error ? error.message : "Unexpected server error";
+  return error instanceof Error ? error.message : "Internal Server Error";
 }
 
 function toPayload(error: ReportableError): ServerErrorPayload {
   return {
     _tag: error._tag,
-    message: error.userMessage ?? "Unexpected server error",
+    message: error.userMessage ?? "Internal Server Error",
     status: error.status,
   };
 }
@@ -32,20 +32,8 @@ export function classifyServerError(error: unknown): {
   }
 
   if (error instanceof ReportableError) {
-    if (error.userMessage) {
-      return {
-        error: toPayload(error),
-        shouldReport: error.severity !== "debug",
-      };
-    }
-
-    const genericError = new UnexpectedServerError({
-      message: error.message,
-      cause: error,
-    });
-
     return {
-      error: toPayload(genericError),
+      error: toPayload(error),
       shouldReport: error.severity !== "debug",
     };
   }

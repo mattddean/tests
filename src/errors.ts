@@ -1,4 +1,4 @@
-import { Data } from "effect";
+import * as Data from "effect/Data";
 
 export type ErrorSeverity = "debug" | "info" | "warn" | "error";
 
@@ -38,7 +38,6 @@ function makeReportableErrorClass<Tag extends string>(
     readonly status: number;
     readonly severity: ErrorSeverity;
     readonly userMessage?: string;
-    readonly exposeMessageAsUserMessage?: boolean;
   },
 ) {
   return class extends ReportableError {
@@ -47,9 +46,7 @@ function makeReportableErrorClass<Tag extends string>(
     constructor(args: ReportableErrorInput) {
       super(tag, {
         message: args.message,
-        userMessage:
-          args.userMessage ??
-          (defaults.exposeMessageAsUserMessage ? args.message : defaults.userMessage),
+        userMessage: args.userMessage ?? defaults.userMessage,
         severity: args.severity ?? defaults.severity,
         status: defaults.status,
         cause: args.cause,
@@ -81,55 +78,47 @@ export class InvalidStateError extends makeReportableErrorClass("InvalidStateErr
 export class UnauthorizedError extends makeReportableErrorClass("UnauthorizedError", {
   status: 401,
   severity: "debug",
-  exposeMessageAsUserMessage: true,
 }) {}
 
 export class UnexpectedServerError extends makeReportableErrorClass("UnexpectedServerError", {
   status: 500,
   severity: "error",
-  userMessage: "Unexpected server error",
+  userMessage: "Internal Server Error",
 }) {}
 
 export class TestNotFound extends makeReportableErrorClass("TestNotFound", {
   status: 404,
   severity: "debug",
-  exposeMessageAsUserMessage: true,
 }) {}
 
 export class QuestionNotFound extends makeReportableErrorClass("QuestionNotFound", {
   status: 404,
   severity: "debug",
-  exposeMessageAsUserMessage: true,
 }) {}
 
 export class ChoiceNotFound extends makeReportableErrorClass("ChoiceNotFound", {
   status: 404,
   severity: "debug",
-  exposeMessageAsUserMessage: true,
 }) {}
 
 export class ResponseNotFound extends makeReportableErrorClass("ResponseNotFound", {
   status: 404,
   severity: "debug",
-  exposeMessageAsUserMessage: true,
 }) {}
 
 export class UserNotFound extends makeReportableErrorClass("UserNotFound", {
   status: 404,
   severity: "debug",
-  exposeMessageAsUserMessage: true,
 }) {}
 
 export class ForbiddenTestAccess extends makeReportableErrorClass("ForbiddenTestAccess", {
   status: 403,
   severity: "debug",
-  exposeMessageAsUserMessage: true,
 }) {}
 
 export class OnlyOwnerCanPublish extends makeReportableErrorClass("OnlyOwnerCanPublish", {
   status: 403,
   severity: "debug",
-  exposeMessageAsUserMessage: true,
 }) {}
 
 export class OnlyOwnerCanShareWithTakers extends makeReportableErrorClass(
@@ -137,7 +126,6 @@ export class OnlyOwnerCanShareWithTakers extends makeReportableErrorClass(
   {
     status: 403,
     severity: "debug",
-    exposeMessageAsUserMessage: true,
   },
 ) {}
 
@@ -146,14 +134,12 @@ export class OnlyOwnerCanManageEditors extends makeReportableErrorClass(
   {
     status: 403,
     severity: "debug",
-    exposeMessageAsUserMessage: true,
   },
 ) {}
 
 export class CannotPublishEmptyTest extends makeReportableErrorClass("CannotPublishEmptyTest", {
   status: 409,
   severity: "debug",
-  exposeMessageAsUserMessage: true,
 }) {}
 
 export class AtLeastTwoChoicesRequired extends makeReportableErrorClass(
@@ -161,26 +147,22 @@ export class AtLeastTwoChoicesRequired extends makeReportableErrorClass(
   {
     status: 409,
     severity: "debug",
-    exposeMessageAsUserMessage: true,
   },
 ) {}
 
 export class ResponseAlreadySubmitted extends makeReportableErrorClass("ResponseAlreadySubmitted", {
   status: 409,
   severity: "debug",
-  exposeMessageAsUserMessage: true,
 }) {}
 
 export class InviteEmailMismatch extends makeReportableErrorClass("InviteEmailMismatch", {
   status: 403,
   severity: "debug",
-  exposeMessageAsUserMessage: true,
 }) {}
 
 export class TestMustBePublished extends makeReportableErrorClass("TestMustBePublished", {
   status: 409,
   severity: "debug",
-  exposeMessageAsUserMessage: true,
 }) {}
 
 export class RequiredQuestionsIncomplete extends makeReportableErrorClass(
@@ -188,12 +170,10 @@ export class RequiredQuestionsIncomplete extends makeReportableErrorClass(
   {
     status: 409,
     severity: "debug",
-    exposeMessageAsUserMessage: true,
   },
 ) {}
 
 export class OwnerAlreadyHasAccess extends makeReportableErrorClass("OwnerAlreadyHasAccess", {
   status: 409,
   severity: "debug",
-  exposeMessageAsUserMessage: true,
 }) {}
