@@ -2,7 +2,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 
 import { throwOnError } from "@/lib/server-result";
-import { currentSessionEffect } from "@/server/runtime/request-context";
+import { currentSessionEffect } from "@/server/runtime/layers/request";
 import { runServerResultEffect } from "@/server/runtime/run-server-result-effect";
 
 export const getSession = createServerFn({ method: "GET" }).handler(async () => {

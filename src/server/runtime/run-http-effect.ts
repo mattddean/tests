@@ -10,8 +10,8 @@ import {
   withActiveSpanContext,
 } from "@/server/observability/tracing";
 
-import { RequestContext, makeRequestLayerFromRequest } from "./request-context";
-import { rootRuntime } from "./root-runtime";
+import { RequestContext, makeRequestLayerFromRequest } from "./layers/request";
+import { rootRuntime } from "./layers/root";
 
 function unwrapEffectCause(error: unknown): unknown {
   if (!error || typeof error !== "object") {

@@ -76,11 +76,7 @@ export function makeRequestLayerFromRequest(request: Request) {
 }
 
 export function makeRequestLayer() {
-  // mergeAll combines peer request-scoped services; it does not wire
-  // dependencies between them automatically.
   return Layer.mergeAll(RequestContextLive, CurrentSessionLive).pipe(
-    // provideMerge supplies the shared CurrentRequest base layer to both peers
-    // while keeping the resulting layer outputs merged together.
     Layer.provideMerge(CurrentRequestLive),
   );
 }

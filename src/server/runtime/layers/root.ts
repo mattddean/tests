@@ -1,6 +1,6 @@
 import * as OtelResource from "@effect/opentelemetry/Resource";
 import * as OtelTracer from "@effect/opentelemetry/Tracer";
-import { Layer } from "effect";
+import { Layer, ManagedRuntime } from "effect";
 
 import { TestAdminServiceLive } from "@/domains/tests/services/test-admin.service";
 import { TestEditorServiceLive } from "@/domains/tests/services/test-editor.service";
@@ -36,3 +36,7 @@ export const RootLayer = Layer.mergeAll(
   TestTakingServiceLayer,
   TestAdminServiceLayer,
 );
+
+// This runtime is created once at module scope, so services built from RootLayer
+// are shared across requests for the lifetime of the server process or dev module instance.
+export const rootRuntime = ManagedRuntime.make(RootLayer);

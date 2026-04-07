@@ -2,8 +2,8 @@ import type { Effect } from "effect";
 
 import { redirect } from "@tanstack/react-router";
 
-import { toServerResultError } from "@/lib/server-result";
 import { UnauthorizedError } from "@/domains/auth/errors";
+import { toServerResultError } from "@/lib/server-result";
 
 import { runServerResultEffect } from "./run-server-result-effect";
 

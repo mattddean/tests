@@ -18,7 +18,7 @@ vi.mock("@tanstack/react-start/server", () => ({
   getRequest,
 }));
 
-vi.mock("@/server/runtime/root-runtime", async () => {
+vi.mock("@/server/runtime/layers/root", async () => {
   const effectModule = await import("effect");
   const tracerModule = await import("effect/Tracer");
   const optionModule = await import("effect/Option");
@@ -73,7 +73,7 @@ vi.mock("@/server/runtime/root-runtime", async () => {
   };
 });
 
-vi.mock("@/server/runtime/request-context", async () => {
+vi.mock("@/server/runtime/layers/request", async () => {
   const effectModule = await import("effect");
   const request = getRequest();
   const CurrentRequest = effectModule.Context.Tag("CurrentRequest")<never, Request>();

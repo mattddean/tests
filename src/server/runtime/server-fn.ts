@@ -36,7 +36,10 @@ export function makeServerQuery<
     }
 
     return serverOk(
-      encodeOutput(options.outputSchema, result.value as Schema.Schema.Type<NonNullable<OutputSchema>>),
+      encodeOutput(
+        options.outputSchema,
+        result.value as Schema.Schema.Type<NonNullable<OutputSchema>>,
+      ),
     );
   };
 }
