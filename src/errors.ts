@@ -32,310 +32,168 @@ export class ReportableError extends Data.Error<{
   }
 }
 
-export class ForbiddenError extends ReportableError {
-  readonly _tag = "ForbiddenError";
+function makeReportableErrorClass<Tag extends string>(
+  tag: Tag,
+  defaults: {
+    readonly status: number;
+    readonly severity: ErrorSeverity;
+    readonly userMessage?: string;
+    readonly exposeMessageAsUserMessage?: boolean;
+  },
+) {
+  return class extends ReportableError {
+    readonly _tag = tag;
 
-  constructor(args: ReportableErrorInput) {
-    super("ForbiddenError", {
-      message: args.message,
-      userMessage: args.userMessage,
-      severity: args.severity ?? "debug",
-      status: 403,
-      cause: args.cause,
-    });
-  }
+    constructor(args: ReportableErrorInput) {
+      super(tag, {
+        message: args.message,
+        userMessage:
+          args.userMessage ??
+          (defaults.exposeMessageAsUserMessage ? args.message : defaults.userMessage),
+        severity: args.severity ?? defaults.severity,
+        status: defaults.status,
+        cause: args.cause,
+      });
+    }
+  } as new (args: ReportableErrorInput) => ReportableError & { readonly _tag: Tag };
 }
 
-export class NotFoundError extends ReportableError {
-  readonly _tag = "NotFoundError";
+export class ForbiddenError extends makeReportableErrorClass("ForbiddenError", {
+  status: 403,
+  severity: "debug",
+}) {}
 
-  constructor(args: ReportableErrorInput) {
-    super("NotFoundError", {
-      message: args.message,
-      userMessage: args.userMessage,
-      severity: args.severity ?? "debug",
-      status: 404,
-      cause: args.cause,
-    });
-  }
-}
+export class NotFoundError extends makeReportableErrorClass("NotFoundError", {
+  status: 404,
+  severity: "debug",
+}) {}
 
-export class ConflictError extends ReportableError {
-  readonly _tag = "ConflictError";
+export class ConflictError extends makeReportableErrorClass("ConflictError", {
+  status: 409,
+  severity: "debug",
+}) {}
 
-  constructor(args: ReportableErrorInput) {
-    super("ConflictError", {
-      message: args.message,
-      userMessage: args.userMessage,
-      severity: args.severity ?? "debug",
-      status: 409,
-      cause: args.cause,
-    });
-  }
-}
+export class InvalidStateError extends makeReportableErrorClass("InvalidStateError", {
+  status: 409,
+  severity: "debug",
+}) {}
 
-export class InvalidStateError extends ReportableError {
-  readonly _tag = "InvalidStateError";
+export class UnauthorizedError extends makeReportableErrorClass("UnauthorizedError", {
+  status: 401,
+  severity: "debug",
+  exposeMessageAsUserMessage: true,
+}) {}
 
-  constructor(args: ReportableErrorInput) {
-    super("InvalidStateError", {
-      message: args.message,
-      userMessage: args.userMessage,
-      severity: args.severity ?? "debug",
-      status: 409,
-      cause: args.cause,
-    });
-  }
-}
+export class UnexpectedServerError extends makeReportableErrorClass("UnexpectedServerError", {
+  status: 500,
+  severity: "error",
+  userMessage: "Unexpected server error",
+}) {}
 
-export class UnauthorizedError extends ReportableError {
-  readonly _tag = "UnauthorizedError";
+export class TestNotFound extends makeReportableErrorClass("TestNotFound", {
+  status: 404,
+  severity: "debug",
+  exposeMessageAsUserMessage: true,
+}) {}
 
-  constructor(args: { readonly message: string; readonly cause?: unknown }) {
-    super("UnauthorizedError", {
-      message: args.message,
-      userMessage: args.message,
-      severity: "debug",
-      status: 401,
-      cause: args.cause,
-    });
-  }
-}
+export class QuestionNotFound extends makeReportableErrorClass("QuestionNotFound", {
+  status: 404,
+  severity: "debug",
+  exposeMessageAsUserMessage: true,
+}) {}
 
-export class UnexpectedServerError extends ReportableError {
-  readonly _tag = "UnexpectedServerError";
+export class ChoiceNotFound extends makeReportableErrorClass("ChoiceNotFound", {
+  status: 404,
+  severity: "debug",
+  exposeMessageAsUserMessage: true,
+}) {}
 
-  constructor(args: ReportableErrorInput) {
-    super("UnexpectedServerError", {
-      message: args.message,
-      userMessage: args.userMessage ?? "Unexpected server error",
-      severity: args.severity ?? "error",
-      status: 500,
-      cause: args.cause,
-    });
-  }
-}
+export class ResponseNotFound extends makeReportableErrorClass("ResponseNotFound", {
+  status: 404,
+  severity: "debug",
+  exposeMessageAsUserMessage: true,
+}) {}
 
-export class TestNotFound extends ReportableError {
-  readonly _tag = "TestNotFound";
+export class UserNotFound extends makeReportableErrorClass("UserNotFound", {
+  status: 404,
+  severity: "debug",
+  exposeMessageAsUserMessage: true,
+}) {}
 
-  constructor(args: ReportableErrorInput) {
-    super("TestNotFound", {
-      message: args.message,
-      userMessage: args.userMessage ?? args.message,
-      severity: args.severity ?? "debug",
-      status: 404,
-      cause: args.cause,
-    });
-  }
-}
+export class ForbiddenTestAccess extends makeReportableErrorClass("ForbiddenTestAccess", {
+  status: 403,
+  severity: "debug",
+  exposeMessageAsUserMessage: true,
+}) {}
 
-export class QuestionNotFound extends ReportableError {
-  readonly _tag = "QuestionNotFound";
+export class OnlyOwnerCanPublish extends makeReportableErrorClass("OnlyOwnerCanPublish", {
+  status: 403,
+  severity: "debug",
+  exposeMessageAsUserMessage: true,
+}) {}
 
-  constructor(args: ReportableErrorInput) {
-    super("QuestionNotFound", {
-      message: args.message,
-      userMessage: args.userMessage ?? args.message,
-      severity: args.severity ?? "debug",
-      status: 404,
-      cause: args.cause,
-    });
-  }
-}
+export class OnlyOwnerCanShareWithTakers extends makeReportableErrorClass(
+  "OnlyOwnerCanShareWithTakers",
+  {
+    status: 403,
+    severity: "debug",
+    exposeMessageAsUserMessage: true,
+  },
+) {}
 
-export class ChoiceNotFound extends ReportableError {
-  readonly _tag = "ChoiceNotFound";
+export class OnlyOwnerCanManageEditors extends makeReportableErrorClass(
+  "OnlyOwnerCanManageEditors",
+  {
+    status: 403,
+    severity: "debug",
+    exposeMessageAsUserMessage: true,
+  },
+) {}
 
-  constructor(args: ReportableErrorInput) {
-    super("ChoiceNotFound", {
-      message: args.message,
-      userMessage: args.userMessage ?? args.message,
-      severity: args.severity ?? "debug",
-      status: 404,
-      cause: args.cause,
-    });
-  }
-}
+export class CannotPublishEmptyTest extends makeReportableErrorClass("CannotPublishEmptyTest", {
+  status: 409,
+  severity: "debug",
+  exposeMessageAsUserMessage: true,
+}) {}
 
-export class ResponseNotFound extends ReportableError {
-  readonly _tag = "ResponseNotFound";
+export class AtLeastTwoChoicesRequired extends makeReportableErrorClass(
+  "AtLeastTwoChoicesRequired",
+  {
+    status: 409,
+    severity: "debug",
+    exposeMessageAsUserMessage: true,
+  },
+) {}
 
-  constructor(args: ReportableErrorInput) {
-    super("ResponseNotFound", {
-      message: args.message,
-      userMessage: args.userMessage ?? args.message,
-      severity: args.severity ?? "debug",
-      status: 404,
-      cause: args.cause,
-    });
-  }
-}
+export class ResponseAlreadySubmitted extends makeReportableErrorClass("ResponseAlreadySubmitted", {
+  status: 409,
+  severity: "debug",
+  exposeMessageAsUserMessage: true,
+}) {}
 
-export class UserNotFound extends ReportableError {
-  readonly _tag = "UserNotFound";
+export class InviteEmailMismatch extends makeReportableErrorClass("InviteEmailMismatch", {
+  status: 403,
+  severity: "debug",
+  exposeMessageAsUserMessage: true,
+}) {}
 
-  constructor(args: ReportableErrorInput) {
-    super("UserNotFound", {
-      message: args.message,
-      userMessage: args.userMessage ?? args.message,
-      severity: args.severity ?? "debug",
-      status: 404,
-      cause: args.cause,
-    });
-  }
-}
+export class TestMustBePublished extends makeReportableErrorClass("TestMustBePublished", {
+  status: 409,
+  severity: "debug",
+  exposeMessageAsUserMessage: true,
+}) {}
 
-export class ForbiddenTestAccess extends ReportableError {
-  readonly _tag = "ForbiddenTestAccess";
+export class RequiredQuestionsIncomplete extends makeReportableErrorClass(
+  "RequiredQuestionsIncomplete",
+  {
+    status: 409,
+    severity: "debug",
+    exposeMessageAsUserMessage: true,
+  },
+) {}
 
-  constructor(args: ReportableErrorInput) {
-    super("ForbiddenTestAccess", {
-      message: args.message,
-      userMessage: args.userMessage ?? args.message,
-      severity: args.severity ?? "debug",
-      status: 403,
-      cause: args.cause,
-    });
-  }
-}
-
-export class OnlyOwnerCanPublish extends ReportableError {
-  readonly _tag = "OnlyOwnerCanPublish";
-
-  constructor(args: ReportableErrorInput) {
-    super("OnlyOwnerCanPublish", {
-      message: args.message,
-      userMessage: args.userMessage ?? args.message,
-      severity: args.severity ?? "debug",
-      status: 403,
-      cause: args.cause,
-    });
-  }
-}
-
-export class OnlyOwnerCanShareWithTakers extends ReportableError {
-  readonly _tag = "OnlyOwnerCanShareWithTakers";
-
-  constructor(args: ReportableErrorInput) {
-    super("OnlyOwnerCanShareWithTakers", {
-      message: args.message,
-      userMessage: args.userMessage ?? args.message,
-      severity: args.severity ?? "debug",
-      status: 403,
-      cause: args.cause,
-    });
-  }
-}
-
-export class OnlyOwnerCanManageEditors extends ReportableError {
-  readonly _tag = "OnlyOwnerCanManageEditors";
-
-  constructor(args: ReportableErrorInput) {
-    super("OnlyOwnerCanManageEditors", {
-      message: args.message,
-      userMessage: args.userMessage ?? args.message,
-      severity: args.severity ?? "debug",
-      status: 403,
-      cause: args.cause,
-    });
-  }
-}
-
-export class CannotPublishEmptyTest extends ReportableError {
-  readonly _tag = "CannotPublishEmptyTest";
-
-  constructor(args: ReportableErrorInput) {
-    super("CannotPublishEmptyTest", {
-      message: args.message,
-      userMessage: args.userMessage ?? args.message,
-      severity: args.severity ?? "debug",
-      status: 409,
-      cause: args.cause,
-    });
-  }
-}
-
-export class AtLeastTwoChoicesRequired extends ReportableError {
-  readonly _tag = "AtLeastTwoChoicesRequired";
-
-  constructor(args: ReportableErrorInput) {
-    super("AtLeastTwoChoicesRequired", {
-      message: args.message,
-      userMessage: args.userMessage ?? args.message,
-      severity: args.severity ?? "debug",
-      status: 409,
-      cause: args.cause,
-    });
-  }
-}
-
-export class ResponseAlreadySubmitted extends ReportableError {
-  readonly _tag = "ResponseAlreadySubmitted";
-
-  constructor(args: ReportableErrorInput) {
-    super("ResponseAlreadySubmitted", {
-      message: args.message,
-      userMessage: args.userMessage ?? args.message,
-      severity: args.severity ?? "debug",
-      status: 409,
-      cause: args.cause,
-    });
-  }
-}
-
-export class InviteEmailMismatch extends ReportableError {
-  readonly _tag = "InviteEmailMismatch";
-
-  constructor(args: ReportableErrorInput) {
-    super("InviteEmailMismatch", {
-      message: args.message,
-      userMessage: args.userMessage ?? args.message,
-      severity: args.severity ?? "debug",
-      status: 403,
-      cause: args.cause,
-    });
-  }
-}
-
-export class TestMustBePublished extends ReportableError {
-  readonly _tag = "TestMustBePublished";
-
-  constructor(args: ReportableErrorInput) {
-    super("TestMustBePublished", {
-      message: args.message,
-      userMessage: args.userMessage ?? args.message,
-      severity: args.severity ?? "debug",
-      status: 409,
-      cause: args.cause,
-    });
-  }
-}
-
-export class RequiredQuestionsIncomplete extends ReportableError {
-  readonly _tag = "RequiredQuestionsIncomplete";
-
-  constructor(args: ReportableErrorInput) {
-    super("RequiredQuestionsIncomplete", {
-      message: args.message,
-      userMessage: args.userMessage ?? args.message,
-      severity: args.severity ?? "debug",
-      status: 409,
-      cause: args.cause,
-    });
-  }
-}
-
-export class OwnerAlreadyHasAccess extends ReportableError {
-  readonly _tag = "OwnerAlreadyHasAccess";
-
-  constructor(args: ReportableErrorInput) {
-    super("OwnerAlreadyHasAccess", {
-      message: args.message,
-      userMessage: args.userMessage ?? args.message,
-      severity: args.severity ?? "debug",
-      status: 409,
-      cause: args.cause,
-    });
-  }
-}
+export class OwnerAlreadyHasAccess extends makeReportableErrorClass("OwnerAlreadyHasAccess", {
+  status: 409,
+  severity: "debug",
+  exposeMessageAsUserMessage: true,
+}) {}
