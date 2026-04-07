@@ -3,14 +3,6 @@ import { Effect } from "effect";
 
 import type { Database } from "@/server/db/live";
 
-import { createId, createSlug } from "@/features/common/ids";
-import { ServerConfig } from "@/server/config/server-config";
-import { DB } from "@/server/db/live";
-import { test, testEmailAccess, testQuestion, testUser, user } from "@/server/db/schema";
-import { Mailer } from "@/server/mail/mailer";
-
-import type { TestPermission } from "../model";
-
 import {
   CannotPublishEmptyTest,
   ForbiddenTestAccess,
@@ -21,7 +13,14 @@ import {
   TestMustBePublished,
   TestNotFound,
   UserNotFound,
-} from "../errors";
+} from "@/errors";
+import { createId, createSlug } from "@/features/common/ids";
+import { ServerConfig } from "@/server/config/server-config";
+import { DB } from "@/server/db/live";
+import { test, testEmailAccess, testQuestion, testUser, user } from "@/server/db/schema";
+import { Mailer } from "@/server/mail/mailer";
+
+import type { TestPermission } from "../model";
 
 type TestsDb = Omit<Database, "$client">;
 

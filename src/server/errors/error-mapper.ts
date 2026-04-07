@@ -1,6 +1,6 @@
 import type { ServerErrorPayload } from "@/lib/server-result";
 
-import { ReportableError, UnexpectedServerError } from "@/backend/errors";
+import { ReportableError, UnexpectedServerError } from "@/errors";
 
 import { TransportError } from "./transport-error";
 

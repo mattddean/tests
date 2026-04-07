@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { UnauthorizedError } from "@/domains/auth/errors";
+import { UnauthorizedError } from "@/errors";
 
 const loggerError = vi.fn();
 const getRequest = vi.fn(
