@@ -1,29 +1,11 @@
-import { Cause, Effect } from "effect";
+import { Effect } from "effect";
 
 import { POSTHOG_DISTINCT_ID_HEADER, POSTHOG_SESSION_ID_HEADER } from "@/lib/posthog";
 import { logger } from "@/server/observability/logger";
-import {
-  annotateCurrentEffectSpan,
-  getErrorType,
-  markCurrentEffectSpanAsError,
-  toError,
-  withActiveSpanContext,
-} from "@/server/observability/tracing";
+import { annotateCurrentEffectSpan, toError } from "@/server/observability/tracing";
 
 import { RequestContext, makeRequestLayerFromRequest } from "./layers/request";
-import { rootRuntime } from "./layers/root";
-
-function unwrapEffectCause(error: unknown): unknown {
-  if (!error || typeof error !== "object") {
-    return error;
-  }
-
-  if ("cause" in error && error.cause) {
-    return unwrapEffectCause(error.cause);
-  }
-
-  return error;
-}
+import { runEffectBoundary } from "./run-effect-boundary";
 
 export async function runHttpEffect<A, E, R>(
   program: Effect.Effect<A, E, R>,
@@ -34,63 +16,39 @@ export async function runHttpEffect<A, E, R>(
   },
 ) {
   const requestLayer = makeRequestLayerFromRequest(options.request);
+  return await runEffectBoundary(program, {
+    name: options.name,
+    requestLayer,
+    onSuccess: (result) =>
+      Effect.gen(function* () {
+        const status = options.getStatus?.(result);
 
-  const instrumentedProgram = withActiveSpanContext(
-    Effect.gen(function* () {
-      const requestContext = yield* RequestContext;
-
-      yield* annotateCurrentEffectSpan({
-        "app.request_id": requestContext.requestId,
-        "http.method": requestContext.method,
-        "url.path": requestContext.pathname,
-        "posthog.distinct_id": options.request.headers.get(POSTHOG_DISTINCT_ID_HEADER) ?? undefined,
-        "posthog.session_id": options.request.headers.get(POSTHOG_SESSION_ID_HEADER) ?? undefined,
-      });
-
-      const result = yield* program;
-      const status = options.getStatus?.(result);
-
-      if (status !== undefined) {
         yield* annotateCurrentEffectSpan({
+          "posthog.distinct_id":
+            options.request.headers.get(POSTHOG_DISTINCT_ID_HEADER) ?? undefined,
+          "posthog.session_id": options.request.headers.get(POSTHOG_SESSION_ID_HEADER) ?? undefined,
           "http.response.status_code": status,
         });
-      }
 
-      return result;
-    }).pipe(
-      Effect.withSpan(options.name, {
-        kind: "server",
+        return result;
       }),
-      Effect.catchAllCause((cause) => {
-        const error = unwrapEffectCause(Cause.squash(cause));
+    onFailure: (error) =>
+      Effect.gen(function* () {
+        const requestContext = yield* RequestContext;
 
-        return Effect.gen(function* () {
-          const requestContext = yield* RequestContext;
+        yield* Effect.sync(() =>
+          logger.error(
+            toError(error),
+            {
+              request_id: requestContext.requestId,
+              http_method: requestContext.method,
+              url_path: requestContext.pathname,
+            },
+            { request: options.request },
+          ),
+        );
 
-          yield* annotateCurrentEffectSpan({
-            "error.type": getErrorType(error),
-            "error.message": toError(error).message,
-          });
-          yield* markCurrentEffectSpanAsError(error);
-          yield* Effect.sync(() =>
-            logger.error(
-              toError(error),
-              {
-                request_id: requestContext.requestId,
-                http_method: requestContext.method,
-                url_path: requestContext.pathname,
-              },
-              { request: options.request },
-            ),
-          );
-
-          return yield* Effect.fail(error as E);
-        });
+        return yield* Effect.fail(error as E);
       }),
-    ),
-  );
-
-  return await rootRuntime.runPromise(
-    instrumentedProgram.pipe(Effect.provide(requestLayer)) as Effect.Effect<A, E, never>,
-  );
+  });
 }
