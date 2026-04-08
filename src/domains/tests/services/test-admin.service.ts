@@ -15,7 +15,7 @@ import {
   UserNotFound,
 } from "@/errors";
 import { createId, createSlug } from "@/features/common/ids";
-import { ServerConfig } from "@/server/config/server-config";
+import { env } from "@/lib/env";
 import { DB } from "@/server/db/live";
 import { test, testEmailAccess, testQuestion, testUser, user } from "@/server/db/schema";
 import { Mailer } from "@/server/mail/mailer";
@@ -62,7 +62,6 @@ export class TestAdminService extends Effect.Service<TestAdminService>()("TestAd
   effect: Effect.gen(function* () {
     const db = yield* DB;
     const mailer = yield* Mailer;
-    const config = yield* ServerConfig;
 
     return {
       createTestRecord: (userId: string, title: string) =>
@@ -264,7 +263,7 @@ export class TestAdminService extends Effect.Service<TestAdminService>()("TestAd
             to: normalizedEmail,
             ownerName: resolvedOwner.name ?? resolvedOwner.email,
             testTitle: resolvedTest.title,
-            invitationUrl: `${config.BETTER_AUTH_URL}/tests/${testId}?inviteEmail=${encodeURIComponent(normalizedEmail)}`,
+            invitationUrl: `${env.BETTER_AUTH_URL}/tests/${testId}?inviteEmail=${encodeURIComponent(normalizedEmail)}`,
           });
         }),
     };

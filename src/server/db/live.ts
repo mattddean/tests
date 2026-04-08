@@ -6,11 +6,11 @@ import * as Layer from "effect/Layer";
 import * as Redacted from "effect/Redacted";
 import { types } from "pg";
 
-import { serverConfig } from "@/server/config/server-config";
+import { env } from "@/lib/env";
 
 import { relations } from "./relations";
 
-const databaseUrl = new URL(serverConfig.DATABASE_URL);
+const databaseUrl = new URL(env.DATABASE_URL);
 
 const PgClientLive = PgClient.layer({
   host: databaseUrl.hostname,

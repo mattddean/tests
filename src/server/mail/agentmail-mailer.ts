@@ -3,14 +3,14 @@ import { AgentMailClient } from "agentmail";
 import { Effect, Layer } from "effect";
 import { createElement } from "react";
 
-import { serverConfig } from "@/server/config/server-config";
+import { env } from "@/lib/env";
 
 import { Mailer } from "./mailer";
 import { TestInvitationEmail } from "./templates/test-invitation-email";
 
 function getClient() {
   return new AgentMailClient({
-    apiKey: serverConfig.AGENTMAIL_API_KEY,
+    apiKey: env.AGENTMAIL_API_KEY,
   });
 }
 
@@ -27,7 +27,7 @@ export const MailerLive = Layer.succeed(Mailer, {
           }),
         );
 
-        await getClient().inboxes.messages.send(serverConfig.AGENTMAIL_INBOX_ID, {
+        await getClient().inboxes.messages.send(env.AGENTMAIL_INBOX_ID, {
           to: input.to,
           subject: `${input.ownerName} shared a test: ${input.testTitle}`,
           text: toPlainText(html),

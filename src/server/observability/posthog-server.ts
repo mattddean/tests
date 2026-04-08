@@ -5,7 +5,7 @@ import { BatchLogRecordProcessor } from "@opentelemetry/sdk-logs";
 import { NodeSDK } from "@opentelemetry/sdk-node";
 import { PostHog } from "posthog-node";
 
-import { serverConfig } from "@/server/config/server-config";
+import { env } from "@/lib/env";
 
 import { getAnalyticsConfig } from "./analytics";
 import {
@@ -200,7 +200,7 @@ function getOtelState(): OtelState | null {
   const sdk = new NodeSDK({
     resource: resourceFromAttributes({
       "service.name": LOG_NAMESPACE,
-      "deployment.environment": serverConfig.PUBLIC_ENV,
+      "deployment.environment": env.VITE_ENV,
     }),
     logRecordProcessors: [
       new BatchLogRecordProcessor(

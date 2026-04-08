@@ -7,12 +7,11 @@ import { TestEditorServiceLive } from "@/domains/tests/services/test-editor.serv
 import { TestReadServiceLive } from "@/domains/tests/services/test-read.service";
 import { TestTakingServiceLive } from "@/domains/tests/services/test-taking.service";
 import { AuthServiceLive } from "@/server/auth/auth-service";
-import { ServerConfigLive } from "@/server/config/server-config";
 import { DbLive } from "@/server/db/live";
 import { MailerLive } from "@/server/mail/agentmail-mailer";
 import { OBSERVABILITY_SERVICE_NAME } from "@/server/observability/tracing";
 
-const BaseLayer = Layer.mergeAll(ServerConfigLive, DbLive, AuthServiceLive, MailerLive);
+const BaseLayer = Layer.mergeAll(DbLive, AuthServiceLive, MailerLive);
 const ObservabilityLayer = OtelTracer.layerGlobal.pipe(
   Layer.provideMerge(
     OtelResource.layer({
@@ -25,7 +24,7 @@ const TestReadServiceLayer = TestReadServiceLive.pipe(Layer.provide(DbLive));
 const TestEditorServiceLayer = TestEditorServiceLive.pipe(Layer.provide(DbLive));
 const TestTakingServiceLayer = TestTakingServiceLive.pipe(Layer.provide(DbLive));
 const TestAdminServiceLayer = TestAdminServiceLive.pipe(
-  Layer.provide(Layer.mergeAll(DbLive, MailerLive, ServerConfigLive)),
+  Layer.provide(Layer.mergeAll(DbLive, MailerLive)),
 );
 
 export const RootLayer = Layer.mergeAll(

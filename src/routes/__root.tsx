@@ -9,6 +9,7 @@ import { SiteShell } from "@/components/site-shell";
 import { sessionQueryOptions } from "@/features/auth/queries";
 import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
 import { Provider } from "@/integrations/tanstack-query/root-provider";
+import { env } from "@/lib/env";
 
 import appCss from "../styles.css?url";
 
@@ -52,8 +53,8 @@ function RootComponent() {
 }
 
 function PostHogInitScript() {
-  const host = import.meta.env.VITE_POSTHOG_HOST;
-  const projectToken = import.meta.env.VITE_POSTHOG_PROJECT_TOKEN;
+  const host = env.VITE_POSTHOG_HOST;
+  const projectToken = env.VITE_POSTHOG_PROJECT_TOKEN;
 
   if (!host || !projectToken) {
     return null;
@@ -71,7 +72,7 @@ if (!window.__posthog_initialized) {
       capture_console_errors: false
     },
     enable_recording_console_log: ${JSON.stringify(
-      (import.meta.env.VITE_POSTHOG_ENABLE_RECORDING_CONSOLE_LOG ?? "false") === "true",
+      env.VITE_POSTHOG_ENABLE_RECORDING_CONSOLE_LOG === "true",
     )}
   });
 }
@@ -82,7 +83,7 @@ if (!window.__posthog_initialized) {
 
 function AppFrame() {
   const { data: session } = useSuspenseQuery(sessionQueryOptions());
-  const shouldShowDevtools = import.meta.env.DEV && import.meta.env.VITE_SHOW_DEVTOOLS === "true";
+  const shouldShowDevtools = env.VITE_ENV === "development" && env.VITE_SHOW_DEVTOOLS === "true";
 
   return (
     <SiteShell session={session}>

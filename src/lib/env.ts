@@ -11,10 +11,10 @@ const zUrlOpt = z.url().optional();
 const railwayEnvironmentName = import.meta.env.RAILWAY_ENVIRONMENT_NAME;
 const processEnv = typeof process !== "undefined" ? process.env : undefined;
 const isCi = !!processEnv?.CI;
-const publicEnv = railwayEnvironmentName?.includes("pr-")
+const viteEnv = railwayEnvironmentName?.includes("pr-")
   ? "pr"
   : railwayEnvironmentName || (isCi ? "ci" : "development");
-const isProduction = publicEnv === "production";
+const isProduction = viteEnv === "production";
 
 export const env = createEnv({
   isServer,
@@ -25,7 +25,6 @@ export const env = createEnv({
     AGENTMAIL_INBOX_ID: zStr,
     BETTER_AUTH_URL: zStr,
     BETTER_AUTH_SECRET: zStr,
-    POSTHOG_OTEL_TRACES_URL: zUrl,
   },
   client: {
     VITE_ENV: z.enum(["development", "ci", "pr", "production"]),
@@ -35,10 +34,12 @@ export const env = createEnv({
       .default("false"),
     VITE_POSTHOG_HOST: isProduction ? zUrl : zUrlOpt,
     VITE_POSTHOG_PROJECT_TOKEN: isProduction ? zStr : zStrOpt,
+    VITE_SHOW_DEVTOOLS: z.enum(["true", "false"]).optional().default("false"),
   },
   runtimeEnv: {
-    ...process.env,
+    ...processEnv,
     ...import.meta.env,
+    VITE_ENV: viteEnv,
   },
   emptyStringAsUndefined: true,
   skipValidation: isCi || processEnv?.npm_lifecycle_event === "lint",
