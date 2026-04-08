@@ -1,3 +1,4 @@
+import "@/lib/polyfills/buffer";
 import { createRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 
