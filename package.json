@@ -17,7 +17,7 @@
     "lint:fix": "oxlint --fix",
     "prepare": "effect-tsgo patch",
     "preview": "bun --bun vite preview",
-    "start": "node .output/server/index.mjs",
+    "start": "bun run .output/server/index.mjs",
     "test": "vitest run",
     "typecheck": "tsgo --noEmit --emitDeclarationOnly false"
   },
