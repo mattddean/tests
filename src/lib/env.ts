@@ -11,9 +11,12 @@ const zUrlOpt = z.url().optional();
 const railwayEnvironmentName = import.meta.env.RAILWAY_ENVIRONMENT_NAME;
 const processEnv = typeof process !== "undefined" ? process.env : undefined;
 const isCi = !!processEnv?.CI;
-const viteEnv = railwayEnvironmentName?.includes("pr-")
-  ? "pr"
-  : railwayEnvironmentName || (isCi ? "ci" : "development");
+const viteEnv = (() => {
+  if (railwayEnvironmentName?.includes("pr-")) return "pr";
+  if (isCi) return "ci";
+  if (railwayEnvironmentName) return railwayEnvironmentName;
+  return "development";
+})();
 const isProduction = viteEnv === "production";
 
 export const env = createEnv({
@@ -27,7 +30,7 @@ export const env = createEnv({
     BETTER_AUTH_SECRET: zStr,
   },
   client: {
-    VITE_ENV: z.enum(["development", "ci", "pr", "production"]),
+    VITE_ENV: z.enum(["development", "ci", "pr", "staging", "production"]),
     VITE_POSTHOG_ENABLE_RECORDING_CONSOLE_LOG: z
       .enum(["true", "false"])
       .optional()
