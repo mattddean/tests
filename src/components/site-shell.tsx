@@ -3,8 +3,8 @@ import { LogOut, SquarePen } from "lucide-react";
 
 import type { SessionData } from "@/domains/auth/model";
 
-import { ButtonLink } from "@/components/button-link";
 import { Button } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button-link";
 import { Card } from "@/components/ui/card";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";

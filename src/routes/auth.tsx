@@ -4,9 +4,9 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { AlertCircle, ArrowRight } from "lucide-react";
 import { useState } from "react";
 
-import { FieldLabel } from "@/components/field-label";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { FieldLabel } from "@/components/ui/field-label";
 import { Input as TextInput } from "@/components/ui/input";
 import { parseAuthSearch } from "@/domains/auth/schema";
 import { sessionQueryOptions } from "@/features/auth/queries";

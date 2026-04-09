@@ -1,6 +1,5 @@
+import { createFormHook, createFormHookContexts } from "@tanstack/react-form";
 import { useStore } from "@tanstack/react-form";
-
-import { useFieldContext, useFormContext } from "@/hooks/demo.form-context";
 
 export function SubscribeButton({ label }: { label: string }) {
   const form = useFormContext();
@@ -109,3 +108,20 @@ export function Select({
     </div>
   );
 }
+
+const { fieldContext, useFieldContext, formContext, useFormContext } = createFormHookContexts();
+
+export const { useAppForm } = createFormHook({
+  fieldComponents: {
+    TextField,
+    Select,
+    TextArea,
+  },
+  formComponents: {
+    SubscribeButton,
+  },
+  fieldContext,
+  formContext,
+});
+
+export { fieldContext, useFieldContext, formContext, useFormContext };
