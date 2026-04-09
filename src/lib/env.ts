@@ -1,4 +1,5 @@
 import { createEnv } from "@t3-oss/env-core";
+import { railway } from "better-auth";
 import { z } from "zod/v4";
 
 import { isServer } from "./is-server";
@@ -8,19 +9,21 @@ const zStrOpt = zStr.optional();
 const zUrl = z.url();
 const zUrlOpt = z.url().optional();
 
-const railwayEnvironmentName =
-  import.meta.env.VITE_RAILWAY_ENVIRONMENT_NAME || process.env.VITE_RAILWAY_ENVIRONMENT_NAME;
+const railwayEnvironmentName = (import.meta.env.VITE_RAILWAY_ENVIRONMENT_NAME ||
+  process.env.VITE_RAILWAY_ENVIRONMENT_NAME) as string;
 const processEnv = typeof process !== "undefined" ? process.env : undefined;
 const isCi = !!processEnv?.CI;
 const viteEnv = (() => {
   if (railwayEnvironmentName?.includes("pr-")) return "pr";
   if (isCi) return "ci";
-  if (railwayEnvironmentName) return railwayEnvironmentName;
-  return "development";
+  return railwayEnvironmentName;
 })();
 const isProduction = viteEnv === "production";
 const viteBaseUrl = (() => {
-  return import.meta.env.VITE_RAILWAY_PUBLIC_DOMAIN || process.env.VITE_RAILWAY_PUBLIC_DOMAIN;
+  const domain = (import.meta.env.VITE_RAILWAY_PUBLIC_DOMAIN ||
+    process.env.VITE_RAILWAY_PUBLIC_DOMAIN) as string;
+  if (viteEnv === "development") return `http://${domain}`;
+  return `https://${domain}`;
 })();
 
 export const env = createEnv({
