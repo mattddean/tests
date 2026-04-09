@@ -9,7 +9,7 @@ import {
   testQuestion,
   testResponse,
   testUser,
-} from "@/server/db/schema";
+} from "@/db/schema";
 
 import {
   ResponseStatusSchema,

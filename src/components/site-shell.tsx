@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { LogOut, SquarePen } from "lucide-react";
 
-import type { SessionData } from "@/domains/auth/model";
+import type { SessionData } from "@/lib/auth/schemas/session";
 
 import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";

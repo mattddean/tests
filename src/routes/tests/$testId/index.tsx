@@ -3,14 +3,14 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Edit3 } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { TestDocument } from "@/components/test-document";
 import { SectionHeading } from "@/components/ui";
 import { Card } from "@/components/ui/card";
-import { sessionQueryOptions } from "@/features/auth/queries";
-import { TestDocument } from "@/features/tests/components/test-document";
-import { testTakeQueryOptions, testsKeys } from "@/features/tests/queries";
-import { saveAnswerAction, submitResponseAction } from "@/features/tests/server";
+import { saveAnswerAction, submitResponseAction } from "@/controllers";
 import { authClient } from "@/lib/auth-client";
+import { sessionQueryOptions } from "@/lib/auth/queries";
 import { throwOnError } from "@/lib/server-result";
+import { testTakeQueryOptions, testsKeys } from "@/lib/tests/queries";
 import { parseTakeTestSearch } from "@/schemas/search";
 
 const saveAnswer = throwOnError(saveAnswerAction);

@@ -4,8 +4,8 @@ import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { TestListRow } from "@/components/site-shell";
 import { EmptyState, SectionHeading } from "@/components/ui";
 import { ButtonLink } from "@/components/ui/button-link";
-import { sessionQueryOptions } from "@/features/auth/queries";
-import { testsListQueryOptions } from "@/features/tests/queries";
+import { sessionQueryOptions } from "@/lib/auth/queries";
+import { testsListQueryOptions } from "@/lib/tests/queries";
 import { parseLibrarySearch } from "@/schemas/search";
 
 export const Route = createFileRoute("/tests/")({
