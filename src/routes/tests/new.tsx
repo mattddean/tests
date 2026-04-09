@@ -1,6 +1,10 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { sessionQueryOptions } from "@/features/auth/queries";
-import { createTest } from "@/features/tests/server";
+
+import { createTest } from "@/controllers";
+import { sessionQueryOptions } from "@/lib/auth/queries";
+import { throwOnError } from "@/lib/server-result";
+
+const createTestOrThrow = throwOnError(createTest);
 
 export const Route = createFileRoute("/tests/new")({
   loader: async ({ context }) => {
@@ -9,7 +13,7 @@ export const Route = createFileRoute("/tests/new")({
       throw redirect({ to: "/auth" });
     }
 
-    const test = await createTest({ data: { title: "Untitled test" } });
+    const test = await createTestOrThrow({ data: { title: "Untitled test" } });
 
     throw redirect({
       to: "/tests/$testId/edit",

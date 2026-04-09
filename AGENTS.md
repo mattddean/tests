@@ -15,3 +15,7 @@
   - `src/routes/tests/$testId/responses/$responseId.tsx`
 - Do not reintroduce `tests_`, `responses_`, or similar underscore route paths unless `src/routeTree.gen.ts` proves a real component-tree nesting problem exists.
 - When there is disagreement about TanStack file-routing behavior, prefer the actual generated route tree and working app behavior over assumptions.
+
+## After all changes
+
+- Run `bun run check`

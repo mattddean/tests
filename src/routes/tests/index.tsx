@@ -1,18 +1,15 @@
-import { z } from "zod";
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { ButtonLink } from "@/components/button-link";
-import { EmptyState, SectionHeading } from "@/components/ui";
-import { TestListRow } from "@/components/site-shell";
-import { sessionQueryOptions } from "@/features/auth/queries";
-import { testsListQueryOptions } from "@/features/tests/queries";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 
-const searchSchema = z.object({
-  scope: z.enum(["drafts", "published", "shared"]).catch("drafts"),
-});
+import { TestListRow } from "@/components/site-shell";
+import { EmptyState, SectionHeading } from "@/components/ui";
+import { ButtonLink } from "@/components/ui/button-link";
+import { sessionQueryOptions } from "@/lib/auth/queries";
+import { testsListQueryOptions } from "@/lib/tests/queries";
+import { parseLibrarySearch } from "@/schemas/search";
 
 export const Route = createFileRoute("/tests/")({
-  validateSearch: searchSchema,
+  validateSearch: parseLibrarySearch,
   loaderDeps: ({ search }) => ({ scope: search.scope }),
   loader: async ({ context, deps }) => {
     const session = await context.queryClient.ensureQueryData(sessionQueryOptions());

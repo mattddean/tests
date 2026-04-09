@@ -1,22 +1,23 @@
-import { useMemo, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Edit3 } from "lucide-react";
-import { z } from "zod";
-import { Card } from "@/components/ui/card";
-import { SectionHeading } from "@/components/ui";
-import { sessionQueryOptions } from "@/features/auth/queries";
-import { testTakeQueryOptions, testsKeys } from "@/features/tests/queries";
-import { saveAnswerAction, submitResponseAction } from "@/features/tests/server";
-import { TestDocument } from "@/features/tests/components/test-document";
-import { authClient } from "@/lib/auth-client";
+import { useMemo, useState } from "react";
 
-const searchSchema = z.object({
-  inviteEmail: z.email().optional(),
-});
+import { TestDocument } from "@/components/test-document";
+import { SectionHeading } from "@/components/ui";
+import { Card } from "@/components/ui/card";
+import { saveAnswerAction, submitResponseAction } from "@/controllers";
+import { authClient } from "@/lib/auth-client";
+import { sessionQueryOptions } from "@/lib/auth/queries";
+import { throwOnError } from "@/lib/server-result";
+import { testTakeQueryOptions, testsKeys } from "@/lib/tests/queries";
+import { parseTakeTestSearch } from "@/schemas/search";
+
+const saveAnswer = throwOnError(saveAnswerAction);
+const submitResponse = throwOnError(submitResponseAction);
 
 export const Route = createFileRoute("/tests/$testId/")({
-  validateSearch: searchSchema,
+  validateSearch: parseTakeTestSearch,
   loader: async ({ context }) => {
     await context.queryClient.ensureQueryData(sessionQueryOptions());
   },
@@ -46,7 +47,7 @@ function TestTakePage() {
   const redirectUrl = `/tests/${testId}${search.inviteEmail ? `?inviteEmail=${encodeURIComponent(search.inviteEmail)}` : ""}`;
 
   const answerMutation = useMutation({
-    mutationFn: saveAnswerAction,
+    mutationFn: saveAnswer,
     onMutate: () => setSaveState({ label: "Saving", tone: "accent" }),
     onSuccess: async () => {
       setSaveState({ label: "Saved draft", tone: "success" });
@@ -60,7 +61,7 @@ function TestTakePage() {
       }),
   });
   const submitMutation = useMutation({
-    mutationFn: submitResponseAction,
+    mutationFn: submitResponse,
     onMutate: () => setSaveState({ label: "Submitting", tone: "accent" }),
     onSuccess: async () => {
       setSaveState({ label: "Submitted", tone: "success" });

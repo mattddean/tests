@@ -1,17 +1,18 @@
-import { useCallback, useMemo, useState } from "react";
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
-import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useForm } from "@tanstack/react-form";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { CircleCheckBig, Eye, Send } from "lucide-react";
-import { FieldLabel } from "@/components/field-label";
+import { useCallback, useMemo, useState } from "react";
+
+import { TestDocument } from "@/components/test-document";
+import { SectionHeading, SurfaceMeta } from "@/components/ui";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { FieldLabel } from "@/components/ui/field-label";
 import { Input as TextInput } from "@/components/ui/input";
-import { SectionHeading, SurfaceMeta } from "@/components/ui";
-import { sessionQueryOptions } from "@/features/auth/queries";
-import { testEditorQueryOptions, testsKeys } from "@/features/tests/queries";
 import {
   addChoiceAction,
+  addEditorInput,
   addEditorAction,
   addQuestionAction,
   deleteChoiceAction,
@@ -20,12 +21,30 @@ import {
   removeEditorAction,
   reorderChoicesAction,
   reorderQuestionsAction,
+  shareTestInput,
   shareTestAction,
   updateChoiceAction,
+  updateTestMetaInput,
   updateQuestionAction,
   updateTestMetaAction,
-} from "@/features/tests/server";
-import { TestDocument } from "@/features/tests/components/test-document";
+} from "@/controllers";
+import { sessionQueryOptions } from "@/lib/auth/queries";
+import { throwOnError } from "@/lib/server-result";
+import { testEditorQueryOptions, testsKeys } from "@/lib/tests/queries";
+
+const updateTestMeta = throwOnError(updateTestMetaAction);
+const addEditor = throwOnError(addEditorAction);
+const shareTest = throwOnError(shareTestAction);
+const removeEditor = throwOnError(removeEditorAction);
+const publishTest = throwOnError(publishTestAction);
+const addQuestion = throwOnError(addQuestionAction);
+const updateQuestion = throwOnError(updateQuestionAction);
+const reorderQuestions = throwOnError(reorderQuestionsAction);
+const addChoice = throwOnError(addChoiceAction);
+const updateChoice = throwOnError(updateChoiceAction);
+const reorderChoices = throwOnError(reorderChoicesAction);
+const deleteQuestion = throwOnError(deleteQuestionAction);
+const deleteChoice = throwOnError(deleteChoiceAction);
 
 export const Route = createFileRoute("/tests/$testId/edit")({
   loader: async ({ context, params }) => {
@@ -68,36 +87,40 @@ function TestEditorPage() {
   };
 
   const metaMutation = useMutation({
-    mutationFn: updateTestMetaAction,
+    mutationFn: updateTestMeta,
     onSuccess: async () => invalidate(),
   });
   const addEditorMutation = useMutation({
-    mutationFn: addEditorAction,
+    mutationFn: addEditor,
     onSuccess: async () => invalidate(),
   });
   const shareTestMutation = useMutation({
-    mutationFn: shareTestAction,
+    mutationFn: shareTest,
     onSuccess: async () => invalidate(),
   });
   const removeEditorMutation = useMutation({
-    mutationFn: removeEditorAction,
+    mutationFn: removeEditor,
     onSuccess: async () => invalidate(),
   });
   const publishMutation = useMutation({
-    mutationFn: publishTestAction,
+    mutationFn: publishTest,
     onSuccess: async () => invalidate(),
   });
 
   const metaForm = useForm({
     defaultValues: {
+      testId,
       title: data.test.title,
-      description: data.test.description ?? "",
+      description: data.test.description,
+    },
+    validators: {
+      onSubmit: updateTestMetaInput,
     },
     onSubmit: async ({ value }) => {
       await withSaveState(async () => {
         await metaMutation.mutateAsync({
           data: {
-            testId,
+            testId: value.testId,
             title: value.title,
             description: value.description || null,
           },
@@ -108,13 +131,17 @@ function TestEditorPage() {
 
   const addEditorForm = useForm({
     defaultValues: {
+      testId,
       email: "",
+    },
+    validators: {
+      onSubmit: addEditorInput,
     },
     onSubmit: async ({ value, formApi }) => {
       await withSaveState(async () => {
         await addEditorMutation.mutateAsync({
           data: {
-            testId,
+            testId: value.testId,
             email: value.email,
           },
         });
@@ -125,13 +152,17 @@ function TestEditorPage() {
 
   const shareTestForm = useForm({
     defaultValues: {
+      testId,
       email: "",
+    },
+    validators: {
+      onSubmit: shareTestInput,
     },
     onSubmit: async ({ value, formApi }) => {
       await withSaveState(async () => {
         await shareTestMutation.mutateAsync({
           data: {
-            testId,
+            testId: value.testId,
             email: value.email,
           },
         });
@@ -164,54 +195,54 @@ function TestEditorPage() {
         }),
       onQuestionPromptSave: async (questionId: string, value: string) =>
         withSaveState(async () => {
-          await updateQuestionAction({
+          await updateQuestion({
             data: { questionId, prompt: value || "Untitled question" },
           });
           await invalidate();
         }),
       onQuestionDescriptionSave: async (questionId: string, value: string) =>
         withSaveState(async () => {
-          await updateQuestionAction({ data: { questionId, description: value || null } });
+          await updateQuestion({ data: { questionId, description: value || null } });
           await invalidate();
         }),
       onQuestionRequiredToggle: async (questionId: string, value: boolean) =>
         withSaveState(async () => {
-          await updateQuestionAction({ data: { questionId, required: value } });
+          await updateQuestion({ data: { questionId, required: value } });
           await invalidate();
         }),
       onQuestionAdd: async (afterQuestionId?: string | null) =>
         withSaveState(async () => {
-          await addQuestionAction({ data: { testId, afterQuestionId } });
+          await addQuestion({ data: { testId, afterQuestionId } });
           await invalidate();
         }),
       onQuestionDelete: async (questionId: string) =>
         withSaveState(async () => {
-          await deleteQuestionAction({ data: { questionId } });
+          await deleteQuestion({ data: { questionId } });
           await invalidate();
         }),
       onQuestionReorder: async (questionIds: Array<string>) =>
         withSaveState(async () => {
-          await reorderQuestionsAction({ data: { testId, questionIds } });
+          await reorderQuestions({ data: { testId, questionIds } });
           await invalidate();
         }),
       onChoiceSave: async (choiceId: string, value: string) =>
         withSaveState(async () => {
-          await updateChoiceAction({ data: { choiceId, label: value || "Untitled choice" } });
+          await updateChoice({ data: { choiceId, label: value || "Untitled choice" } });
           await invalidate();
         }),
       onChoiceAdd: async (questionId: string, afterChoiceId?: string | null) =>
         withSaveState(async () => {
-          await addChoiceAction({ data: { questionId, afterChoiceId } });
+          await addChoice({ data: { questionId, afterChoiceId } });
           await invalidate();
         }),
       onChoiceDelete: async (choiceId: string) =>
         withSaveState(async () => {
-          await deleteChoiceAction({ data: { choiceId } });
+          await deleteChoice({ data: { choiceId } });
           await invalidate();
         }),
       onChoiceReorder: async (questionId: string, choiceIds: Array<string>) =>
         withSaveState(async () => {
-          await reorderChoicesAction({ data: { questionId, choiceIds } });
+          await reorderChoices({ data: { questionId, choiceIds } });
           await invalidate();
         }),
     }),
@@ -304,7 +335,7 @@ function TestEditorPage() {
                 <div className="space-y-2">
                   <FieldLabel label="Description" />
                   <textarea
-                    value={field.state.value}
+                    value={field.state.value ?? ""}
                     onChange={(event) => field.handleChange(event.target.value)}
                     onBlur={field.handleBlur}
                     rows={4}
