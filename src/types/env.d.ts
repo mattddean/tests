@@ -8,9 +8,3 @@ interface Window {
     get_distinct_id: () => string | null;
   };
 }
-
-declare namespace App {
-  interface Locals {
-    // Add custom locals here
-  }
-}

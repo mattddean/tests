@@ -12,7 +12,7 @@ const runHttpEffect = vi.fn((effect, _options) =>
   ),
 );
 
-vi.mock("@/server/runtime/run-http-effect", () => ({
+vi.mock("@/lib/runtime/run-http-effect", () => ({
   runHttpEffect,
 }));
 

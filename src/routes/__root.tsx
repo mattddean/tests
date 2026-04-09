@@ -6,9 +6,8 @@ import { Outlet, createRootRouteWithContext, HeadContent, Scripts } from "@tanst
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 
 import { SiteShell } from "@/components/site-shell";
-import { sessionQueryOptions } from "@/features/auth/queries";
-import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
-import { Provider } from "@/integrations/tanstack-query/root-provider";
+import { Provider, TanStackQueryDevtools } from "@/components/tanstack-query";
+import { sessionQueryOptions } from "@/lib/auth/queries";
 import { env } from "@/lib/env";
 
 import appCss from "../styles.css?url";

@@ -7,13 +7,13 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
-import type { GetResponsesTableDataItem } from "@/features/tests/types";
+import type { GetResponsesTableDataItem } from "@/lib/tests/types";
 
 import { EmptyState, SectionHeading } from "@/components/ui";
 import { Card } from "@/components/ui/card";
 import { Input as TextInput } from "@/components/ui/input";
-import { sessionQueryOptions } from "@/features/auth/queries";
-import { responsesTableQueryOptions } from "@/features/tests/queries";
+import { sessionQueryOptions } from "@/lib/auth/queries";
+import { responsesTableQueryOptions } from "@/lib/tests/queries";
 import { parseResponseSearchInput } from "@/schemas/search";
 
 export const Route = createFileRoute("/tests/$testId/responses/")({

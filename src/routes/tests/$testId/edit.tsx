@@ -4,14 +4,12 @@ import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { CircleCheckBig, Eye, Send } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
-import { FieldLabel } from "@/components/field-label";
+import { TestDocument } from "@/components/test-document";
 import { SectionHeading, SurfaceMeta } from "@/components/ui";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { FieldLabel } from "@/components/ui/field-label";
 import { Input as TextInput } from "@/components/ui/input";
-import { sessionQueryOptions } from "@/features/auth/queries";
-import { TestDocument } from "@/features/tests/components/test-document";
-import { testEditorQueryOptions, testsKeys } from "@/features/tests/queries";
 import {
   addChoiceAction,
   addEditorInput,
@@ -29,8 +27,10 @@ import {
   updateTestMetaInput,
   updateQuestionAction,
   updateTestMetaAction,
-} from "@/features/tests/server";
+} from "@/controllers";
+import { sessionQueryOptions } from "@/lib/auth/queries";
 import { throwOnError } from "@/lib/server-result";
+import { testEditorQueryOptions, testsKeys } from "@/lib/tests/queries";
 
 const updateTestMeta = throwOnError(updateTestMetaAction);
 const addEditor = throwOnError(addEditorAction);

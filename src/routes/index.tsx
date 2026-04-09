@@ -2,12 +2,12 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, CheckCircle2, FilePenLine, LayoutList, Rows3, Sparkles } from "lucide-react";
 
-import { ButtonLink } from "@/components/button-link";
 import { TestListRow } from "@/components/site-shell";
 import { EmptyState, SectionHeading, StatusPill } from "@/components/ui";
+import { ButtonLink } from "@/components/ui/button-link";
 import { Card } from "@/components/ui/card";
-import { sessionQueryOptions } from "@/features/auth/queries";
-import { dashboardQueryOptions } from "@/features/tests/queries";
+import { sessionQueryOptions } from "@/lib/auth/queries";
+import { dashboardQueryOptions } from "@/lib/tests/queries";
 
 export const Route = createFileRoute("/")({
   loader: async ({ context }) => {

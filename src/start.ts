@@ -2,7 +2,7 @@ import { createMiddleware, createStart } from "@tanstack/react-start";
 import { Effect } from "effect";
 
 import { getPostHogHeaders } from "@/lib/posthog";
-import { runHttpEffect } from "@/server/runtime/run-http-effect";
+import { runHttpEffect } from "@/lib/runtime/run-http-effect";
 
 export const postHogRequestMiddleware = createMiddleware().server(
   async ({ next, pathname, request }) => {

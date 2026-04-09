@@ -1,11 +1,11 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 
-import { ButtonLink } from "@/components/button-link";
 import { EmptyState, SectionHeading, StatusPill } from "@/components/ui";
+import { ButtonLink } from "@/components/ui/button-link";
 import { Card } from "@/components/ui/card";
-import { sessionQueryOptions } from "@/features/auth/queries";
-import { myResponsesQueryOptions } from "@/features/tests/queries";
+import { sessionQueryOptions } from "@/lib/auth/queries";
+import { myResponsesQueryOptions } from "@/lib/tests/queries";
 
 export const Route = createFileRoute("/me/responses")({
   loader: async ({ context }) => {
