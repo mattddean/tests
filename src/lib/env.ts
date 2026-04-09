@@ -8,7 +8,8 @@ const zStrOpt = zStr.optional();
 const zUrl = z.url();
 const zUrlOpt = z.url().optional();
 
-const railwayEnvironmentName = import.meta.env.RAILWAY_ENVIRONMENT_NAME;
+const railwayEnvironmentName =
+  import.meta.env.VITE_RAILWAY_ENVIRONMENT_NAME || process.env.VITE_RAILWAY_ENVIRONMENT_NAME;
 const processEnv = typeof process !== "undefined" ? process.env : undefined;
 const isCi = !!processEnv?.CI;
 const viteEnv = (() => {
@@ -18,6 +19,9 @@ const viteEnv = (() => {
   return "development";
 })();
 const isProduction = viteEnv === "production";
+const viteBaseUrl = (() => {
+  return import.meta.env.VITE_RAILWAY_PUBLIC_DOMAIN || process.env.VITE_RAILWAY_PUBLIC_DOMAIN;
+})();
 
 export const env = createEnv({
   isServer,
@@ -31,6 +35,7 @@ export const env = createEnv({
   },
   client: {
     VITE_ENV: z.enum(["development", "ci", "pr", "staging", "production"]),
+    VITE_BASE_URL: zUrl,
     VITE_POSTHOG_ENABLE_RECORDING_CONSOLE_LOG: z
       .enum(["true", "false"])
       .optional()
@@ -43,6 +48,7 @@ export const env = createEnv({
     ...processEnv,
     ...import.meta.env,
     VITE_ENV: viteEnv,
+    VITE_BASE_URL: viteBaseUrl,
   },
   emptyStringAsUndefined: true,
   skipValidation: isCi || processEnv?.npm_lifecycle_event === "lint",
