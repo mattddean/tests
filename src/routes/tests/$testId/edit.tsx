@@ -1,7 +1,7 @@
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
-import { CircleCheckBig, Eye, Send } from "lucide-react";
+import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
+import { AlertTriangle, CircleCheckBig, Eye, Send, Trash2 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
 import { TestDocument } from "@/components/test-document";
@@ -30,6 +30,7 @@ import {
 } from "@/controllers";
 import { sessionQueryOptions } from "@/lib/auth/queries";
 import { throwOnError } from "@/lib/server-result";
+import { useDeleteTest } from "@/lib/tests/mutations";
 import { testEditorQueryOptions, testsKeys } from "@/lib/tests/queries";
 
 const updateTestMeta = throwOnError(updateTestMetaAction);
@@ -59,10 +60,12 @@ export const Route = createFileRoute("/tests/$testId/edit")({
 
 function TestEditorPage() {
   const { testId } = Route.useParams();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data } = useSuspenseQuery(testEditorQueryOptions(testId));
   const [saveLabel, setSaveLabel] = useState("Ready");
   const [saveTone, setSaveTone] = useState<"neutral" | "accent" | "success" | "warning">("neutral");
+  const [isDeleteConfirming, setIsDeleteConfirming] = useState(false);
 
   const invalidate = useCallback(async () => {
     await Promise.all([
@@ -249,6 +252,26 @@ function TestEditorPage() {
     [data.test.description, data.test.title, invalidate, metaMutation, testId],
   );
 
+  const deletedListScope = data.test.status === "published" ? "published" : "drafts";
+
+  const { deleteTest, deleteTestMutation } = useDeleteTest();
+  const deleteErrorMessage =
+    deleteTestMutation.error && deleteTestMutation.error instanceof Error
+      ? deleteTestMutation.error.message
+      : "Failed to delete test.";
+
+  async function handleDeleteTest() {
+    setSaveLabel("Deleting");
+    setSaveTone("accent");
+    try {
+      await deleteTest({ testId });
+      await navigate({ to: "/tests", search: { scope: deletedListScope } });
+    } catch (error) {
+      setSaveLabel(error instanceof Error ? error.message : "Failed");
+      setSaveTone("warning");
+    }
+  }
+
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
       <div className="space-y-6">
@@ -258,6 +281,13 @@ function TestEditorPage() {
           description="The live reader view and the editor view share the same structure. Hover reveals tools, click turns text into editing, and reorder actions stay anchored to the content."
           actions={
             <>
+              <Button
+                variant="destructive"
+                className="bg-red-400 text-white"
+                onClick={() => handleDeleteTest()}
+              >
+                Delete
+              </Button>
               <Link
                 to="/tests/$testId"
                 params={{ testId }}
@@ -496,6 +526,73 @@ function TestEditorPage() {
                 <Send className="mr-2 h-4 w-4" />
                 {data.test.status === "published" ? "Published" : "Publish test"}
               </Button>
+
+              <div className="h-px bg-[color:var(--border)]" />
+
+              <div className="space-y-3">
+                <FieldLabel
+                  label="Danger zone"
+                  helper="Delete this test and every question, response, invite, and collaborator link attached to it."
+                />
+                {isDeleteConfirming ? (
+                  <div className="space-y-4 rounded-2xl border border-red-200 bg-red-50 p-4">
+                    <div className="flex gap-3">
+                      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-700" />
+                      <div className="space-y-1">
+                        <p className="text-sm font-semibold text-red-800">
+                          Delete {data.test.title}?
+                        </p>
+                        <p className="text-sm leading-6 text-red-700">
+                          This cannot be undone. Existing taker links and collected responses will
+                          be removed.
+                        </p>
+                      </div>
+                    </div>
+                    {deleteErrorMessage ? (
+                      <p className="rounded-xl border border-red-200 bg-white/70 px-3 py-2 text-sm text-red-700">
+                        {deleteErrorMessage}
+                      </p>
+                    ) : null}
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full"
+                        disabled={deleteTestMutation.isPending}
+                        onClick={() => {
+                          deleteTestMutation.reset();
+                          setIsDeleteConfirming(false);
+                        }}
+                      >
+                        Keep test
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        className="w-full"
+                        disabled={deleteTestMutation.isPending}
+                        onClick={() => void handleDeleteTest()}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        {deleteTestMutation.isPending ? "Deleting" : "Delete test"}
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    className="w-full"
+                    onClick={() => {
+                      deleteTestMutation.reset();
+                      setIsDeleteConfirming(true);
+                    }}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete test
+                  </Button>
+                )}
+              </div>
             </>
           ) : null}
         </Card>

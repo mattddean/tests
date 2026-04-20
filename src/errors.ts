@@ -167,6 +167,13 @@ export class OnlyOwnerCanManageEditors extends makeReportableErrorClass(
   },
 ) {}
 
+export class OnlyOwnerCanDeleteTest extends makeReportableErrorClass("OnlyOwnerCanDeleteTest", {
+  message: "Only owners can delete a test",
+  userMessage: "Only owners can delete a test",
+  status: 403,
+  severity: "debug",
+}) {}
+
 export class CannotPublishEmptyTest extends makeReportableErrorClass("CannotPublishEmptyTest", {
   message: "Cannot publish an empty test",
   userMessage: "Cannot publish an empty test",

@@ -131,3 +131,20 @@ export const shareTestAction = createServerFn({ method: "POST" })
     ),
   );
 export type ShareTestActionResponse = Awaited<ReturnType<typeof shareTestAction>>;
+
+export const deleteTestInput = Schema.Struct({
+  id: Schema.String,
+}).pipe(Schema.standardSchemaV1);
+export type DeleteTestInput = Schema.Schema.Type<typeof deleteTestInput>;
+export const deleteTestAction = createServerFn({ method: "POST" })
+  .inputValidator(deleteTestInput)
+  .handler(({ data }) =>
+    runServerResultEffect(
+      Effect.gen(function* () {
+        const userId = yield* currentUserIdEffect;
+        const testAdminService = yield* TestAdminService;
+        yield* testAdminService.deleteTest(data.id, userId);
+      }),
+      { name: "tests.deleteTest" },
+    ),
+  );

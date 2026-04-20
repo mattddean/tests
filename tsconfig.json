@@ -28,7 +28,7 @@
         "name": "@effect/language-service",
         "diagnosticSeverity": {
           "extendsNativeError": "warning",
-          "globalConsole": "warning",
+          "globalConsole": "off",
           "globalConsoleInEffect": "warning",
           "globalDate": "warning",
           "globalDateInEffect": "warning",

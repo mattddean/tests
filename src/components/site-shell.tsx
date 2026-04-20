@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Card } from "@/components/ui/card";
 import { authClient } from "@/lib/auth-client";
+import { useDeleteTest } from "@/lib/tests/mutations";
 import { cn } from "@/lib/utils";
 
 import { AppLogo, StatusPill } from "./ui";
@@ -210,6 +211,8 @@ export function TestListRow({
   canEdit?: boolean;
   canViewResponses?: boolean;
 }) {
+  const { deleteTest } = useDeleteTest();
+
   return (
     <Card className="group overflow-hidden px-5 py-5">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -245,6 +248,13 @@ export function TestListRow({
               Edit
             </Link>
           ) : null}
+          <Button
+            variant="destructive"
+            className="bg-red-400 text-white"
+            onClick={() => deleteTest({ testId })}
+          >
+            Delete
+          </Button>
           {canViewResponses ? (
             <Link
               to="/tests/$testId/responses"
