@@ -9,6 +9,7 @@ import { test, testEmailAccess, testQuestion, testUser, user } from "@/db/schema
 import {
   CannotPublishEmptyTest,
   ForbiddenTestAccess,
+  OnlyOwnerCanDeleteTest,
   OnlyOwnerCanManageEditors,
   OnlyOwnerCanPublish,
   OnlyOwnerCanShareWithTakers,
@@ -264,6 +265,17 @@ export class TestAdminService extends Effect.Service<TestAdminService>()("TestAd
             testTitle: resolvedTest.title,
             invitationUrl: `${env.BETTER_AUTH_URL}/tests/${testId}?inviteEmail=${encodeURIComponent(normalizedEmail)}`,
           });
+        }),
+      deleteTest: (testId: string, ownerUserId: string) =>
+        Effect.gen(function* () {
+          const permission = yield* requireEditAccess(db, testId, ownerUserId);
+          if (permission !== "owner") {
+            return yield* Effect.fail(
+              new OnlyOwnerCanDeleteTest({ message: "Only owners can remove editors" }),
+            );
+          }
+
+          yield* db.delete(test).where(eq(test.id, testId));
         }),
     };
   }),

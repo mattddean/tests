@@ -1,5 +1,4 @@
 import { createEnv } from "@t3-oss/env-core";
-import { railway } from "better-auth";
 import { z } from "zod/v4";
 
 import { isServer } from "./is-server";
